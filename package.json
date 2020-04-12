@@ -21,6 +21,12 @@
 	],
 	"main": "./client/out/extension",
 	"contributes": {
+		"commands": [
+			{
+				"command": "languageServerExample.startStreaming",
+				"title": "Start Stream Logs into languageServerExample.port"
+			}
+		],
 		"configuration": {
 			"type": "object",
 			"title": "Example configuration",
@@ -31,24 +37,49 @@
 					"default": 100,
 					"description": "Controls the maximum number of problems produced by the server."
 				},
+				"languageServerExample.port": {
+					"type": "number",
+					"default": 7000,
+					"scope": "window",
+					"description": "The WebSocket port to stream LSP log data into."
+				},
 				"languageServerExample.trace.server": {
 					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "off",
-					"description": "Traces the communication between VS Code and the language server."
+					"type": "object",
+					"description": "Traces the communication between VS Code and the language server.",
+					"properties": {
+						"verbosity": {
+							"type": "string",
+							"description": "Controls the verbosity of the trace.",
+							"enum": [
+								"off",
+								"messages",
+								"verbose"
+							],
+							"default": "off"
+						},
+						"format": {
+							"type": "string",
+							"description": "Controls the output format of the trace.",
+							"enum": [
+								"text",
+								"json"
+							],
+							"default": "text"
+						}
+					}
 				}
 			}
 		}
 	},
 	"scripts": {
 		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
-		"compile": "tsc -b",
+		"compile": "npm run compile:client && npm run compile:server",
+		"compile:client": "tsc -p ./client/tsconfig.json",
+		"compile:server": "tsc -p ./server/tsconfig.json",
 		"watch": "tsc -b -w",
+		"watch:client": "tsc -w -p ./client/tsconfig.json",
+		"watch:server": "tsc -w -p ./server/tsconfig.json",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
 		"test": "sh ./scripts/e2e.sh"
 	},

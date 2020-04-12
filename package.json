@@ -91,5 +91,8 @@
 		"eslint": "^6.4.0",
 		"mocha": "^6.2.2",
 		"typescript": "^3.8.3"
+	},
+	"dependencies": {
+		"aurelia-dependency-injection": "^1.5.2"
 	}
 }

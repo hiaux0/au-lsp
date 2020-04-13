@@ -36,8 +36,6 @@ const TextDocumentChangeClass = globalContainer.get(TextDocumentChange);
 // Also include all preview / proposed LSP features.
 let connection = createConnection(ProposedFeatures.all);
 
-const { console } = connection;
-
 // Create a simple text document manager. The text document manager
 // supports full document sync only
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -47,6 +45,11 @@ let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
 
 connection.onInitialize(async (params: InitializeParams) => {
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('1. TCL: onInitialize');
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('------------------------------------------------------------------------------------------');
 	let capabilities = params.capabilities;
 
 	// Does the client support the `workspace/configuration` request?
@@ -88,18 +91,28 @@ connection.onInitialize(async (params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('2. TCL: onInitialized');
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('------------------------------------------------------------------------------------------');
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
 	}
 	if (hasWorkspaceFolderCapability) {
 		connection.workspace.onDidChangeWorkspaceFolders(_event => {
-			console.log('Workspace folder change event received.');
+			connection.console.log('Workspace folder change event received.');
 		});
 	}
 });
 
 connection.onDidChangeConfiguration(change => {
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('3. TCL: onDidChangeConfiguration');
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('------------------------------------------------------------------------------------------');
 	if (hasConfigurationCapability) {
 		// Reset all cached document settings
 		DocumentSettingsClass.settingsMap.clear();
@@ -122,13 +135,18 @@ documents.onDidClose(e => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(async change => {
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('4. TCL: onDidChangeContent');
+	console.log('------------------------------------------------------------------------------------------');
+	console.log('------------------------------------------------------------------------------------------');
 	TextDocumentChangeClass.inject(connection, hasDiagnosticRelatedInformationCapability);
 	TextDocumentChangeClass.validateTextDocument(change.document);
 });
 
 connection.onDidChangeWatchedFiles(_change => {
 	// Monitored files have change in VSCode
-	console.log('We received an file change event');
+	connection.console.log('We received an file change event');
 });
 
 // This handler provides the initial list of the completion items.
@@ -172,18 +190,18 @@ connection.onDidOpenTextDocument((params) => {
 	// A text document got opened in VSCode.
 	// params.textDocument.uri uniquely identifies the document. For documents store on disk this is a file URI.
 	// params.textDocument.text the initial full content of the document.
-	console.log(`${params.textDocument.uri} opened.`);
+	connection.console.log(`${params.textDocument.uri} opened.`);
 });
 connection.onDidChangeTextDocument((params) => {
 	// The content of a text document did change in VSCode.
 	// params.textDocument.uri uniquely identifies the document.
 	// params.contentChanges describe the content changes to the document.
-	console.log(`${params.textDocument.uri} changed: ${JSON.stringify(params.contentChanges)}`);
+	connection.console.log(`${params.textDocument.uri} changed: ${JSON.stringify(params.contentChanges)}`);
 });
 connection.onDidCloseTextDocument((params) => {
 	// A text document got closed in VSCode.
 	// params.textDocument.uri uniquely identifies the document.
-	console.log(`${params.textDocument.uri} closed.`);
+	connection.console.log(`${params.textDocument.uri} closed.`);
 });
 */
 

@@ -28,10 +28,14 @@ import { Container } from 'aurelia-dependency-injection';
 
 import { DocumentSettings, ExampleSettings } from './configuration/DocumentSettings';
 import { TextDocumentChange } from './textDocumentChange/TextDocumentChange';
+import { AureliaProgram } from './viewModel/AureliaProgram';
+import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram';
+import { createAureliaComponentMap } from './viewModel/createAureliaComponentMap';
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
 const TextDocumentChangeClass = globalContainer.get(TextDocumentChange);
+const aureliaProgram = globalContainer.get(AureliaProgram);
 
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
@@ -92,7 +96,7 @@ connection.onInitialize(async (params: InitializeParams) => {
 	return result;
 });
 
-connection.onInitialized(() => {
+connection.onInitialized(async () => {
 	console.log('------------------------------------------------------------------------------------------');
 	console.log('------------------------------------------------------------------------------------------');
 	console.log('2. TCL: onInitialized');
@@ -101,6 +105,10 @@ connection.onInitialized(() => {
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
+
+		await createAureliaWatchProgram(aureliaProgram);
+		createAureliaComponentMap(aureliaProgram);
+
 	}
 	if (hasWorkspaceFolderCapability) {
 		connection.workspace.onDidChangeWorkspaceFolders(_event => {

@@ -150,6 +150,8 @@ documents.onDidChangeContent(async change => {
 	console.log('4. TCL: onDidChangeContent');
 	console.log('------------------------------------------------------------------------------------------');
 	console.log('------------------------------------------------------------------------------------------');
+	createAureliaComponentMap(aureliaProgram);
+
 	TextDocumentChangeClass.inject(connection, hasDiagnosticRelatedInformationCapability);
 	TextDocumentChangeClass.validateTextDocument(change.document);
 });
@@ -165,6 +167,7 @@ connection.onCompletion(
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
+		return aureliaProgram.getComponentMap().classStatements!
 		return [
 			{
 				label: 'TypeScript',

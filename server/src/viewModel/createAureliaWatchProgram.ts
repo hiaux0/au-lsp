@@ -10,9 +10,9 @@ const updateAureliaComponents = async () => {
 	// console.log(aureliaProgram.components.length);
 };
 
-export async function createAureliaWatchProgram(aureliaProgram: AureliaProgram) {
+export async function createAureliaWatchProgram(aureliaProgram: AureliaProgram, sourceDirectory?: string) {
 	// 1. Define/default path/to/tsconfig.json
-	const sourceDirectory = ts.sys.getCurrentDirectory();
+	sourceDirectory = sourceDirectory || ts.sys.getCurrentDirectory();
 	let configPath = ts.findConfigFile(
 		// /* searchPath */ "./",
 		/* searchPath */ sourceDirectory,

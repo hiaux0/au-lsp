@@ -1,9 +1,14 @@
 import { Connection } from 'vscode-languageserver';
 import { singleton } from 'aurelia-dependency-injection';
 
+interface IAureliaProject {
+	path: string[]
+}
+
 // The example settings
 export interface ExampleSettings {
 	maxNumberOfProblems: number;
+	aureliaProject?: IAureliaProject;
 }
 
 @singleton()
@@ -11,7 +16,9 @@ export class DocumentSettings {
 	// The global settings, used when the `workspace/configuration` request is not supported by the client.
 	// Please note that this is not the case when using this server with the client provided in this example
 	// but could happen with other clients.
-	public defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
+	public defaultSettings: ExampleSettings = {
+		maxNumberOfProblems: 1000
+	};
 	public globalSettings: ExampleSettings;
 
 	// Cache the settings of all open documents

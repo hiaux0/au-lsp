@@ -6,7 +6,8 @@ import { kebabCase } from '@aurelia/kernel';
 
 export function getAureliaComponentMap(aureliaProgram: AureliaProgram) {
 	const paths = aureliaProgram.getProjectFiles();
-	let classStatements: CompletionItem[] | undefined;
+	let classStatement: CompletionItem | undefined;
+	let classStatements: CompletionItem[] = [];
 
 	const program = aureliaProgram.getProgram()
 	if (program === undefined) {
@@ -15,7 +16,7 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram) {
 	}
 	const checker = program.getTypeChecker();
 
-	paths.forEach(path => {
+	paths.forEach(async path => {
 		const ext = Path.extname(path);
 		ext
 		switch (ext) {
@@ -26,7 +27,12 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram) {
 					console.log('Watcher program did not find file: ', path)
 				}
 
-				classStatements = getAureliaViewModelClassStatement(sourceFile!, checker)
+				classStatement = getAureliaViewModelClassStatement(sourceFile!, checker)
+				if (classStatement === undefined) {
+					console.log('No Class statement found')
+					break;
+				}
+				classStatements.push(classStatement);
 				break;
 			}
 			case '.html': {
@@ -45,10 +51,15 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram) {
 }
 
 function getAureliaViewModelClassStatement(sourceFile: ts.SourceFile, checker: ts.TypeChecker) {
-	if (sourceFile.fileName !== '/Users/hdn/Desktop/aurelia-lsp/client/testFixture/src/my-compo/my-compo.ts') return;
-	const result: CompletionItem[] = [];
+	// if (sourceFile.fileName !== '/Users/hdn/Desktop/aurelia-lsp/client/testFixture/src/my-compo/my-compo.ts') return;
+	let result: CompletionItem | undefined;
 
 	sourceFile.forEachChild(node => {
+		const asht = ts.isClassDeclaration(node)
+		let qdrw;
+		if (ts.isClassDeclaration(node)) {
+			qdrw = isNodeExported(node);
+		}
 		if (ts.isClassDeclaration(node) &&
 			isNodeExported(node)
 			/** && hasTemplate
@@ -65,7 +76,7 @@ function getAureliaViewModelClassStatement(sourceFile: ts.SourceFile, checker: t
 			const documentation = ts.displayPartsToString(
 				symbol.getDocumentationComment(checker));
 
-			result.push({
+			result = {
 				documentation: {
 					kind: MarkupKind.Markdown,
 					value: documentation,
@@ -75,7 +86,7 @@ function getAureliaViewModelClassStatement(sourceFile: ts.SourceFile, checker: t
 				insertTextFormat: InsertTextFormat.Snippet,
 				kind: CompletionItemKind.Property,
 				label: `${elementName} (Au Custom Element)`,
-			});
+			};
 		}
 	});
 

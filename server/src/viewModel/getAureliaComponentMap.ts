@@ -84,7 +84,7 @@ function getAureliaViewModelClassStatement(sourceFile: ts.SourceFile, checker: t
 				detail: `${elementName}`,
 				insertText: `${elementName}$2>$1</${elementName}>$0`,
 				insertTextFormat: InsertTextFormat.Snippet,
-				kind: CompletionItemKind.Property,
+				kind: CompletionItemKind.Class,
 				label: `${elementName} (Au Custom Element)`,
 			};
 		}

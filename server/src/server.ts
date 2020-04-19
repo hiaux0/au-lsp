@@ -30,7 +30,7 @@ import { DocumentSettings, ExampleSettings } from './configuration/DocumentSetti
 import { TextDocumentChange } from './textDocumentChange/TextDocumentChange';
 import { AureliaProgram } from './viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram';
-import { createAureliaComponentMap } from './viewModel/createAureliaComponentMap';
+import { getAureliaComponentMap } from './viewModel/getAureliaComponentMap';
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -107,7 +107,7 @@ connection.onInitialized(async () => {
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
 
 		await createAureliaWatchProgram(aureliaProgram);
-		createAureliaComponentMap(aureliaProgram);
+		getAureliaComponentMap(aureliaProgram);
 
 	}
 	if (hasWorkspaceFolderCapability) {
@@ -150,7 +150,7 @@ documents.onDidChangeContent(async change => {
 	console.log('4. TCL: onDidChangeContent');
 	console.log('------------------------------------------------------------------------------------------');
 	console.log('------------------------------------------------------------------------------------------');
-	createAureliaComponentMap(aureliaProgram);
+	getAureliaComponentMap(aureliaProgram);
 
 	TextDocumentChangeClass.inject(connection, hasDiagnosticRelatedInformationCapability);
 	TextDocumentChangeClass.validateTextDocument(change.document);

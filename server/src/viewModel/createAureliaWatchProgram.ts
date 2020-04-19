@@ -11,10 +11,11 @@ const updateAureliaComponents = async () => {
 };
 
 export async function createAureliaWatchProgram(aureliaProgram: AureliaProgram) {
-	console.log("TCL: createAureliaWatchProgram -> createAureliaWatchProgram")
 	// 1. Define/default path/to/tsconfig.json
+	const sourceDirectory = ts.sys.getCurrentDirectory();
 	let configPath = ts.findConfigFile(
-		/* searchPath */ "./",
+		// /* searchPath */ "./",
+		/* searchPath */ sourceDirectory,
 		ts.sys.fileExists,
 		"tsconfig.json"
 	);
@@ -24,18 +25,12 @@ export async function createAureliaWatchProgram(aureliaProgram: AureliaProgram) 
 
 	// 2. Skip watcher if no tsconfig found
 	const isCreateWatchProgram = configPath !== undefined;
-	console.log("TCL: createAureliaWatchProgram -> configPath", configPath)
 	if (isCreateWatchProgram) {
 		console.log(">>> 1.4 Initiating a watcher for documentation and fetching changes in custom components");
 		const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
 
-
-		// const sourceDirectory = ts.sys.getCurrentDirectory();
-		// // const paths = host.readDirectory(sourceDirectory, ['ts', 'js', 'html'], ['node_modules', 'aurelia_project'], extensionSettings.pathToAureliaProject);
-		// const paths = ts.sys.readDirectory(sourceDirectory, ['ts', 'js', 'html'], ['node_modules', 'aurelia_project'], ['src']);
 		const host = ts.createWatchCompilerHost(
 			configPath,
-			// paths,
 			{},
 			ts.sys,
 			createProgram,
@@ -58,9 +53,6 @@ export async function createAureliaWatchProgram(aureliaProgram: AureliaProgram) 
 			aureliaProgram.watcherProgram = program;
 		};
 
-
-
-		// console.log("TCL: createAureliaWatchProgram -> paths", paths)
 		// 2.3 Create initial watch program with our specially crafted host for aurelia component handling
 		ts.createWatchProgram(host);
 	} else {
@@ -68,7 +60,6 @@ export async function createAureliaWatchProgram(aureliaProgram: AureliaProgram) 
 	}
 
 	// 3 .To avoid an extra call to the AureliaComponents mapping we check whether the host has been created
-	console.log("TCL: createAureliaWatchProgram -> isCreateWatchProgram", isCreateWatchProgram)
 	if (!isCreateWatchProgram) {
 		await updateAureliaComponents();
 	}

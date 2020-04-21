@@ -95,6 +95,7 @@
 	},
 	"dependencies": {
 		"aurelia-dependency-injection": "^1.5.2",
+		"lodash": "^4.17.15",
 		"reflect-metadata": "^0.1.9"
 	}
 }

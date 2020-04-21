@@ -4,8 +4,8 @@ import * as Path from 'path';
 import { CompletionItem, MarkupKind, InsertTextFormat, CompletionItemKind } from 'vscode-languageserver';
 import { kebabCase } from '@aurelia/kernel';
 
-export function getAureliaComponentMap(aureliaProgram: AureliaProgram) {
-	const paths = aureliaProgram.getProjectFiles();
+export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDirectory?: string) {
+	const paths = aureliaProgram.getProjectFiles(sourceDirectory);
 	let classStatement: CompletionItem | undefined;
 	let classStatements: CompletionItem[] = [];
 

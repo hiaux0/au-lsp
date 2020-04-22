@@ -7,12 +7,16 @@ import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { intersectionWith } from 'lodash';
 import { AureliaProgram } from './../../../server/src/viewModel/AureliaProgram';
+import { IComponentMap } from './../../../server/src/viewModel/AureliaProgram';
 
 import { activate, getTestApplicationFiles, getAureliaProgramForTesting } from './helper';
 
-function getTestItems(aureliaProgram: AureliaProgram) {
+function getTestItems(
+	aureliaProgram: AureliaProgram,
+	completionType: keyof IComponentMap
+) {
 	const componentMap = aureliaProgram.getComponentMap()
-	const testItems = componentMap.classDeclarations.map(classDeclaration => ({
+	const testItems = componentMap[completionType].map(classDeclaration => ({
 		label: classDeclaration.label,
 		kind: classDeclaration.kind
 	}))
@@ -29,15 +33,16 @@ suite.only('Completion', () => {
 	const applicationFile = getTestApplicationFiles();
 	const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
 	const aureliaProgram = getAureliaProgramForTesting();
-	const allCompletions = getTestItems(aureliaProgram);
+	const classDeclarationTestItems = getTestItems(aureliaProgram, 'classDeclarations');
+	const classMemberTestItems = getTestItems(aureliaProgram, 'classMembers');
 
 	test('Complete class declaration', async () => {
-		await testCompletion(docUri, new vscode.Position(0, 0), { items: allCompletions });
+		await testCompletion(docUri, new vscode.Position(0, 0), { items: classDeclarationTestItems });
 	});
 
-	// test('Should complete class members - properties', async () => {
-	// 	await testCompletion(docUri, new vscode.Position(0, 0), { items: allCompletions });
-	// });
+	test('Should complete class members - properties', async () => {
+		await testCompletion(docUri, new vscode.Position(0, 0), { items: classMemberTestItems });
+	});
 });
 
 async function testCompletion(

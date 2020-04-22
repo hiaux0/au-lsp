@@ -29,11 +29,15 @@ suite.only('Completion', () => {
 	const applicationFile = getTestApplicationFiles();
 	const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
 	const aureliaProgram = getAureliaProgramForTesting();
-	const items = getTestItems(aureliaProgram);
+	const allCompletions = getTestItems(aureliaProgram);
 
-	test('Complete class statement name', async () => {
-		await testCompletion(docUri, new vscode.Position(0, 0), { items });
+	test('Complete class declaration', async () => {
+		await testCompletion(docUri, new vscode.Position(0, 0), { items: allCompletions });
 	});
+
+	// test('Should complete class members - properties', async () => {
+	// 	await testCompletion(docUri, new vscode.Position(0, 0), { items: allCompletions });
+	// });
 });
 
 async function testCompletion(

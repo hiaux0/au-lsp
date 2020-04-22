@@ -8,9 +8,9 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDir
 	const paths = aureliaProgram.getProjectFiles(sourceDirectory);
 	let targetClassDeclaration: ts.ClassDeclaration | undefined;
 	let classDeclaration: CompletionItem | undefined;
-	let classMember: CompletionItem | undefined;
 	let classDeclarations: CompletionItem[] = [];
 	let classMembers: CompletionItem[] = [];
+	let bindables: CompletionItem[] = [];
 
 	const program = aureliaProgram.getProgram()
 	if (program === undefined) {
@@ -42,7 +42,9 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDir
 				classDeclarations.push(classDeclaration);
 
 				/* public myVariables: string; */
-				classMembers = getAureliaViewModelClassMembers(targetClassDeclaration!, checker);
+				const result1 = getAureliaViewModelClassMembers(targetClassDeclaration!, checker);
+				classMembers = result1.classMembers;
+				bindables = result1.bindables;
 
 				break;
 			}
@@ -58,6 +60,7 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDir
 	let result: IComponentMap = {
 		classDeclarations,
 		classMembers,
+		bindables
 	}
 	aureliaProgram.setComponentMap(result);
 }
@@ -101,7 +104,7 @@ function getAureliaViewModelClassDeclaration(sourceFile: ts.SourceFile, checker:
 				insertText: `${elementName}$2>$1</${elementName}>$0`,
 				insertTextFormat: InsertTextFormat.Snippet,
 				kind: CompletionItemKind.Class,
-				label: `${elementName} (Au Custom Element)`,
+				label: `${elementName} (Au Class Declaration)`,
 			};
 		}
 	});
@@ -136,16 +139,27 @@ function getElementNameFromClassDeclaration(classDeclaration: ts.ClassDeclaratio
 	return kebabCase(classDeclaration.name?.getText()!);
 }
 
+/**
+ *
+ */
 function getAureliaViewModelClassMembers(classDeclaration: ts.ClassDeclaration, checker: ts.TypeChecker) {
 	let classMembers: CompletionItem[] = [];
+	let bindables: CompletionItem[] = [];
 	classDeclaration.forEachChild(classMember => {
 		ts
-		if (ts.isPropertyDeclaration(classMember)) {
+		if (ts.isPropertyDeclaration(classMember) || ts.isMethodDeclaration(classMember)) {
 			const classMemberName = classMember.name?.getText();
 
+			const isBindable = classMember.decorators?.find(decorator => {
+				return decorator.getText().includes('@bindable');
+			});
+
 			// Get bindable type. If bindable type is undefined, we set it to be "unknown".
-			const bindableType = classMember.type?.getText() !== undefined ? classMember.type?.getText() : "unknown";
-			const bindableTypeText = `Bindable type: \`${bindableType}\``;
+			const memberType = classMember.type?.getText() !== undefined ? classMember.type?.getText() : "unknown";
+			const memberTypeText = ""
+				+ `${isBindable ? 'Bindable ' : ''}`
+				+ `Type: \`${memberType}\``
+				;
 
 			// Add comment documentation if available
 			const symbol = checker.getSymbolAtLocation(classMember.name);
@@ -153,17 +167,24 @@ function getAureliaViewModelClassMembers(classDeclaration: ts.ClassDeclaration, 
 				symbol?.getDocumentationComment(checker)
 			);
 
-			// Add default values. The value can be undefined, but that is correct in most cases.
-			const defaultValue = classMember.initializer?.getText();
-			const defaultValueText = `Default value: \`${defaultValue}\``;
+			let defaultValueText: string = '';
+			if (ts.isPropertyDeclaration(classMember)) {
+				// Add default values. The value can be undefined, but that is correct in most cases.
+				const defaultValue = classMember.initializer?.getText();
+				defaultValueText = `Default value: \`${defaultValue}\``;
+			}
 
 			// Concatenate documentation parts with spacing
-			const documentation = `${commentDoc}\n\n${bindableTypeText}\n\n${defaultValueText}`;
+			const documentation = `${commentDoc}\n\n${memberTypeText}\n\n${defaultValueText}`;
+
+			const kind: CompletionItemKind = ts.isPropertyDeclaration(classMember)
+				? CompletionItemKind.Variable
+				: CompletionItemKind.Method;
 
 			// const quote = this.settings.quote;
 			const quote = '\"'
 			const varAsKebabCase = kebabCase(classMemberName);
-			classMembers.push({
+			const result = {
 				documentation: {
 					kind: MarkupKind.Markdown,
 					value: documentation
@@ -171,12 +192,21 @@ function getAureliaViewModelClassMembers(classDeclaration: ts.ClassDeclaration, 
 				detail: `${varAsKebabCase}`,
 				insertText: `${varAsKebabCase}.$\{1:bind}=${quote}$\{0:${classMemberName}}${quote}`,
 				insertTextFormat: InsertTextFormat.Snippet,
-				kind: CompletionItemKind.Variable,
-				label: `${varAsKebabCase} (Au Bindable)`
-			});
-		} else if (ts.isMethodDeclaration(classMember)) {
+				kind,
+				label: ""
+					+ `${varAsKebabCase} `
+					+ `(Au ${isBindable ? 'Bindable' : 'Class member'})`
+			}
 
+			if (isBindable) {
+				bindables.push(result)
+			} else {
+				classMembers.push(result)
+			}
 		}
 	});
-	return classMembers;
+	return {
+		classMembers,
+		bindables
+	}
 }

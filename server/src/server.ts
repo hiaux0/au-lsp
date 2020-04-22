@@ -170,6 +170,7 @@ connection.onCompletion(
 		return [
 			...aureliaProgram.getComponentMap().classDeclarations!,
 			...aureliaProgram.getComponentMap().classMembers!,
+			...aureliaProgram.getComponentMap().bindables!,
 		]
 		return [
 			{

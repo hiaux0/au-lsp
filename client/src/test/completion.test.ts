@@ -33,15 +33,21 @@ suite.only('Completion', () => {
 	const applicationFile = getTestApplicationFiles();
 	const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
 	const aureliaProgram = getAureliaProgramForTesting();
+
 	const classDeclarationTestItems = getTestItems(aureliaProgram, 'classDeclarations');
 	const classMemberTestItems = getTestItems(aureliaProgram, 'classMembers');
+	const bindablesTestItems = getTestItems(aureliaProgram, 'bindables');
 
 	test('Complete class declaration', async () => {
 		await testCompletion(docUri, new vscode.Position(0, 0), { items: classDeclarationTestItems });
 	});
 
-	test('Should complete class members - properties', async () => {
+	test('Should complete class members', async () => {
 		await testCompletion(docUri, new vscode.Position(0, 0), { items: classMemberTestItems });
+	});
+
+	test.only('Should complete class members - bindables', async () => {
+		await testCompletion(docUri, new vscode.Position(0, 0), { items: bindablesTestItems });
 	});
 });
 

@@ -10,7 +10,7 @@ interface IWebcomponent {
 export interface IComponentMap {
 	classDeclarations: CompletionItem[] | undefined
 	classMembers: CompletionItem[] | undefined
-	bindables?: CompletionItem[] | undefined
+	bindables: CompletionItem[] | undefined
 }
 
 /**

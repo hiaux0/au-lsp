@@ -7,9 +7,9 @@ import { kebabCase } from '@aurelia/kernel';
 export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDirectory?: string) {
 	const paths = aureliaProgram.getProjectFiles(sourceDirectory);
 	let targetClassDeclaration: ts.ClassDeclaration | undefined;
-	let classStatement: CompletionItem | undefined;
+	let classDeclaration: CompletionItem | undefined;
 	let classMember: CompletionItem | undefined;
-	let classStatements: CompletionItem[] = [];
+	let classDeclarations: CompletionItem[] = [];
 	let classMembers: CompletionItem[] = [];
 
 	const program = aureliaProgram.getProgram()
@@ -31,15 +31,15 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDir
 				}
 
 				/* export class MyCustomElement */
-				const result = getAureliaViewModelClassStatement(sourceFile!, checker);
-				classStatement = result?.classStatement
+				const result = getAureliaViewModelClassDeclaration(sourceFile!, checker);
+				classDeclaration = result?.classDeclaration
 				targetClassDeclaration = result?.targetClassDeclaration
 
-				if (classStatement === undefined || targetClassDeclaration === undefined) {
+				if (classDeclaration === undefined || targetClassDeclaration === undefined) {
 					console.log('No Class statement found.')
 					break;
 				}
-				classStatements.push(classStatement);
+				classDeclarations.push(classDeclaration);
 
 				/* public myVariables: string; */
 				classMembers = getAureliaViewModelClassMembers(targetClassDeclaration!, checker);
@@ -56,13 +56,13 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDir
 	});
 
 	let result: IComponentMap = {
-		classStatements,
+		classDeclarations,
 		classMembers,
 	}
 	aureliaProgram.setComponentMap(result);
 }
 
-function getAureliaViewModelClassStatement(sourceFile: ts.SourceFile, checker: ts.TypeChecker) {
+function getAureliaViewModelClassDeclaration(sourceFile: ts.SourceFile, checker: ts.TypeChecker) {
 	if (sourceFile.fileName !== '/Users/hdn/Desktop/aurelia-lsp/client/testFixture/src/my-compo/my-compo.ts') return;
 	let result: CompletionItem | undefined;
 	let targetClassDeclaration: ts.ClassDeclaration | undefined;
@@ -107,7 +107,7 @@ function getAureliaViewModelClassStatement(sourceFile: ts.SourceFile, checker: t
 	});
 
 	return {
-		classStatement: result,
+		classDeclaration: result,
 		targetClassDeclaration
 	};
 }

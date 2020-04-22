@@ -168,7 +168,7 @@ connection.onCompletion(
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
 		return [
-			...aureliaProgram.getComponentMap().classStatements!,
+			...aureliaProgram.getComponentMap().classDeclarations!,
 			...aureliaProgram.getComponentMap().classMembers!,
 		]
 		return [

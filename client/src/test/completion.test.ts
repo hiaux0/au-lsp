@@ -12,9 +12,9 @@ import { activate, getTestApplicationFiles, getAureliaProgramForTesting } from '
 
 function getTestItems(aureliaProgram: AureliaProgram) {
 	const componentMap = aureliaProgram.getComponentMap()
-	const testItems = componentMap.classStatements.map(classStatement => ({
-		label: classStatement.label,
-		kind: classStatement.kind
+	const testItems = componentMap.classDeclarations.map(classDeclaration => ({
+		label: classDeclaration.label,
+		kind: classDeclaration.kind
 	}))
 		.sort(function (a, b) {
 			if (a.label < b.label) { return -1; }

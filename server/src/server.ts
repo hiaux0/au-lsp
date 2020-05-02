@@ -15,7 +15,8 @@ import {
 	CompletionItemKind,
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
-	InitializeResult
+	InitializeResult,
+	CompletionList
 } from 'vscode-languageserver';
 
 import {
@@ -24,6 +25,8 @@ import {
 
 // We need to import this to include reflect functionality
 import 'reflect-metadata';
+
+
 import { Container } from 'aurelia-dependency-injection';
 
 import { DocumentSettings, ExampleSettings } from './configuration/DocumentSettings';
@@ -31,6 +34,7 @@ import { TextDocumentChange } from './textDocumentChange/TextDocumentChange';
 import { AureliaProgram } from './viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram';
 import { getAureliaComponentMap } from './viewModel/getAureliaComponentMap';
+import { LanguageModes, getLanguageModes } from './embeddedLanguages/languageModes';
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -49,6 +53,7 @@ let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
+let languageModes: LanguageModes;
 
 connection.onInitialize(async (params: InitializeParams) => {
 	console.log('------------------------------------------------------------------------------------------');
@@ -71,6 +76,18 @@ connection.onInitialize(async (params: InitializeParams) => {
 		capabilities.textDocument.publishDiagnostics &&
 		capabilities.textDocument.publishDiagnostics.relatedInformation
 	);
+
+	/** ********************** */
+	/** Embedded Language Mode */
+	/** ********************** */
+	languageModes = getLanguageModes();
+
+	documents.onDidClose(e => {
+		languageModes.onDocumentRemoved(e.document);
+	});
+	connection.onShutdown(() => {
+		languageModes.dispose();
+	});
 
 	const result: InitializeResult = {
 		capabilities: {
@@ -163,7 +180,21 @@ connection.onDidChangeWatchedFiles(_change => {
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+	(_textDocumentPosition: TextDocumentPositionParams): CompletionList => {
+		// (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+		// Embedded Language
+		const document = documents.get(_textDocumentPosition.textDocument.uri);
+		// if (!document) return [CompletionItem.create('')];
+		if (!document) return CompletionList.create();
+		const mode = languageModes.getModeAtPosition(document, _textDocumentPosition.position);
+		if (!mode || !mode.doComplete) {
+			return CompletionList.create();
+			// return [CompletionItem.create('')];
+		}
+		// const doComplete = mode.doComplete!;
+		// return doComplete(document, _textDocumentPosition.position);
+
+
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.

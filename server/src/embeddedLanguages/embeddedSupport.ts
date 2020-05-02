@@ -44,11 +44,13 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 				break;
 			case TokenType.Styles:
 				// regions.push({ languageId: 'typescript', start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
+				// regions.push({ languageId: 'javascript', start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
 				regions.push({ languageId: 'css', start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
 				break;
 			case TokenType.Script:
 				console.log(">>>>>>>>>>>>>>>>>> \TCL: TokenType.Script:", TokenType.Script)
 				regions.push({ languageId: languageIdFromType, start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
+				// regions.push({ languageId: 'javascript', start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
 				break;
 			case TokenType.AttributeName:
 				lastAttributeName = scanner.getTokenText();
@@ -90,6 +92,7 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 							start++;
 							end--;
 						}
+						// regions.push({ languageId: 'javascript', start, end, attributeValue: true });
 						regions.push({ languageId: attributeLanguageId, start, end, attributeValue: true });
 					}
 				}

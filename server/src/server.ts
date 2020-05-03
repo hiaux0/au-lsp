@@ -35,6 +35,7 @@ import { AureliaProgram } from './viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram';
 import { getAureliaComponentMap } from './viewModel/getAureliaComponentMap';
 import { LanguageModes, getLanguageModes } from './embeddedLanguages/languageModes';
+import { aureliaLanguageId } from './embeddedLanguages/embeddedSupport';
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -180,20 +181,15 @@ connection.onDidChangeWatchedFiles(_change => {
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-	(_textDocumentPosition: TextDocumentPositionParams): CompletionList => {
-		// (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
 		// Embedded Language
 		const document = documents.get(_textDocumentPosition.textDocument.uri);
-		// if (!document) return [CompletionItem.create('')];
-		if (!document) return CompletionList.create();
-		const mode = languageModes.getModeAtPosition(document, _textDocumentPosition.position);
-		if (!mode || !mode.doComplete) {
-			return CompletionList.create();
-			// return [CompletionItem.create('')];
+		const mode = languageModes.getModeAtPosition(document!, _textDocumentPosition.position);
+		console.log("TCL: mode", mode)
+		if (typeof mode === 'string') {
+			console.log('heeeeeeeeeeeeeeee')
+			return [CompletionItem.create('LETS DO IT')]
 		}
-		// const doComplete = mode.doComplete!;
-		// return doComplete(document, _textDocumentPosition.position);
-
 
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this

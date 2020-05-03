@@ -22,6 +22,7 @@ export const CSS_STYLE_RULE = '__';
 
 interface EmbeddedRegion { languageId: string | undefined; start: number; end: number; attributeValue?: boolean; }
 
+export const aureliaLanguageId = 'aurelia';
 
 export function getDocumentRegions(languageService: LanguageService, document: TextDocument): HTMLDocumentRegions {
 	let regions: EmbeddedRegion[] = [];
@@ -59,16 +60,8 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 				let value = scanner.getTokenText();
 				console.log("TCL: value", value)
 
-
-				if (lastAttributeName?.includes('.bind')) {
-					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-				}
-
-
 				if (lastAttributeName === 'src' && lastTagName.toLowerCase() === 'script') {
-					console.log("TCL: value", value)
+					// console.log("TCL: value", value)
 					if (value[0] === '\'' || value[0] === '"') {
 						value = value.substr(1, value.length - 1);
 					}
@@ -96,18 +89,37 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 						regions.push({ languageId: attributeLanguageId, start, end, attributeValue: true });
 					}
 				}
+
+				console.log("TCL: lastAttributeName", lastAttributeName)
+				if (lastAttributeName?.includes('.bind')) {
+					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+					let start = scanner.getTokenOffset();
+					console.log("TCL: start", start)
+					let end = scanner.getTokenEnd();
+					console.log("TCL: end", end)
+					let firstChar = document.getText()[start];
+					console.log("TCL: firstChar", firstChar)
+					if (firstChar === '\'' || firstChar === '"') {
+						start++;
+						end--;
+					}
+					regions.push({ languageId: aureliaLanguageId, start, end, attributeValue: true });
+				}
+
 				lastAttributeName = null;
 				break;
 		}
-		console.log("TCL: token", token)
-		console.log("TCL: lastTagName", lastTagName)
-		console.log("TCL: lastAttributeName", lastAttributeName)
+		// console.log("TCL: token", token)
+		// console.log("TCL: lastTagName", lastTagName)
+		// console.log("TCL: lastAttributeName", lastAttributeName)
 		console.log("TCL: regions", regions)
 		token = scanner.scan();
 		console.log('END ------------------------------------------------------------------------------------------')
 		counter++
 	}
-	console.log("TCL: counter", counter)
+	// console.log("TCL: counter", counter)
 	return {
 		getLanguageRanges: (range: Range) => getLanguageRanges(document, regions, range),
 		getEmbeddedDocument: (languageId: string, ignoreAttributeValues: boolean) => getEmbeddedDocument(document, regions, languageId, ignoreAttributeValues),
@@ -177,9 +189,12 @@ function getLanguagesInDocument(_document: TextDocument, regions: EmbeddedRegion
 // [2.] Offset in region check
 function getLanguageAtPosition(document: TextDocument, regions: EmbeddedRegion[], position: Position): string | undefined {
 	let offset = document.offsetAt(position);
+	console.log("TCL: offset", offset)
 	for (let region of regions) {
+		console.log("TCL: region", region)
 		if (region.start <= offset) {
 			if (offset <= region.end) {
+				console.log("TCL: region.languageId", region.languageId)
 				return region.languageId;
 			}
 		} else {

@@ -18,19 +18,12 @@ export class MyCompoCustomElement {
    * A bindable for strings
    */
   @bindable public stringBindable: string = 'foo';
-  @bindable public whhhhaaat: string = 'foo';
-  @bindable public numberBindable: number = 123;
 
   @bindable public interBindable: ICompoInter = {
     stringInter: 'stringInter',
   };
 
   private stringArray: string[] = ['hello', 'world'];
-
-  /** Some docs */
-  public theMethod() {
-
-  }
 
   /**
    * Here doc it

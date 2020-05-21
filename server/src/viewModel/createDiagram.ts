@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItemKind } from 'vscode-languageserver';
 
 interface ClassInfo {
 	name: string;
@@ -8,7 +8,6 @@ interface ClassInfo {
 }
 
 export function createDiagram(classDeclaration: ts.ClassDeclaration, checker: ts.TypeChecker) {
-	// let classMembers: CompletionItem[] = [];
 	let classMembers: string[] = [];
 	let classMethods: ClassInfo[] = [];
 	let classVariables: ClassInfo[] = [];
@@ -18,16 +17,8 @@ export function createDiagram(classDeclaration: ts.ClassDeclaration, checker: ts
 			const classMemberName = classMember.name?.getText();
 			classMembers.push(classMemberName);
 
-			// const isBindable = classMember.decorators?.find(decorator => {
-			// 	return decorator.getText().includes('@bindable');
-			// });
-
 			// Get bindable type. If bindable type is undefined, we set it to be "unknown".
 			const memberType = classMember.type?.getText() !== undefined ? classMember.type?.getText() : "unknown";
-			// const memberTypeText = ""
-			// 	+ `${isBindable ? 'Bindable ' : ''}`
-			// 	+ `Type: \`${memberType}\``
-			// 	;
 
 			// Add comment documentation if available
 			const symbol = checker.getSymbolAtLocation(classMember.name);
@@ -67,34 +58,8 @@ export function createDiagram(classDeclaration: ts.ClassDeclaration, checker: ts
 					break;
 				}
 			}
-
-			// const quote = this.settings.quote;
-			// const quote = '\"'
-			// const varAsKebabCase = kebabCase(classMemberName);
-			// const result = {
-			// 	documentation: {
-			// 		kind: MarkupKind.Markdown,
-			// 		value: documentation
-			// 	},
-			// 	detail: `${isBindable ? classMemberName : varAsKebabCase}`,
-			// 	insertText: isBindable ?
-			// 		`${varAsKebabCase}.$\{1:bind}=${quote}$\{0:${classMemberName}}${quote}`
-			// 		: classMemberName,
-			// 	insertTextFormat: InsertTextFormat.Snippet,
-			// 	kind,
-			// 	label: ""
-			// 		+ `${isBindable ? varAsKebabCase : classMemberName} `
-			// 		+ `(Au ${isBindable ? 'Bindable' : 'Class member'})`
-			// }
-
-			// if (isBindable) {
-			// 	bindables.push(result)
-			// } else {
-			// classMembers.push(result)
-			// }
 		}
 	});
-	// const parentClassName = classMembers[0].getText();
 	classMembers
 	classMethods
 	classVariables

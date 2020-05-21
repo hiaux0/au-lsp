@@ -3,6 +3,7 @@ import * as ts from 'typescript';
 import * as Path from 'path';
 import { CompletionItem, MarkupKind, InsertTextFormat, CompletionItemKind } from 'vscode-languageserver';
 import { kebabCase } from '@aurelia/kernel';
+import { createDiagram } from './createDiagram';
 
 export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDirectory?: string) {
 	const paths = aureliaProgram.getProjectFiles(sourceDirectory);
@@ -42,6 +43,8 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDir
 				classDeclarations.push(classDeclaration);
 
 				/* public myVariables: string; */
+
+				createDiagram(targetClassDeclaration!, checker);
 				const result1 = getAureliaViewModelClassMembers(targetClassDeclaration!, checker);
 				classMembers = result1.classMembers;
 				bindables = result1.bindables;

@@ -189,12 +189,14 @@ function getAureliaViewModelClassMembers(classDeclaration: ts.ClassDeclaration, 
 					kind: MarkupKind.Markdown,
 					value: documentation
 				},
-				detail: `${varAsKebabCase}`,
-				insertText: `${varAsKebabCase}.$\{1:bind}=${quote}$\{0:${classMemberName}}${quote}`,
+				detail: `${isBindable ? classMemberName : varAsKebabCase}`,
+				insertText: isBindable ?
+					`${varAsKebabCase}.$\{1:bind}=${quote}$\{0:${classMemberName}}${quote}`
+					: classMemberName,
 				insertTextFormat: InsertTextFormat.Snippet,
 				kind,
 				label: ""
-					+ `${varAsKebabCase} `
+					+ `${isBindable ? varAsKebabCase : classMemberName} `
 					+ `(Au ${isBindable ? 'Bindable' : 'Class member'})`
 			}
 

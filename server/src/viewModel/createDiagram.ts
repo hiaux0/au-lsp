@@ -4,17 +4,17 @@ import { CompletionItemKind } from 'vscode-languageserver';
 interface ClassInfo {
 	[name: string]: {
 		node: ts.Node;
-	name: string;
-	documentation: string;
-	types: string;
+		name: string;
+		documentation: string;
+		types: string;
 		outGoingCalls?: ClassInfo;
-}
+	}
 }
 
 export function createDiagram(classDeclaration: ts.ClassDeclaration, checker: ts.TypeChecker) {
 	let classMembers: string[] = [];
-	let classMethods: ClassInfo[] = [];
-	let classVariables: ClassInfo[] = [];
+	const classMethods: ClassInfo = {};
+	const classVariables: ClassInfo = {};
 
 	// 1. Parse class members (for diagram creation)
 	classDeclaration.forEachChild(classMember => {
@@ -47,19 +47,26 @@ export function createDiagram(classDeclaration: ts.ClassDeclaration, checker: ts
 
 			switch (kind) {
 				case CompletionItemKind.Variable: {
-					classVariables.push({
+					classVariables[classMemberName] = {
+						node: classMember,
 						name: classMemberName,
 						documentation: commentDoc,
 						types: memberType,
-					});
+					};
 					break;
 				}
 				case CompletionItemKind.Method: {
-					classMethods.push({
+					classMethods[classMemberName] = {
+						node: classMember,
 						name: classMemberName,
 						documentation: commentDoc,
 						types: memberType,
-					});
+					};
+
+					classMember.forEachChild(methodBodyMember => {
+						const result = methodBodyMember.getText();
+						result;
+					})
 					break;
 				}
 			}
@@ -76,27 +83,81 @@ export function createDiagram(classDeclaration: ts.ClassDeclaration, checker: ts
  */
 function assembleUmlString(
 	{ className, classMethods, classVariables }:
-		{ className: string, classMethods: ClassInfo[], classVariables: ClassInfo[] }
+		{ className: string, classMethods: ClassInfo, classVariables: ClassInfo }
 ) {
+	const classMethodsData = Object.values(classMethods);
+	const classVariablesData = Object.values(classVariables);
 	const mermaidMdStringStart = '\`\`\`mermaid\n  classDiagram';
-	const classNameString = `class ${className} {`;
-	const mermaidMdStringEnd = '}\n\`\`\`';
+	const classNameStringStart = `class ${className} {`;
+	const classNameStringEnd = '}\n';
+	const mermaidMdStringEnd = '\`\`\`';
 
-	const classVariablesString = classVariables.reduce((acc, classInfo, index) => {
+	// 1. Class variables
+	const classVariablesString = classVariablesData.reduce((acc, classInfo, index) => {
 		const { name, types, documentation } = classInfo
 		return `${acc}
 			${name}: ${types} // ${documentation} [${index}]`;
 	}, '');
-	const classMethodsString = classMethods.reduce((acc, classInfo, index) => {
-		const { name, types, documentation } = classInfo
+	// 2. Class methods
+	const classMethodsString = classMethodsData.reduce((acc, classInfo, index) => {
+		const { node, name, types, documentation } = classInfo
+		// 1. Call hierarchy
+		let classMemberStatements: any = {};
+		node.forEachChild(methodBodyStatement => {
+			const children = methodBodyStatement.getChildren()
+			// 1.1 Find references within class
+			children.forEach(child => {
+				const childText = child.getText();
+				if (!childText.includes('this.')) return;
+				// 1.1.1 Iterate over all class members to find reference
+				[...classMethodsData, ...classVariablesData].forEach(classMember => {
+					const isClassMember = childText.includes(`this.${classMember.name}`)
+					if (!isClassMember) return;
+					classMemberStatements[classMember.name] = classMember;
+				});
+				// 1.1.2 Assign found reference
+				classInfo.outGoingCalls = classMemberStatements;
+			});
+		});
+
+		// 2. Class members
+		const methodIndex = classVariablesData.length + index;
 		return `${acc}
-      ${name}(): ${types} // ${documentation} [${classVariables.length + index}]`;
+			${name}(): ${types} // ${documentation} [${methodIndex}]\n`;
+	}, '');
+
+	// 3. Class methods call hierarchy
+	const produceParentClassName = (name: string, index: number) => `${className}_${name}`;
+
+	const callHierarchyDiagram = classMethodsData.reduce((acc, method) => {
+		// 3.1 Create classes for (called) methods and their dependencies
+		let callHierarchyOfMethod = '';
+		if (!method.outGoingCalls) return acc;
+
+		// class $className_$methodName_$index { }
+		callHierarchyOfMethod += `class ${produceParentClassNameWithMethodIndex(method.name)}{ }`;
+		// MyCompoCustomElement_foo__0 --|> MyCompoCustomElement_bar__1
+		callHierarchyOfMethod += Object.values(method.outGoingCalls).reduce((acc, outGoingCall) => {
+			return `${acc}
+			${ produceParentClassNameWithMethodIndex(method.name)} --|> ${produceParentClassNameWithMethodIndex(outGoingCall.name)}`;
+		}, '');
+		return `${acc}
+			${callHierarchyOfMethod}`;
+
+		function produceParentClassNameWithMethodIndex(name: string) {
+			const classMethodNames = Object.keys(classMethods);
+			const methodIndex = classMethodNames.findIndex(classMethodName => classMethodName === name);
+			const result = `${className}_${name}_${Object.keys(classVariables).length + methodIndex}`;
+			return result;
+		}
 	}, '');
 
 	const result = mermaidMdStringStart + '\n    ' +
-		classNameString + '\n' +
+		classNameStringStart + '\n' +
 		classVariablesString + '\n' +
 		classMethodsString + '\n' +
+		classNameStringEnd + '\n' +
+		callHierarchyDiagram + '\n' +
 		mermaidMdStringEnd;
 
 	return result;

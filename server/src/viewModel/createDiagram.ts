@@ -2,9 +2,13 @@ import * as ts from 'typescript';
 import { CompletionItemKind } from 'vscode-languageserver';
 
 interface ClassInfo {
+	[name: string]: {
+		node: ts.Node;
 	name: string;
 	documentation: string;
 	types: string;
+		outGoingCalls?: ClassInfo;
+}
 }
 
 export function createDiagram(classDeclaration: ts.ClassDeclaration, checker: ts.TypeChecker) {

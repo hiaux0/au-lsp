@@ -5,7 +5,6 @@ import * as path from 'path';
 
 export function registerDiagramPreview(context: vscode.ExtensionContext, client: LanguageClient) {
 
-	const aureliaViewDataPanelType = 'aureliaViewData';
 
 	let previewUri = vscode.Uri.parse('aurelia-preview://authority/aurelia-preview');
 
@@ -14,16 +13,32 @@ export function registerDiagramPreview(context: vscode.ExtensionContext, client:
 	let isPanelVisible: boolean = false;
 	let panel: vscode.WebviewPanel;
 
-	function fillWebViewHtml(panel: vscode.WebviewPanel, classDiagram: string): string {
-		const mermaidSrc = path.resolve(__dirname, '../../../../../', 'client/src/webview/index.bundle.js');
-		const scriptPathOnDisk = vscode.Uri.file(mermaidSrc);
-		// And the uri we use to load this script in the webview
-		const mermaidSrcUri = panel.webview.asWebviewUri(scriptPathOnDisk);
+	context.subscriptions.push(vscode.commands.registerCommand('aurelia.openClassMethodsHierarchy', async () => {
+		const activeEditorPath = '';
+		const classDiagram = await client.sendRequest<any>('aurelia-class-diagram', activeEditorPath);
+		DiagramPreviewPanel.createPanel('', classDiagram)
+	}));
+}
 
-		// Use a nonce to whitelist which scripts can be run
-		const nonce = getNonce();
+function getNonce() {
+	let text = '';
+	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	for (let i = 0; i < 32; i++) {
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+	return text;
+}
 
-		return `
+function fillWebViewHtml(panel: vscode.WebviewPanel, classDiagram: string): string {
+	const mermaidSrc = path.resolve(__dirname, '../../../../../', 'client/src/webview/index.bundle.js');
+	const scriptPathOnDisk = vscode.Uri.file(mermaidSrc);
+	// And the uri we use to load this script in the webview
+	const mermaidSrcUri = panel.webview.asWebviewUri(scriptPathOnDisk);
+
+	// Use a nonce to whitelist which scripts can be run
+	const nonce = getNonce();
+
+	return `
       <!DOCTYPE html>
       <html lang="en">
         <head>
@@ -41,13 +56,34 @@ export function registerDiagramPreview(context: vscode.ExtensionContext, client:
 				</body>
       </html>
     `;
+}
+
+/**
+ * TODO: this could be a generic webview
+ */
+class DiagramPreviewPanel {
+	public static currentPath: string;
+	public static currentPanel: DiagramPreviewPanel;
+	public static readonly viewType = 'aureliaDiagramPanel';
+
+	private readonly webViewPanel: vscode.WebviewPanel;
+	private readonly isPanelVisible: boolean;
+
+	constructor(panel: DiagramPreviewPanel, currentPath?: string) {
+
 	}
 
-	context.subscriptions.push(vscode.commands.registerCommand('aurelia.openClassMethodsHierarchy', async () => {
-		const classDiagram = await client.sendRequest<any>('aurelia-class-diagram')
+	/**
+	 * Create web view panel with diagram of class in active editor.
+	 */
+	public static async createPanel(filePath: string, content: string) {
+		// 1. get current path
+		if (!DiagramPreviewPanel.currentPath) {
+			DiagramPreviewPanel.currentPath = filePath;
+		}
 
-		panel = vscode.window.createWebviewPanel(
-			aureliaViewDataPanelType,
+		const panel = vscode.window.createWebviewPanel(
+			DiagramPreviewPanel.viewType,
 			'Aurelia view data',
 			vscode.ViewColumn.Two,
 			{
@@ -55,32 +91,30 @@ export function registerDiagramPreview(context: vscode.ExtensionContext, client:
 			}
 		);
 
-		panel.webview.html = fillWebViewHtml(panel, classDiagram);
+		panel.webview.html = fillWebViewHtml(panel, content);
 
-    /**
-     * Set panel visible flag to true, if
-     * - we have the correct WebView type (multiple WebView types possible)
-     * - and panel itself is not active
-     */
-		panel.onDidChangeViewState(event => {
-			const correctPanelType = (event.webviewPanel.viewType === aureliaViewDataPanelType);
-			/** Don't update panel if the panel itself is 'active' */
-			const panelNotActive = !event.webviewPanel.active
-			isPanelVisible = correctPanelType && panelNotActive;
-		});
+		// /**
+		//  * Set panel visible flag to true, if
+		//  * - we have the correct WebView type (multiple WebView types possible)
+		//  * - and panel itself is not active
+		//  */
+		// panel.onDidChangeViewState(event => {
+		// 	const correctPanelType = (event.webviewPanel.viewType === DiagramPreviewPanel.viewType);
+		// 	/** Don't update panel if the panel itself is 'active' */
+		// 	const panelNotActive = !event.webviewPanel.active
+		// 	this.isPanelVisible = correctPanelType && panelNotActive;
+		// });
 
-		panel.onDidDispose(event => {
-			isPanelVisible = false;
-		});
-
-	}));
-}
-
-function getNonce() {
-	let text = '';
-	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	for (let i = 0; i < 32; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
+		// panel.onDidDispose(event => {
+		// 	this.isPanelVisible = false;
+		// });
 	}
-	return text;
+
+	/**
+	 * Refresh the panel, if the underlying data changed
+	 */
+	public static refreshPanel() {
+
+	}
+
 }

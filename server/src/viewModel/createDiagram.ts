@@ -29,7 +29,9 @@ export function createDiagram(classDeclaration: ts.ClassDeclaration, checker: ts
 			const symbol = checker.getSymbolAtLocation(classMember.name);
 			const commentDoc = ts.displayPartsToString(
 				symbol?.getDocumentationComment(checker)
-			);
+			)
+				// Replace, else diagram breaks (evaluates new comment line as class member)
+				.replace('\n', ' ');
 
 			let defaultValueText: string = '';
 			if (ts.isPropertyDeclaration(classMember)) {

@@ -145,6 +145,7 @@ function assembleUmlString(
 	${ produceParentClassNameWithMethodIndex(method.name)} --|> ${produceParentClassNameWithMethodIndex(outGoingCall.name)}`;
 		}, '');
 		return `${acc}
+
 	${callHierarchyOfMethod}`;
 
 		function produceParentClassNameWithMethodIndex(name: string) {
@@ -159,7 +160,7 @@ function assembleUmlString(
 		classNameStringStart + '\n' +
 		classVariablesString + '\n' +
 		classMethodsString + '\n' +
-		classNameStringEnd + '\n' +
+		classNameStringEnd +
 		callHierarchyDiagram + '\n' +
 		mermaidMdStringEnd;
 

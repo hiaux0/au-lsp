@@ -13,7 +13,7 @@ export function registerDiagramPreview(context: vscode.ExtensionContext, client:
 	context.subscriptions.push(vscode.commands.registerCommand('aurelia.openClassMethodsHierarchy', async () => {
 		const filePath = vscode.window.activeTextEditor.document.fileName;
 		const classDiagram = await client.sendRequest<any>('aurelia-class-diagram', filePath);
-		DiagramPreviewPanel.createPanel('', classDiagram)
+		DiagramPreviewPanel.createPanel(classDiagram)
 	}));
 
 	// Editor events
@@ -61,26 +61,20 @@ function fillWebViewHtml(panel: vscode.WebviewPanel, classDiagram: string): stri
  * TODO: this could be a generic webview
  */
 class DiagramPreviewPanel {
-	public static currentPath: string;
 	public static currentPanel: DiagramPreviewPanel;
 	public static readonly viewType = 'aureliaDiagramPanel';
 
 	private readonly webViewPanel: vscode.WebviewPanel;
 	private readonly isPanelVisible: boolean;
 
-	constructor(panel: DiagramPreviewPanel, currentPath?: string) {
+	constructor(panel: DiagramPreviewPanel) {
 
 	}
 
 	/**
 	 * Create web view panel with diagram of class in active editor.
 	 */
-	public static async createPanel(filePath: string, content: string) {
-		// 1. get current path
-		if (!DiagramPreviewPanel.currentPath) {
-			DiagramPreviewPanel.currentPath = filePath;
-		}
-
+	public static async createPanel(content: string) {
 		const panel = vscode.window.createWebviewPanel(
 			DiagramPreviewPanel.viewType,
 			'Aurelia view data',

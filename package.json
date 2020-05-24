@@ -17,6 +17,7 @@
 		"vscode": "^1.43.0"
 	},
 	"activationEvents": [
+		"onCommand:aurelia.openClassMethodsHierarchy",
 		"onLanguage:plaintext"
 	],
 	"main": "./client/out/client/src/extension",
@@ -25,6 +26,11 @@
 			{
 				"command": "languageServerExample.startStreaming",
 				"title": "Start Stream Logs into languageServerExample.port"
+			},
+			{
+				"command": "aurelia.openClassMethodsHierarchy",
+				"title": "Open class methods hierarchy",
+				"category": "Aurelia"
 			}
 		],
 		"configuration": {

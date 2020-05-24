@@ -30,6 +30,7 @@ export class AureliaProgram {
 	public documentSettings: DocumentSettings;
 	public componentMap: IComponentMap;
 	public classDiagram: IClassDiagram;
+	public aureliaSourceFiles?: ts.SourceFile[];
 
 	constructor(documentSettings: DocumentSettings) {
 		this.documentSettings = documentSettings;
@@ -74,6 +75,18 @@ export class AureliaProgram {
 		} else {
 			return undefined;
 		}
+	}
+
+	/**
+	 * Only get relevant aurelia source files from the program.
+	 */
+	public getAureliaSourceFiles() {
+		const sourceFiles = this.watcherProgram?.getSourceFiles();
+		this.aureliaSourceFiles = sourceFiles?.filter(sourceFile => {
+			if (sourceFile.fileName.includes('node_modules')) return
+			return sourceFile;
+		});
+		return this.aureliaSourceFiles;
 	}
 }
 

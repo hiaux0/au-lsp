@@ -4,20 +4,19 @@ import { LanguageClient } from 'vscode-languageclient';
 import * as path from 'path';
 
 export function registerDiagramPreview(context: vscode.ExtensionContext, client: LanguageClient) {
-
-
 	let previewUri = vscode.Uri.parse('aurelia-preview://authority/aurelia-preview');
-
 	let provider = new TextDocumentContentProvider(client);
 	let registration = vscode.workspace.registerTextDocumentContentProvider('aurelia-preview', provider);
 	let isPanelVisible: boolean = false;
 	let panel: vscode.WebviewPanel;
 
 	context.subscriptions.push(vscode.commands.registerCommand('aurelia.openClassMethodsHierarchy', async () => {
-		const activeEditorPath = '';
-		const classDiagram = await client.sendRequest<any>('aurelia-class-diagram', activeEditorPath);
+		const filePath = vscode.window.activeTextEditor.document.fileName;
+		const classDiagram = await client.sendRequest<any>('aurelia-class-diagram', filePath);
 		DiagramPreviewPanel.createPanel('', classDiagram)
 	}));
+
+	// Editor events
 }
 
 function getNonce() {

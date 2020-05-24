@@ -36,6 +36,9 @@ import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram
 import { getAureliaComponentMap } from './viewModel/getAureliaComponentMap';
 import { LanguageModes, getLanguageModes } from './embeddedLanguages/languageModes';
 import { aureliaLanguageId } from './embeddedLanguages/embeddedSupport';
+import * as path from 'path';
+import * as ts from 'typescript';
+import { createDiagram } from './viewModel/createDiagram';
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -248,8 +251,35 @@ connection.onDidCloseTextDocument((params) => {
 */
 
 /** On requests */
-connection.onRequest('aurelia-class-diagram', async (params: any) => {
-	return aureliaProgram.getClassDiagram();
+connection.onRequest('aurelia-class-diagram', async (filePath: string) => {
+	// 1. Find the active component
+	const aureliaSourceFiles = aureliaProgram.getAureliaSourceFiles();
+	const filePathDir = path.dirname(filePath);
+	const componentName = path.parse(filePath).name
+	const targetSourceFile = aureliaSourceFiles?.find(sourceFile => {
+		const sameDir = path.dirname(sourceFile.fileName) === filePathDir;
+		const sameComponent = path.parse(sourceFile.fileName).name === componentName;
+		/** Need both, since possibility of same component name in different directories */
+		return sameDir && sameComponent;
+	});
+	if (!targetSourceFile) {
+		console.log(`No target file for: ${filePath} in all your ${aureliaSourceFiles?.map(sf => sf.fileName)}`);
+	}
+
+	// 2. create diagram by going through the class ast
+	let classDiagram = '';
+	targetSourceFile?.forEachChild(fileMembers => {
+		if (ts.isClassDeclaration(fileMembers)) {
+			const checker = aureliaProgram.getProgram()?.getTypeChecker();
+			if (!checker) {
+				console.log('no checker');
+			}
+			classDiagram = createDiagram(fileMembers!, checker!);
+		}
+	})
+	console.log("TCL: classDiagram", classDiagram)
+
+	return classDiagram;
 })
 
 // Make the text document manager listen on the connection

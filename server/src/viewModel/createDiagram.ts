@@ -145,17 +145,17 @@ function assembleUmlString(
 		// class $className_$methodName_$index { }
 		callHierarchyOfMethod += `%% ------------------------------ ${method.name}
 %%------
-	class ${produceParentClassNameWithMethodIndex(method.name)}{ }`;
+	class ${produceParentClassNameWithMemberIndex(method.name)}{ }`;
 		// MyCompoCustomElement_foo__0 --|> MyCompoCustomElement_bar__1
 		callHierarchyOfMethod += Object.values(method.outGoingCalls).reduce((acc, outGoingCall) => {
 			return `${acc}
-	${ produceParentClassNameWithMethodIndex(method.name)} --|> ${produceParentClassNameWithMethodIndex(outGoingCall.name)}`;
+	${ produceParentClassNameWithMemberIndex(method.name)} --|> ${produceParentClassNameWithMemberIndex(outGoingCall.name)}`;
 		}, '');
 		return `${acc}
 
 ${callHierarchyOfMethod}`;
 
-		function produceParentClassNameWithMethodIndex(name: string) {
+		function produceParentClassNameWithMemberIndex(name: string) {
 			const classMethodNames = Object.keys(classMethods);
 			const methodIndex = classMethodNames.findIndex(classMethodName => classMethodName === name);
 			const result = `${className}_${name}_${Object.keys(classVariables).length + methodIndex}`;

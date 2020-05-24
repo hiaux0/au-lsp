@@ -100,7 +100,8 @@ function assembleUmlString(
 		const { name, types, documentation } = classInfo
 		return `${acc}
 	${name}: ${types} // ${documentation} [${index}]`;
-	}, '');
+	}, '------------------------------ Class variables\n--------');
+
 	// 2. Class methods
 	const classMethodsString = classMethodsData.reduce((acc, classInfo, index) => {
 		const { node, name, types, documentation } = classInfo
@@ -114,7 +115,9 @@ function assembleUmlString(
 				if (!childText.includes('this.')) return;
 				// 1.1.1 Iterate over all class members to find reference
 				[...classMethodsData, ...classVariablesData].forEach(classMember => {
-					const isClassMember = childText.includes(`this.${classMember.name}`)
+					const classMemberRegex = new RegExp(`(this.${classMember.name})(?:\\W)`);
+					const isClassMember = childText.match(classMemberRegex);
+					// const isClassMember = childText.includes(`this.${classMember.name}`)
 					if (!isClassMember) return;
 					classMemberStatements[classMember.name] = classMember;
 				});
@@ -126,8 +129,8 @@ function assembleUmlString(
 		// 2. Class members
 		const methodIndex = classVariablesData.length + index;
 		return `${acc}
-	${name}(): ${types} // ${documentation} [${methodIndex}]\n`;
-	}, '');
+	${name}(): ${types} // ${documentation} [${methodIndex}]`;
+	}, '------------------------------ Class methods\n--------');
 
 	// 3. Class methods call hierarchy
 	const produceParentClassName = (name: string, index: number) => `${className}_${name}`;
@@ -138,7 +141,9 @@ function assembleUmlString(
 		if (!method.outGoingCalls) return acc;
 
 		// class $className_$methodName_$index { }
-		callHierarchyOfMethod += `class ${produceParentClassNameWithMethodIndex(method.name)}{ }`;
+		callHierarchyOfMethod += `%% ------------------------------ ${method.name}
+%%------
+	class ${produceParentClassNameWithMethodIndex(method.name)}{ }`;
 		// MyCompoCustomElement_foo__0 --|> MyCompoCustomElement_bar__1
 		callHierarchyOfMethod += Object.values(method.outGoingCalls).reduce((acc, outGoingCall) => {
 			return `${acc}
@@ -146,7 +151,7 @@ function assembleUmlString(
 		}, '');
 		return `${acc}
 
-	${callHierarchyOfMethod}`;
+${callHierarchyOfMethod}`;
 
 		function produceParentClassNameWithMethodIndex(name: string) {
 			const classMethodNames = Object.keys(classMethods);
@@ -158,7 +163,7 @@ function assembleUmlString(
 
 	const result = '\n' + mermaidMdStringStart + '\n    ' +
 		classNameStringStart + '\n' +
-		classVariablesString + '\n' +
+		classVariablesString + '\n\n' +
 		classMethodsString + '\n' +
 		classNameStringEnd +
 		callHierarchyDiagram + '\n' +

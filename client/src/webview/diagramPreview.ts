@@ -34,6 +34,11 @@ function fillWebViewHtml(panel: vscode.WebviewPanel, classDiagram: string): stri
 	// And the uri we use to load this script in the webview
 	const mermaidSrcUri = panel.webview.asWebviewUri(scriptPathOnDisk);
 
+	const diagramPreviewScriptSrc = path.resolve(__dirname, './diagramScript.js')
+	const scriptPathOnDisk1 = vscode.Uri.file(diagramPreviewScriptSrc);
+	// And the uri we use to load this script in the webview
+	const diagramPreviewScriptSrcUri = panel.webview.asWebviewUri(scriptPathOnDisk1);
+
 	// Use a nonce to whitelist which scripts can be run
 	const nonce = getNonce();
 
@@ -46,12 +51,18 @@ function fillWebViewHtml(panel: vscode.WebviewPanel, classDiagram: string): stri
             <title>Cat Coding</title>
 				</head>
 				<body>
-					<h1 id="lines-of-code-counter">0</h1>
 					<div class="mermaid">
 					${classDiagram}
 					</div>
 
-					<script nonce="${nonce}" src="${mermaidSrcUri}"></script>
+					<pre style="border: 1px solid black;">
+\`\`\`mermaid
+${classDiagram}
+\`\`\`
+					</pre>
+
+ 					<script nonce="${nonce}" src="${mermaidSrcUri}"></script>
+					<script nonce="${nonce}" src="${diagramPreviewScriptSrcUri}"></script>
 				</body>
       </html>
     `;

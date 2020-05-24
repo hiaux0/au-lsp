@@ -30,6 +30,7 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDir
 				const sourceFile = program.getSourceFile(path)
 				if (sourceFile === undefined) {
 					console.log('Watcher program did not find file: ', path)
+					return;
 				}
 
 				/* export class MyCustomElement */
@@ -71,7 +72,7 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDir
 }
 
 function getAureliaViewModelClassDeclaration(sourceFile: ts.SourceFile, checker: ts.TypeChecker) {
-	if (sourceFile.fileName !== '/Users/hdn/Desktop/aurelia-lsp/client/testFixture/src/my-compo/my-compo.ts') return;
+	// if (sourceFile?.fileName !== '/Users/hdn/Desktop/aurelia-lsp/client/testFixture/src/my-compo/my-compo.ts') return;
 	let result: CompletionItem | undefined;
 	let targetClassDeclaration: ts.ClassDeclaration | undefined;
 

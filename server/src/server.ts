@@ -31,7 +31,7 @@ import { Container } from 'aurelia-dependency-injection';
 
 import { DocumentSettings, ExampleSettings } from './configuration/DocumentSettings';
 import { TextDocumentChange } from './textDocumentChange/TextDocumentChange';
-import { AureliaProgram } from './viewModel/AureliaProgram';
+import { aureliaProgram } from './viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram';
 import { getAureliaComponentMap } from './viewModel/getAureliaComponentMap';
 import { LanguageModes, getLanguageModes } from './embeddedLanguages/languageModes';
@@ -40,7 +40,6 @@ import { aureliaLanguageId } from './embeddedLanguages/embeddedSupport';
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
 const TextDocumentChangeClass = globalContainer.get(TextDocumentChange);
-const aureliaProgram = globalContainer.get(AureliaProgram);
 
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
@@ -126,7 +125,6 @@ connection.onInitialized(async () => {
 
 		await createAureliaWatchProgram(aureliaProgram);
 		getAureliaComponentMap(aureliaProgram);
-
 	}
 	if (hasWorkspaceFolderCapability) {
 		connection.workspace.onDidChangeWorkspaceFolders(_event => {
@@ -248,6 +246,11 @@ connection.onDidCloseTextDocument((params) => {
 	connection.console.log(`${params.textDocument.uri} closed.`);
 });
 */
+
+/** On requests */
+connection.onRequest('aurelia-class-diagram', async (params: any) => {
+	return aureliaProgram.getClassDiagram();
+})
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events

@@ -1,14 +1,16 @@
 import * as ts from 'typescript';
 import { CompletionItemKind } from 'vscode-languageserver';
 
+interface ClassInfoData {
+	node: ts.Node;
+	name: string;
+	documentation: string;
+	types: string;
+	outGoingCalls?: ClassInfo;
+}
+
 interface ClassInfo {
-	[name: string]: {
-		node: ts.Node;
-		name: string;
-		documentation: string;
-		types: string;
-		outGoingCalls?: ClassInfo;
-	}
+	[name: string]: ClassInfoData
 }
 
 export function createDiagram(classDeclaration: ts.ClassDeclaration, checker: ts.TypeChecker) {
@@ -145,20 +147,35 @@ function assembleUmlString(
 		// class $className_$methodName_$index { }
 		callHierarchyOfMethod += `%% ------------------------------ ${method.name}
 %%------
-	class ${produceParentClassNameWithMemberIndex(method.name)}{ }`;
+	class ${produceParentClassNameWithMemberIndex(method)}{ }`;
 		// MyCompoCustomElement_foo__0 --|> MyCompoCustomElement_bar__1
 		callHierarchyOfMethod += Object.values(method.outGoingCalls).reduce((acc, outGoingCall) => {
 			return `${acc}
-	${ produceParentClassNameWithMemberIndex(method.name)} --|> ${produceParentClassNameWithMemberIndex(outGoingCall.name)}`;
+	${ produceParentClassNameWithMemberIndex(method)} --|> ${produceParentClassNameWithMemberIndex(outGoingCall)}`;
 		}, '');
 		return `${acc}
 
 ${callHierarchyOfMethod}`;
 
-		function produceParentClassNameWithMemberIndex(name: string) {
+		/**
+		 * MyCompoCustomElement_bar__1
+		 */
+		function produceParentClassNameWithMemberIndex(outGoingCall: ClassInfoData) {
+			const name = outGoingCall.name;
 			const classMethodNames = Object.keys(classMethods);
+			const classVariableNames = Object.keys(classVariables);
+
 			const methodIndex = classMethodNames.findIndex(classMethodName => classMethodName === name);
-			const result = `${className}_${name}_${Object.keys(classVariables).length + methodIndex}`;
+			let variableIndex = classVariableNames.findIndex(classVariableName => classVariableName === name);
+
+			let index = 0;
+			if (variableIndex === -1) {
+				index = (Object.keys(classVariables).length + methodIndex);
+			} else {
+				index = variableIndex;
+			}
+
+			const result = `${className}_${name}_${index}`;
 			return result;
 		}
 	}, '');

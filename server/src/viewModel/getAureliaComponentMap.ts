@@ -12,7 +12,6 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDir
 	let classDeclarations: CompletionItem[] = [];
 	let classMembers: CompletionItem[] = [];
 	let bindables: CompletionItem[] = [];
-	let classDiagram: any;
 
 	const program = aureliaProgram.getProgram()
 	if (program === undefined) {
@@ -45,7 +44,7 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDir
 
 				/* public myVariables: string; */
 
-				classDiagram = createDiagram(targetClassDeclaration!, checker);
+				createDiagram(targetClassDeclaration!, checker);
 				const result1 = getAureliaViewModelClassMembers(targetClassDeclaration!, checker);
 				classMembers = result1.classMembers;
 				bindables = result1.bindables;
@@ -67,7 +66,6 @@ export function getAureliaComponentMap(aureliaProgram: AureliaProgram, sourceDir
 		bindables
 	}
 	aureliaProgram.setComponentMap(result);
-	aureliaProgram.setClassDiagram(classDiagram);
 }
 
 function getAureliaViewModelClassDeclaration(sourceFile: ts.SourceFile, checker: ts.TypeChecker) {

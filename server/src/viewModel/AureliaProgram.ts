@@ -1,8 +1,7 @@
-import { singleton, inject, autoinject, Container } from 'aurelia-dependency-injection';
+import { singleton, inject, autoinject } from 'aurelia-dependency-injection';
 import * as ts from 'typescript';
 import { CompletionItem } from 'vscode-languageserver';
 import { DocumentSettings } from '../configuration/DocumentSettings';
-const globalContainer = new Container();
 
 interface IWebcomponent {
 
@@ -12,10 +11,6 @@ export interface IComponentMap {
 	classDeclarations: CompletionItem[] | undefined
 	classMembers: CompletionItem[] | undefined
 	bindables: CompletionItem[] | undefined
-}
-
-interface IClassDiagram {
-
 }
 
 /**
@@ -28,8 +23,8 @@ export class AureliaProgram {
 	public components: IWebcomponent[] = [];
 	public watcherProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
 	public documentSettings: DocumentSettings;
-	public componentMap: IComponentMap;
-	public classDiagram: IClassDiagram;
+
+	private componentMap: IComponentMap;
 
 	constructor(documentSettings: DocumentSettings) {
 		this.documentSettings = documentSettings;
@@ -41,14 +36,6 @@ export class AureliaProgram {
 
 	public getComponentMap() {
 		return this.componentMap
-	}
-
-	public setClassDiagram(classDiagram: IClassDiagram) {
-		this.classDiagram = classDiagram;
-	}
-
-	public getClassDiagram() {
-		return this.classDiagram
 	}
 
 	public getProjectFiles(sourceDirectory?: string) {
@@ -76,5 +63,3 @@ export class AureliaProgram {
 		}
 	}
 }
-
-export const aureliaProgram = globalContainer.get(AureliaProgram);

@@ -97,7 +97,8 @@
 		"@typescript-eslint/parser": "^2.3.0",
 		"eslint": "^6.4.0",
 		"mocha": "^6.2.2",
-		"typescript": "^3.8.3"
+		"typescript": "^3.8.3",
+		"core-js": "^3.6.5"
 	},
 	"dependencies": {
 		"aurelia-dependency-injection": "^1.5.2",

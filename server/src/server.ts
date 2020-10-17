@@ -34,8 +34,9 @@ import { TextDocumentChange } from './textDocumentChange/TextDocumentChange';
 import { aureliaProgram } from './viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram';
 import { getAureliaComponentMap } from './viewModel/getAureliaComponentMap';
-import { LanguageModes, getLanguageModes } from './embeddedLanguages/languageModes';
+import { LanguageModes, getLanguageModes, getDocumentRegionAtPosition} from './embeddedLanguages/languageModes';
 import { aureliaLanguageId } from './embeddedLanguages/embeddedSupport';
+import { createVirtualProgram, createVirtualCompletion, getVirtualCompletion } from './virtualCompletion/virtualCompletion';
 import * as path from 'path';
 import * as ts from 'typescript';
 import { createDiagram } from './viewModel/createDiagram';
@@ -178,12 +179,36 @@ connection.onDidChangeWatchedFiles(_change => {
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
 	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-		// Embedded Language
-		const document = documents.get(_textDocumentPosition.textDocument.uri);
+		const documentUri = _textDocumentPosition.textDocument.uri;
+		const document = documents.get(documentUri);
 		if (!document) {
 			throw new Error('No document found')
 			return [];
 		}
+		// Embedded Language
+
+		// Virtual file
+		// 1. From the region get the part, that should be made virtual.
+		const region = getDocumentRegionAtPosition(_textDocumentPosition.position).get(document);
+		const virtualContent = document.getText().slice(region.start, region.end);
+        console.log('TCL: virtualContent', virtualContent)
+
+		const virtualProgram = createVirtualProgram(virtualContent);
+
+		// 2. Get original viewmodel file from view
+		const viewName = path.basename(documentUri)
+
+		const componentMap = aureliaProgram.getComponentMap();
+		console.log('TCL: componentMap', componentMap)
+		const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
+        console.log('TCL: aureliaFiles', aureliaFiles)
+		const viewModelContent = '';
+
+		// 3. Create virtual completion
+		createVirtualCompletion(virtualProgram, viewModelContent, virtualContent);
+		getVirtualCompletion();
+
+
 		const text = document.getText();
 		const offset = document.offsetAt(_textDocumentPosition.position);
 		const triggerCharacter = text.substring(offset - 1, offset);

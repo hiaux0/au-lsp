@@ -15,6 +15,8 @@ import {
 	TransportKind
 } from 'vscode-languageclient';
 import { registerDiagramPreview } from './webview/diagramPreview';
+import { RelatedFiles } from './feature/relatedFiles';
+
 
 let client: LanguageClient;
 
@@ -94,7 +96,9 @@ export function activate(context: ExtensionContext) {
 		const components = await client.sendRequest('aurelia-get-components');
 		console.clear();
 		console.log("TCL: activate -> components", components);
-	  }));
+	}));
+
+	context.subscriptions.push(new RelatedFiles());
 
 	registerDiagramPreview(context, client);
 

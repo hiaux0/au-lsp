@@ -13,7 +13,7 @@ import {
 	TextDocument
 } from 'vscode-html-languageservice';
 import { getCSSMode } from './modes/cssMode';
-import { getDocumentRegions, HTMLDocumentRegions, aureliaLanguageId } from './embeddedSupport';
+import { getDocumentRegions, HTMLDocumentRegions, EmbeddedRegion,aureliaLanguageId } from './embeddedSupport';
 import { getHTMLMode } from './modes/htmlMode';
 import { getLanguageModelCache, LanguageModelCache } from './languageModelCache';
 
@@ -40,6 +40,20 @@ export interface LanguageModes {
 export interface LanguageModeRange extends Range {
 	mode: LanguageMode | undefined;
 	attributeValue?: boolean;
+}
+
+export function getDocumentRegionAtPosition(position: Position) {
+	const htmlLanguageService = getHTMLLanguageService();
+	const cssLanguageService = getCSSLanguageService();
+
+	const documentRegion = getLanguageModelCache<EmbeddedRegion>(10, 60, document => {
+		const region = getDocumentRegions(htmlLanguageService, document).getRegionAtPosition(position)
+		if (!region) throw new Error('No Region')
+		return region;
+	}
+	);
+
+	return documentRegion;
 }
 
 export function getLanguageModes(): LanguageModes {

@@ -17,11 +17,12 @@ export interface HTMLDocumentRegions {
 	getLanguageAtPosition(position: Position): string | undefined;
 	getLanguagesInDocument(): string[];
 	getImportedScripts(): string[];
+	getRegionAtPosition(position: Position): EmbeddedRegion | undefined;
 }
 
 export const CSS_STYLE_RULE = '__';
 
-interface EmbeddedRegion { languageId: string | undefined; start: number; end: number; attributeValue?: boolean; }
+export interface EmbeddedRegion { languageId: string | undefined; start: number; end: number; attributeValue?: boolean; }
 
 export const aureliaLanguageId = 'aurelia';
 
@@ -130,7 +131,8 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 		getEmbeddedDocument: (languageId: string, ignoreAttributeValues: boolean) => getEmbeddedDocument(document, regions, languageId, ignoreAttributeValues),
 		getLanguageAtPosition: (position: Position) => getLanguageAtPosition(document, regions, position),
 		getLanguagesInDocument: () => getLanguagesInDocument(document, regions),
-		getImportedScripts: () => importedScripts
+		getImportedScripts: () => importedScripts,
+		getRegionAtPosition: (position: Position) => getRegionAtPosition(document, regions, position),
 	};
 }
 
@@ -208,6 +210,21 @@ function getLanguageAtPosition(document: TextDocument, regions: EmbeddedRegion[]
 	}
 	return 'html';
 }
+
+export function getRegionAtPosition(document: TextDocument, regions: EmbeddedRegion[], position: Position): EmbeddedRegion | undefined {
+	let offset = document.offsetAt(position);
+	for (let region of regions) {
+		if (region.start <= offset) {
+			if (offset <= region.end) {
+				return region;
+			}
+		} else {
+			break;
+		}
+	}
+	return undefined;
+}
+
 
 function getEmbeddedDocument(document: TextDocument, contents: EmbeddedRegion[], languageId: string, ignoreAttributeValues: boolean): TextDocument {
 	let currentPos = 0;

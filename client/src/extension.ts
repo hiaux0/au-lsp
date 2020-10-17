@@ -4,6 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from 'path';
+import * as vscode from 'vscode';
 import { workspace, commands, ExtensionContext, OutputChannel } from 'vscode';
 import * as WebSocket from 'ws';
 
@@ -78,7 +79,7 @@ export function activate(context: ExtensionContext) {
 			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
 		},
 		// Hijacks all LSP logs and redirect them to a specific port through WebSocket connection
-		outputChannel: websocketOutputChannel
+		// outputChannel: websocketOutputChannel
 	};
 
 	// Create the language client and start the client.
@@ -88,6 +89,12 @@ export function activate(context: ExtensionContext) {
 		serverOptions,
 		clientOptions
 	);
+
+	context.subscriptions.push(vscode.commands.registerCommand('aurelia.getAureliaComponents', async () => {
+		const components = await client.sendRequest('aurelia-get-components');
+		console.clear();
+		console.log("TCL: activate -> components", components);
+	  }));
 
 	registerDiagramPreview(context, client);
 

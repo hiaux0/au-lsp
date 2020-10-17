@@ -282,6 +282,10 @@ connection.onRequest('aurelia-class-diagram', async (filePath: string) => {
 	return classDiagram;
 })
 
+connection.onRequest('aurelia-get-components', () => {
+	return aureliaProgram.getComponentMap();
+});
+
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);

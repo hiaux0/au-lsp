@@ -18,6 +18,7 @@
 	},
 	"activationEvents": [
 		"onCommand:aurelia.openClassMethodsHierarchy",
+		"onCommand:aurelia.getAureliaComponents",
 		"onLanguage:plaintext"
 	],
 	"main": "./client/out/client/src/extension",
@@ -30,6 +31,11 @@
 			{
 				"command": "aurelia.openClassMethodsHierarchy",
 				"title": "Open class methods hierarchy",
+				"category": "Aurelia"
+			},
+			{
+				"command": "aurelia.getAureliaComponents",
+				"title": "[Au VSC Ext] Show Aurelia Components parsed by the extension",
 				"category": "Aurelia"
 			}
 		],

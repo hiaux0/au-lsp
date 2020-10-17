@@ -8,7 +8,7 @@ export class RelatedFiles implements Disposable {
   constructor() {
     this.disposables.push(commands.registerTextEditorCommand('extension.auOpenRelated', this.onOpenRelated, this));
 
-    const fileExtensionsConfig = this.getRelatedFileExtensions();
+    const fileExtensionsConfig = this.getRelatedFilePathExtensions();
     const {
       scriptExtensions,
       styleExtensions,
@@ -33,7 +33,7 @@ export class RelatedFiles implements Disposable {
   /**
    * Provide file extensions for navigating between Aurelia files.
    */
-  private getRelatedFileExtensions() {
+  private getRelatedFilePathExtensions() {
     return {
       scriptExtensions: [".js", ".ts"],
       styleExtensions: [".less", ".sass", ".scss", ".styl", ".css"],
@@ -50,16 +50,16 @@ export class RelatedFiles implements Disposable {
     let relatedFile: string;
     const fileName = editor.document.fileName;
     const extension = path.extname(fileName).toLowerCase();
-    const fileExtensionsConfig = this.getRelatedFileExtensions();
+    const fileExtensionsConfig = this.getRelatedFilePathExtensions();
     const {
       viewExtensions,
       scriptExtensions,
     } = fileExtensionsConfig;
 
     if (viewExtensions.includes(extension)) {
-      relatedFile = this.relatedFileExists(fileName, scriptExtensions);
+      relatedFile = this.getRelatedFilePath(fileName, scriptExtensions);
     } else if (scriptExtensions.includes(extension)) {
-      relatedFile = this.relatedFileExists(fileName, viewExtensions);
+      relatedFile = this.getRelatedFilePath(fileName, viewExtensions);
     }
 
     if (relatedFile) {
@@ -85,7 +85,7 @@ export class RelatedFiles implements Disposable {
        * */
       const fileName = editor.document.fileName.replace('.spec', '');
       const extension = path.extname(fileName).toLowerCase();
-      const relatedFile = this.relatedFileExists(fileName, switchToExtensions);
+      const relatedFile = this.getRelatedFilePath(fileName, switchToExtensions);
       if (relatedFile) {
         commands.executeCommand('vscode.open', Uri.file(relatedFile), editor.viewColumn);
       }
@@ -97,7 +97,7 @@ export class RelatedFiles implements Disposable {
    * @param relatedExts - Possible extensions, for target file
    * @returns targetFile
    */
-  private relatedFileExists(fullPath: string, relatedExts: string[]): string {
+  private getRelatedFilePath(fullPath: string, relatedExts: string[]): string {
     let targetFile: string;
     relatedExts.forEach(ext => {
       const fileName = `${path.basename(fullPath, path.extname(fullPath))}${ext}`

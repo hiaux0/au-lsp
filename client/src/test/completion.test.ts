@@ -46,7 +46,7 @@ suite.only('Completion', () => {
 		await testCompletion(docUri, new vscode.Position(0, 0), { items: classMemberTestItems });
 	});
 
-	test.only('Should complete class members - bindables', async () => {
+	test('Should complete class members - bindables', async () => {
 		await testCompletion(docUri, new vscode.Position(0, 0), { items: bindablesTestItems });
 	});
 });

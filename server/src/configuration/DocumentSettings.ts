@@ -1,6 +1,20 @@
 import { Connection } from 'vscode-languageserver';
 import { singleton } from 'aurelia-dependency-injection';
 
+export const AURELIA_ATTRIBUTES_KEYWORDS = [
+	'bind',
+	'one-way',
+	'two-way',
+	'one-time',
+	'from-view',
+	'to-view',
+	'delegate',
+	'trigger',
+	'call',
+	'capture',
+	'ref',
+]
+
 interface IAureliaProject {
 	path: string[]
 }

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TextDocument, Position, LanguageService, TokenType, Range } from './languageModes';
+import { AURELIA_ATTRIBUTES_KEYWORDS } from '../configuration/DocumentSettings';
 
 export interface LanguageRange extends Range {
 	languageId: string | undefined;
@@ -91,7 +92,11 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 				}
 
 				console.log("TCL: lastAttributeName", lastAttributeName)
-				if (lastAttributeName?.includes('.bind')) {
+				const isAttributeKeyword = AURELIA_ATTRIBUTES_KEYWORDS.some(keyword => {
+					return lastAttributeName?.includes(keyword)
+				})
+
+				if (isAttributeKeyword) {
 					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
 					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
 					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')

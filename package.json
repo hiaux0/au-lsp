@@ -19,6 +19,11 @@
 	"activationEvents": [
 		"onCommand:aurelia.openClassMethodsHierarchy",
 		"onCommand:aurelia.getAureliaComponents",
+		"onCommand:extension.auOpenRelated",
+		"onCommand:extension.auOpenRelatedScript",
+		"onCommand:extension.auOpenRelatedStyle",
+		"onCommand:extension.auOpenRelatedUnit",
+		"onCommand:extension.auOpenRelatedView",
 		"onLanguage:plaintext"
 	],
 	"main": "./client/out/client/src/extension",
@@ -37,7 +42,27 @@
 				"command": "aurelia.getAureliaComponents",
 				"title": "[Au VSC Ext] Show Aurelia Components parsed by the extension",
 				"category": "Aurelia"
-			}
+			},
+			{
+				"command": "extension.auOpenRelated",
+				"title": "Switch between Aurelia view and view model"
+			  },
+			  {
+				"command": "extension.auOpenRelatedScript",
+				"title": "Open Related Aurelia File: Script"
+			  },
+			  {
+				"command": "extension.auOpenRelatedStyle",
+				"title": "Open Related Aurelia File: Style"
+			  },
+			  {
+				"command": "extension.auOpenRelatedUnit",
+				"title": "Open Related Aurelia File: Unit"
+			  },
+			  {
+				"command": "extension.auOpenRelatedView",
+				"title": "Open Related Aurelia File: View"
+			  }
 		],
 		"configuration": {
 			"type": "object",

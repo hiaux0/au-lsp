@@ -119,9 +119,7 @@ connection.onInitialize(async (params: InitializeParams) => {
 
 connection.onInitialized(async () => {
 	console.log('------------------------------------------------------------------------------------------');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('2. TCL: onInitialized');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('------------------------------------------------------------------------------------------');
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
@@ -139,9 +137,7 @@ connection.onInitialized(async () => {
 
 connection.onDidChangeConfiguration(change => {
 	console.log('------------------------------------------------------------------------------------------');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('3. TCL: onDidChangeConfiguration');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('------------------------------------------------------------------------------------------');
 	if (hasConfigurationCapability) {
 		// Reset all cached document settings
@@ -166,9 +162,7 @@ documents.onDidClose(e => {
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(async change => {
 	console.log('------------------------------------------------------------------------------------------');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('4. TCL: onDidChangeContent');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('------------------------------------------------------------------------------------------');
 	getAureliaComponentMap(aureliaProgram);
 
@@ -201,7 +195,6 @@ connection.onCompletion(
 				]
 			}
 			case ' ': {
-				console.log('space')
 				// only return compone specific
 				return [
 					...aureliaProgram.getComponentMap().bindables!,
@@ -224,18 +217,6 @@ connection.onCompletion(
 			...aureliaProgram.getComponentMap().classMembers!,
 			...aureliaProgram.getComponentMap().bindables!,
 		]
-		return [
-			{
-				label: 'TypeScript',
-				kind: CompletionItemKind.Text,
-				data: 1
-			},
-			{
-				label: 'JavaScript',
-				kind: CompletionItemKind.Text,
-				data: 2
-			}
-		];
 	}
 );
 

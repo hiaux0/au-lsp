@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TextDocument, Position, LanguageService, TokenType, Range } from './languageModes';
+import { AURELIA_ATTRIBUTES_KEYWORDS } from '../configuration/DocumentSettings';
 
 export interface LanguageRange extends Range {
 	languageId: string | undefined;
@@ -36,7 +37,7 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 	let token = scanner.scan();
 	// [1.] token parsing
 	while (token !== TokenType.EOS) {
-		console.log('START ------------------------------------------------------------------------------------------')
+        // console.log('START ------------------------------------------------------------------------------------------')
 		switch (token) {
 			case TokenType.StartTag:
 				lastTagName = scanner.getTokenText();
@@ -49,7 +50,7 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 				regions.push({ languageId: 'css', start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
 				break;
 			case TokenType.Script:
-				console.log(">>>>>>>>>>>>>>>>>> \TCL: TokenType.Script:", TokenType.Script)
+                // console.log(">>>>>>>>>>>>>>>>>> \TCL: TokenType.Script:", TokenType.Script)
 				regions.push({ languageId: languageIdFromType, start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
 				// regions.push({ languageId: 'javascript', start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
 				break;
@@ -58,10 +59,10 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 				break;
 			case TokenType.AttributeValue:
 				let value = scanner.getTokenText();
-				console.log("TCL: value", value)
+                // console.log("TCL: value", value)
 
 				if (lastAttributeName === 'src' && lastTagName.toLowerCase() === 'script') {
-					// console.log("TCL: value", value)
+                    // // console.log("TCL: value", value)
 					if (value[0] === '\'' || value[0] === '"') {
 						value = value.substr(1, value.length - 1);
 					}
@@ -71,7 +72,7 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 						languageIdFromType = 'javascript';
 					} else if (/["']text\/typescript["']/.test(scanner.getTokenText())) {
 						languageIdFromType = 'typescript';
-						console.log('BIIIIIIIIIIIIIIIIIIIIINNNNNNNNNNNNNNNGOOOOOOOOO______________+++++')
+                        console.log('BIIIIIIIIIIIIIIIIIIIIINNNNNNNNNNNNNNNGOOOOOOOOO______________+++++')
 					} else {
 						languageIdFromType = undefined;
 					}
@@ -91,16 +92,20 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 				}
 
 				console.log("TCL: lastAttributeName", lastAttributeName)
-				if (lastAttributeName?.includes('.bind')) {
-					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-					console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+				const isAttributeKeyword = AURELIA_ATTRIBUTES_KEYWORDS.some(keyword => {
+					return lastAttributeName?.includes(keyword)
+				})
+
+				if (isAttributeKeyword) {
+                    console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+                    console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+                    console.log('>>> SET TS REGION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
 					let start = scanner.getTokenOffset();
-					console.log("TCL: start", start)
+                    console.log("TCL: start", start)
 					let end = scanner.getTokenEnd();
-					console.log("TCL: end", end)
+                    console.log("TCL: end", end)
 					let firstChar = document.getText()[start];
-					console.log("TCL: firstChar", firstChar)
+                    console.log("TCL: firstChar", firstChar)
 					if (firstChar === '\'' || firstChar === '"') {
 						start++;
 						end--;
@@ -111,15 +116,15 @@ export function getDocumentRegions(languageService: LanguageService, document: T
 				lastAttributeName = null;
 				break;
 		}
-		// console.log("TCL: token", token)
-		// console.log("TCL: lastTagName", lastTagName)
-		// console.log("TCL: lastAttributeName", lastAttributeName)
-		console.log("TCL: regions", regions)
+        // // console.log("TCL: token", token)
+        // // console.log("TCL: lastTagName", lastTagName)
+        // // console.log("TCL: lastAttributeName", lastAttributeName)
+        // console.log("TCL: regions", regions)
 		token = scanner.scan();
-		console.log('END ------------------------------------------------------------------------------------------')
+        // console.log('END ------------------------------------------------------------------------------------------')
 		counter++
 	}
-	// console.log("TCL: counter", counter)
+    // // console.log("TCL: counter", counter)
 	return {
 		getLanguageRanges: (range: Range) => getLanguageRanges(document, regions, range),
 		getEmbeddedDocument: (languageId: string, ignoreAttributeValues: boolean) => getEmbeddedDocument(document, regions, languageId, ignoreAttributeValues),
@@ -172,7 +177,7 @@ function getLanguageRanges(document: TextDocument, regions: EmbeddedRegion[], ra
 }
 
 function getLanguagesInDocument(_document: TextDocument, regions: EmbeddedRegion[]): string[] {
-	// console.log("TCL: regions", regions)
+    // // console.log("TCL: regions", regions)
 	let result = [];
 	for (let region of regions) {
 		if (region.languageId && result.indexOf(region.languageId) === -1) {
@@ -189,12 +194,12 @@ function getLanguagesInDocument(_document: TextDocument, regions: EmbeddedRegion
 // [2.] Offset in region check
 function getLanguageAtPosition(document: TextDocument, regions: EmbeddedRegion[], position: Position): string | undefined {
 	let offset = document.offsetAt(position);
-	console.log("TCL: offset", offset)
+    // console.log("TCL: offset", offset)
 	for (let region of regions) {
-		console.log("TCL: region", region)
+        // console.log("TCL: region", region)
 		if (region.start <= offset) {
 			if (offset <= region.end) {
-				console.log("TCL: region.languageId", region.languageId)
+                // console.log("TCL: region.languageId", region.languageId)
 				return region.languageId;
 			}
 		} else {

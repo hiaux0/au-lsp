@@ -97,7 +97,8 @@ connection.onInitialize(async (params: InitializeParams) => {
 			textDocumentSync: TextDocumentSyncKind.Full,
 			// Tell the client that the server supports code completion
 			completionProvider: {
-				resolveProvider: true
+				resolveProvider: false,
+				triggerCharacters: [' ', '.', '[', '"', '\'', '{', '<'],
 			}
 		}
 	};
@@ -185,8 +186,31 @@ connection.onCompletion(
 	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
 		// Embedded Language
 		const document = documents.get(_textDocumentPosition.textDocument.uri);
+		if (!document) {
+			throw new Error('No document found')
+			return [];
+		}
+		const text = document.getText();
+		const offset = document.offsetAt(_textDocumentPosition.position);
+		const triggerCharacter = text.substring(offset - 1, offset);
+
+		switch(triggerCharacter) {
+			case '<': {
+				return [
+					...aureliaProgram.getComponentMap().classDeclarations!,
+				]
+			}
+			case ' ': {
+				console.log('space')
+				// only return compone specific
+				return [
+					...aureliaProgram.getComponentMap().bindables!,
+				]
+			}
+		}
+
 		const mode = languageModes.getModeAtPosition(document!, _textDocumentPosition.position);
-		console.log("TCL: mode", mode)
+		// console.log("TCL: mode", mode)
 		if (typeof mode === 'string') {
 			console.log('heeeeeeeeeeeeeeee')
 			return [CompletionItem.create('LETS DO IT')]

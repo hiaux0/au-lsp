@@ -17,7 +17,7 @@
 import * as ts from "typescript";
 import * as path from "path";
 import { CompletionItem, InsertTextFormat, TextDocument } from 'vscode-css-languageservice';
-import { TextDocumentPositionParams } from 'vscode-languageserver';
+import { MarkupKind, TextDocumentPositionParams } from 'vscode-languageserver';
 import { EmbeddedRegion } from '../embeddedLanguages/embeddedSupport';
 import { getDocumentRegionAtPosition } from '../embeddedLanguages/languageModes';
 import { AureliaProgram } from '../viewModel/AureliaProgram';
@@ -127,14 +127,25 @@ export function getVirtualCompletion(
 
   if (!cls) throw new Error('No cls')
 
-  const completion = cls.getCompletionsAtPosition(
+  const virtualCompletions = cls.getCompletionsAtPosition(
     sourceFile.fileName,
     positionOfAutocomplete,
     undefined
   )?.entries;
 
-  return completion;
-  // return map(completion, "name");
+  if (!virtualCompletions) {
+    throw new Error('No completions found')
+  }
+
+  const virtualQuickInfo = cls.getQuickInfoAtPosition(sourceFile.fileName, positionOfAutocomplete);
+
+  const virtualCompletionEntryDetails = virtualCompletions.map(completion=> {
+    return cls.getCompletionEntryDetails(sourceFile.fileName, positionOfAutocomplete, completion.name, undefined, undefined, undefined) /*?*/
+  });
+
+
+  return { virtualCompletions, virtualQuickInfo, virtualCompletionEntryDetails };
+  // return map(virtualCompletions, "name");
 }
 
 export function createProgram(
@@ -235,7 +246,11 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
     completionIndex
   } = createVirtualCompletionSourceFile(virtualViewModelSourceFile, virtualContent, customElementClassName);
 
-  const virtualCompletions = getVirtualCompletion(
+  const {
+    virtualCompletions,
+    virtualQuickInfo,
+    virtualCompletionEntryDetails,
+  }= getVirtualCompletion(
     targetVirtualSourcefile,
     completionIndex
   );
@@ -248,17 +263,32 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
     return [];
   }
 
+  if (!virtualCompletionEntryDetails) {
+    return [];
+  }
+
+  const documentation = virtualCompletionEntryDetails.map(
+    (entryDetail) => {
+      return entryDetail?.displayParts?.map((part) => part.text).join('') ||
+      "No documenation found."
+    }
+  )
+
   const result = virtualCompletions.map(tsCompletion => {
     // const kindMap = {
 
     // }
     const completionItem: CompletionItem = {
+      documentation: {
+        kind: MarkupKind.Markdown,
+        value: documentation.join(''),
+      },
       detail: tsCompletion.kind,
       insertTextFormat: InsertTextFormat.Snippet,
       label: tsCompletion.name,
     }
     /**
-        documentation: {
+      documentation: {
         kind: MarkupKind.Markdown,
         value: documentation,
       },

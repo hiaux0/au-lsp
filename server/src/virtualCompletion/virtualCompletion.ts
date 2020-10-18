@@ -16,7 +16,7 @@
 
 import * as ts from "typescript";
 
-const VIRTUAL_SOURCE_FILENAME = "virutal.ts";
+const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
 
 /**
  * Create "virtual" program.
@@ -50,7 +50,6 @@ export function createVirtualCompletion(
       targetClassName: string
     ) {
       const originalText = sourceFile.getText();
-      // const index = 6;
       const classNameToOpeningBracketRegex = new RegExp(
         `${targetClassName}(.*?{)`
       );
@@ -67,17 +66,18 @@ export function createVirtualCompletion(
 
       const tempMethodTextStart = `temp() {this.`;
       const tempMethodTextEnd = "};\n  ";
-    //   const tempMethodText = tempMethodTextStart + code + tempMethodTextEnd;
+      const tempMethodText = tempMethodTextStart + virtualContent + tempMethodTextEnd;
 
       // 1.3.1
-    //   const tempWithCompletion = starter + tempMethodText + ender;
-    //   const tempProgram = createProgram([
-    //     { fileName: "temp.ts", content: tempWithCompletion },
-    //   ]);
-    //   const tempTargetSourcefile = tempProgram.getSourceFiles()[0];
+      const tempWithCompletion = starter + tempMethodText + ender;
+      console.log('TCL: tempWithCompletion', tempWithCompletion)
+      const tempProgram = createProgram([
+        { fileName: "temp.ts", content: tempWithCompletion },
+      ]);
+      const tempTargetSourcefile = tempProgram.getSourceFiles()[0];
 
-    //   const completionIndex =
-        // classIdentifierEndIndex + tempMethodTextStart.length + code.length - 2;
+      const completionIndex =
+        classIdentifierEndIndex + tempMethodTextStart.length + virtualContent.length - 2;
 
     //   createCompletion(
     //     tempProgram,
@@ -88,7 +88,7 @@ export function createVirtualCompletion(
 
     // 1.3.2
     visit(sourceFile, (n, level) => {
-      const targetClassName = "App";
+      const targetClassName = "MyCompoCustomElement";
       const targetClass = n.getText() === targetClassName;
       if (targetClass) {
         sourceFile.getText();

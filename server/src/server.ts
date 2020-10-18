@@ -37,6 +37,7 @@ import { getAureliaComponentMap } from './viewModel/getAureliaComponentMap';
 import { LanguageModes, getLanguageModes, getDocumentRegionAtPosition} from './embeddedLanguages/languageModes';
 import { aureliaLanguageId } from './embeddedLanguages/embeddedSupport';
 import { createVirtualProgram, createVirtualCompletion, getVirtualCompletion } from './virtualCompletion/virtualCompletion';
+
 import * as path from 'path';
 import * as ts from 'typescript';
 import { createDiagram } from './viewModel/createDiagram';
@@ -191,21 +192,27 @@ connection.onCompletion(
 		// 1. From the region get the part, that should be made virtual.
 		const region = getDocumentRegionAtPosition(_textDocumentPosition.position).get(document);
 		const virtualContent = document.getText().slice(region.start, region.end);
-        console.log('TCL: virtualContent', virtualContent)
 
 		const virtualProgram = createVirtualProgram(virtualContent);
 
 		// 2. Get original viewmodel file from view
-		const viewName = path.basename(documentUri)
-
-		const componentMap = aureliaProgram.getComponentMap();
-		console.log('TCL: componentMap', componentMap)
 		const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
-        console.log('TCL: aureliaFiles', aureliaFiles)
-		const viewModelContent = '';
+		const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
+		const viewBaseName = path.parse(documentUri).name;
+		const targetSourceFile = aureliaFiles?.find(aureliaFile => {
+			return scriptExtensions.find(extension => {
+				const toViewModelName = `${viewBaseName}${extension}`;
+				const aureliaFileName = path.basename(aureliaFile.fileName);
+				return aureliaFileName === toViewModelName;
+			});
+		});
+
+		if (!targetSourceFile) {
+			throw new Error(`No source file found for current view: ${documentUri}`);
+		}
 
 		// 3. Create virtual completion
-		createVirtualCompletion(virtualProgram, viewModelContent, virtualContent);
+		createVirtualCompletion(virtualProgram, targetSourceFile.getText(), virtualContent);
 		getVirtualCompletion();
 
 

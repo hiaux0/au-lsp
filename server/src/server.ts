@@ -16,7 +16,8 @@ import {
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
-	CompletionList
+	CompletionList,
+	InsertTextFormat
 } from 'vscode-languageserver';
 
 import {
@@ -36,7 +37,7 @@ import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram
 import { getAureliaComponentMap } from './viewModel/getAureliaComponentMap';
 import { LanguageModes, getLanguageModes, getDocumentRegionAtPosition} from './embeddedLanguages/languageModes';
 import { aureliaLanguageId } from './embeddedLanguages/embeddedSupport';
-import { createVirtualProgram, createVirtualCompletion, getVirtualCompletion } from './virtualCompletion/virtualCompletion';
+import { getVirtualCompletion, createVirtualCompletionSourceFile } from './virtualCompletion/virtualCompletion';
 
 import * as path from 'path';
 import * as ts from 'typescript';
@@ -193,8 +194,6 @@ connection.onCompletion(
 		const region = getDocumentRegionAtPosition(_textDocumentPosition.position).get(document);
 		const virtualContent = document.getText().slice(region.start, region.end);
 
-		const virtualProgram = createVirtualProgram(virtualContent);
-
 		// 2. Get original viewmodel file from view
 		const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
 		const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
@@ -212,43 +211,86 @@ connection.onCompletion(
 		}
 
 		// 3. Create virtual completion
-		createVirtualCompletion(virtualProgram, targetSourceFile.getText(), virtualContent);
-		getVirtualCompletion();
+		const virtualViewModelSourceFile = ts.createSourceFile('virtual.ts', targetSourceFile?.getText(), 99);
+		const customElementClassName = 'MyCompoCustomElement';
+		const {
+			targetVirtualSourcefile,
+			completionIndex
+		} = createVirtualCompletionSourceFile(virtualViewModelSourceFile, virtualContent, customElementClassName);
 
+		// createVirtualCompletion(virtualProgram, targetSourceFile.getText(), virtualContent);
+		const virtualCompletions = getVirtualCompletion(
+			targetVirtualSourcefile,
+			completionIndex
+		);
 
-		const text = document.getText();
-		const offset = document.offsetAt(_textDocumentPosition.position);
-		const triggerCharacter = text.substring(offset - 1, offset);
-
-		switch(triggerCharacter) {
-			case '<': {
-				return [
-					...aureliaProgram.getComponentMap().classDeclarations!,
-				]
-			}
-			case ' ': {
-				// only return compone specific
-				return [
-					...aureliaProgram.getComponentMap().bindables!,
-				]
-			}
+		if (!virtualCompletions) {
+			console.log(`
+				We were trying to find completions for: ${virtualContent},
+				but couldn't find anything in the view model: ${documentUri}
+			`)
+			return [];
 		}
 
-		const mode = languageModes.getModeAtPosition(document!, _textDocumentPosition.position);
-		// console.log("TCL: mode", mode)
-		if (typeof mode === 'string') {
-			console.log('heeeeeeeeeeeeeeee')
-			return [CompletionItem.create('LETS DO IT')]
-		}
+		const result = virtualCompletions.map(tsCompletion => {
+			// const kindMap = {
 
-		// The pass parameter contains the position of the text document in
-		// which code complete got requested. For the example we ignore this
-		// info and always provide the same completion items.
-		return [
-			...aureliaProgram.getComponentMap().classDeclarations!,
-			...aureliaProgram.getComponentMap().classMembers!,
-			...aureliaProgram.getComponentMap().bindables!,
-		]
+			// }
+			const completionItem: CompletionItem = {
+				detail: tsCompletion.kind,
+				insertTextFormat: InsertTextFormat.Snippet,
+				label: tsCompletion.name,
+			}
+			/**
+			    documentation: {
+					kind: MarkupKind.Markdown,
+					value: documentation,
+				},
+				detail: `${elementName}`,
+				insertText: `${elementName}$2>$1</${elementName}>$0`,
+				insertTextFormat: InsertTextFormat.Snippet,
+				kind: CompletionItemKind.Class,
+				label: `${elementName} (Au Class Declaration)`,
+			 */
+			return completionItem;
+		})
+
+		return result
+
+
+		// const text = document.getText();
+		// const offset = document.offsetAt(_textDocumentPosition.position);
+		// const triggerCharacter = text.substring(offset - 1, offset);
+
+		// switch(triggerCharacter) {
+		// 	case '<': {
+		// 		return [
+		// 			...aureliaProgram.getComponentMap().classDeclarations!,
+		// 		]
+		// 	}
+		// 	case ' ': {
+		// 		// only return compone specific
+		// 		return [
+		// 			...aureliaProgram.getComponentMap().bindables!,
+		// 		]
+		// 	}
+		// }
+
+		// const mode = languageModes.getModeAtPosition(document!, _textDocumentPosition.position);
+		// // console.log("TCL: mode", mode)
+		// if (typeof mode === 'string') {
+		// 	console.log('heeeeeeeeeeeeeeee')
+		// 	return [CompletionItem.create('LETS DO IT')]
+		// }
+
+		// // The pass parameter contains the position of the text document in
+		// // which code complete got requested. For the example we ignore this
+		// // info and always provide the same completion items.
+		// return [
+		// 	...aureliaProgram.getComponentMap().classDeclarations!,
+		// 	...aureliaProgram.getComponentMap().classMembers!,
+		// 	...aureliaProgram.getComponentMap().bindables!,
+		// ]
 	}
 );
 

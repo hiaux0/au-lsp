@@ -19,90 +19,128 @@ import * as ts from "typescript";
 const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
 
 /**
- * Create "virtual" program.
- * Act like normal program, but takes a "virtual" file.
+ * With a virtual file, create a completions from a virtual progrm.
  *
- * Usecase: Take part of html file, make it virtual, and thus allow typescript completion
+ * 1. In the virtual view model source file
+ * 2. Split up
+ *   2.1 Need to visit each node
+ *   2.2 (or are we regexing it?)
+ *
+ * @param virtualViewModelSourceFile
+ * @param virtualContent
+ * @param customElementClassName Name of the class associated to your view
  */
-export function createVirtualProgram(virtualContent: string) {
-  const virtualProgram = createProgram([
-    { fileName: VIRTUAL_SOURCE_FILENAME, content: virtualContent },
-  ]);
-
-  return virtualProgram;
-}
-
-/**
- * With a virtual program, create a completions from a virtual file.
- */
-export function createVirtualCompletion(
-  virtualProgram: ts.Program,
-  viewModelContent: string,
-  virtualContent: string
+export function createVirtualCompletionSourceFile(
+  virtualViewModelSourceFile: ts.SourceFile,
+  virtualContent: string,
+  customElementClassName: string
 ) {
-  virtualProgram.getSourceFiles().forEach((sourceFile) => {
-    if (sourceFile.fileName !== VIRTUAL_SOURCE_FILENAME) return;
+  // Match [...] export class MyCustomElement { [...]
+  const virtualViewModelContent = virtualViewModelSourceFile.getText();
+  const classDeclaration = "class ";
+  const classNameToOpeningBracketRegex = new RegExp(
+    `${classDeclaration}${customElementClassName}(.*?{)`
+  );
+  const classNameAndOpeningBracketMatch = classNameToOpeningBracketRegex.exec(
+    virtualViewModelContent
+  );
+  if (!classNameAndOpeningBracketMatch) {
+    throw new Error(
+      `No match found in File: ${virtualViewModelSourceFile.fileName} with target class name: ${customElementClassName}`
+    );
+  }
 
-    // modify text
-    // 1.3
-    function createTempCompletion(
-      classIdentifierEndIndex: number,
-      targetClassName: string
-    ) {
-      const originalText = sourceFile.getText();
-      const classNameToOpeningBracketRegex = new RegExp(
-        `${targetClassName}(.*?{)`
-      );
-      const regexResult = classNameToOpeningBracketRegex.exec(
-        sourceFile.getText()
-      );
-      if (!regexResult)
-        throw new Error('Nothing matched the "class name to bracket regex"');
+  /** class Foo >{<-- index */
+  const classNameStartIndex = classNameAndOpeningBracketMatch?.index;
+  const toOpeningBracketLength = classNameAndOpeningBracketMatch[1]?.length;
+  const classOpeningBracketIndex =
+    classDeclaration.length +
+    customElementClassName.length +
+    classNameStartIndex +
+    toOpeningBracketLength;
 
-      const toOpeningBracketLength = regexResult[1]?.length;
-      const toCut = classIdentifierEndIndex + toOpeningBracketLength;
-      const starter = originalText.slice(0, toCut);
-      const ender = originalText.slice(toCut);
+  /** Split on class MyClass >{< ..otherContent */
+  const starter = virtualViewModelContent.slice(0, classOpeningBracketIndex);
+  const ender = virtualViewModelContent.slice(classOpeningBracketIndex);
 
-      const tempMethodTextStart = `temp() {this.`;
-      const tempMethodTextEnd = "};\n  ";
-      const tempMethodText = tempMethodTextStart + virtualContent + tempMethodTextEnd;
+  /**  Create temp content */
+  const tempMethodTextStart = `temp() {this.`;
+  const tempMethodTextEnd = "};\n  ";
+  const tempMethodText =
+    tempMethodTextStart + virtualContent + tempMethodTextEnd;
+  const tempWithCompletion = starter + tempMethodText + ender;
 
-      // 1.3.1
-      const tempWithCompletion = starter + tempMethodText + ender;
-      console.log('TCL: tempWithCompletion', tempWithCompletion)
-      const tempProgram = createProgram([
-        { fileName: "temp.ts", content: tempWithCompletion },
-      ]);
-      const tempTargetSourcefile = tempProgram.getSourceFiles()[0];
+  // Create virtual/temp program and sourcefile
+  // const tempProgram = createProgram([
+  //   { fileName: "temp.ts", content: tempWithCompletion },
+  // ]);
+  // const targetVirtualSourcefile = tempProgram.getSourceFiles()[0];
+  const targetVirtualSourcefile = ts.createSourceFile(
+    VIRTUAL_SOURCE_FILENAME,
+    tempWithCompletion,
+    99
+  );
 
-      const completionIndex =
-        classIdentifierEndIndex + tempMethodTextStart.length + virtualContent.length - 2;
+  const completionIndex =
+    classOpeningBracketIndex +
+    tempMethodTextStart.length +
+    virtualContent.length;
 
-    //   createCompletion(
-    //     tempProgram,
-    //     tempTargetSourcefile,
-    //     completionIndex
-    //   ); /*?*/
-    }
+  return {
+    targetVirtualSourcefile,
+    completionIndex,
+  };
 
-    // 1.3.2
-    visit(sourceFile, (n, level) => {
-      const targetClassName = "MyCompoCustomElement";
-      const targetClass = n.getText() === targetClassName;
-      if (targetClass) {
-        sourceFile.getText();
-        const classEndIndex = n.getEnd();
-        createTempCompletion(classEndIndex, targetClassName);
-      }
-    });
-  });
+  // const result = targetVirtualSourcefile.getText().slice(0, completionIndex);
 }
 
 /**
  * Returns the virtual competion. (to be used as real completions)
  */
-export function getVirtualCompletion() {}
+export function getVirtualCompletion(
+  sourceFile: ts.SourceFile,
+  positionOfAutocomplete: number
+) {
+  let compilerSettings = {} as ts.CompilerOptions;
+  compilerSettings = {
+    module: ts.ModuleKind.CommonJS,
+    target: ts.ScriptTarget.ESNext,
+    outDir: "dist",
+    emitDecoratorMetadata: true,
+    experimentalDecorators: true,
+    lib: ["es2017.object", "es7", "dom"],
+    sourceMap: true,
+    rootDir: ".",
+  };
+
+  const host: ts.LanguageServiceHost = {
+    getCompilationSettings: () => compilerSettings,
+    getScriptFileNames: () => [sourceFile.fileName],
+    // program.getSourceFiles().map((file) => file.fileName),
+    // getScriptFileNames: () => program.getSourceFiles().map(file => file.fileName),
+    getScriptVersion: () => "0",
+    getScriptSnapshot: () => ts.ScriptSnapshot.fromString(sourceFile.getText()),
+    getCurrentDirectory: () => process.cwd(),
+    getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
+    fileExists: ts.sys.fileExists,
+    readFile: ts.sys.readFile,
+    readDirectory: ts.sys.readDirectory,
+  };
+  const cls = ts.createLanguageService(host, ts.createDocumentRegistry());
+  cls
+    .getProgram()
+    ?.getSourceFiles()
+    .map((sf) => sf.fileName);
+
+  const quickInfo = cls?.getCompletionsAtPosition(
+    sourceFile.fileName,
+    positionOfAutocomplete,
+    undefined
+  )?.entries;
+  // .filter(entry => !filterOutKind.find(filteredKind => entry.kind === filteredKind));
+  return quickInfo;
+  // return map(quickInfo, "name");
+}
 
 export function createProgram(
   files: {

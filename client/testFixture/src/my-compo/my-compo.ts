@@ -1,7 +1,13 @@
 import { bindable } from "aurelia-framework";
 
+interface More {
+  alright: number;
+}
+
 interface ICompoInter {
   stringInter: string;
+  complex?: number;
+  mooore?: More;
 }
 
 class CustomError extends Error {
@@ -23,12 +29,22 @@ export class MyCompoCustomElement {
     stringInter: 'stringInter',
   };
 
+  constructor() {
+    this.oneOtherMethod(3322, {stringInter: 'hi'});
+  }
+
   private stringArray: string[] = ['hello', 'world'];
+
+  public what = 'helo'
 
   /**
    * Here doc it
    */
-  private oneOtherMethod() {
+  private oneOtherMethod(someVar: number, moreToCome: ICompoInter): string[] {
+    if (someVar && moreToCome) {
+      return this.stringArray;
+    }
 
+    return [''];
   }
 }

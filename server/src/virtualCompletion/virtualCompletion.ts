@@ -4,17 +4,23 @@
  * From the SO question
  * https://stackoverflow.com/questions/50574469/can-i-change-the-sourcefile-of-a-node-using-the-typescript-compiler-api
  */
+
 /**
-- [ ] 1. Create a program
-  - [ ] 1.1 current viewModel of view (as sourcefile)
-  - [ ] 1.2 in the program, find the target viewModel sourcefile
-  - [ ] 1.3 createTempCompletion
-    - [ ] 1.3.1 - add "phantom" method, that handles the autocompletion for us
-    - [ ] 1.3.2 - find correct place in code to do the spliiting!
-  - [ ] 1.4 createCompletion - use createLanguageService, that handles the actual completion getCompletionsAtPosition
+ * 1. Get region
+ * 2. Get aurelia view model file
+ * 3. split content to instert temporary method (used for actual completion, thus "virtual")
+ * 4. From 3. create virtualSourceFile
+ * 5. Create language service from 4.
+ * 6. Get completions
  */
 
 import * as ts from "typescript";
+import * as path from "path";
+import { CompletionItem, InsertTextFormat, TextDocument } from 'vscode-css-languageservice';
+import { TextDocumentPositionParams } from 'vscode-languageserver';
+import { EmbeddedRegion } from '../embeddedLanguages/embeddedSupport';
+import { getDocumentRegionAtPosition } from '../embeddedLanguages/languageModes';
+import { AureliaProgram } from '../viewModel/AureliaProgram';
 
 const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
 
@@ -35,7 +41,7 @@ export function createVirtualCompletionSourceFile(
   virtualContent: string,
   customElementClassName: string
 ) {
-  // Match [...] export class MyCustomElement { [...]
+  /** Match [...] export class MyCustomElement { [...] */
   const virtualViewModelContent = virtualViewModelSourceFile.getText();
   const classDeclaration = "class ";
   const classNameToOpeningBracketRegex = new RegExp(
@@ -70,11 +76,6 @@ export function createVirtualCompletionSourceFile(
     tempMethodTextStart + virtualContent + tempMethodTextEnd;
   const tempWithCompletion = starter + tempMethodText + ender;
 
-  // Create virtual/temp program and sourcefile
-  // const tempProgram = createProgram([
-  //   { fileName: "temp.ts", content: tempWithCompletion },
-  // ]);
-  // const targetVirtualSourcefile = tempProgram.getSourceFiles()[0];
   const targetVirtualSourcefile = ts.createSourceFile(
     VIRTUAL_SOURCE_FILENAME,
     tempWithCompletion,
@@ -90,8 +91,6 @@ export function createVirtualCompletionSourceFile(
     targetVirtualSourcefile,
     completionIndex,
   };
-
-  // const result = targetVirtualSourcefile.getText().slice(0, completionIndex);
 }
 
 /**
@@ -116,8 +115,6 @@ export function getVirtualCompletion(
   const host: ts.LanguageServiceHost = {
     getCompilationSettings: () => compilerSettings,
     getScriptFileNames: () => [sourceFile.fileName],
-    // program.getSourceFiles().map((file) => file.fileName),
-    // getScriptFileNames: () => program.getSourceFiles().map(file => file.fileName),
     getScriptVersion: () => "0",
     getScriptSnapshot: () => ts.ScriptSnapshot.fromString(sourceFile.getText()),
     getCurrentDirectory: () => process.cwd(),
@@ -127,19 +124,17 @@ export function getVirtualCompletion(
     readDirectory: ts.sys.readDirectory,
   };
   const cls = ts.createLanguageService(host, ts.createDocumentRegistry());
-  cls
-    .getProgram()
-    ?.getSourceFiles()
-    .map((sf) => sf.fileName);
 
-  const quickInfo = cls?.getCompletionsAtPosition(
+  if (!cls) throw new Error('No cls')
+
+  const completion = cls.getCompletionsAtPosition(
     sourceFile.fileName,
     positionOfAutocomplete,
     undefined
   )?.entries;
-  // .filter(entry => !filterOutKind.find(filteredKind => entry.kind === filteredKind));
-  return quickInfo;
-  // return map(quickInfo, "name");
+
+  return completion;
+  // return map(completion, "name");
 }
 
 export function createProgram(
@@ -207,4 +202,74 @@ function visit(
 
 function getKindName(kind: ts.SyntaxKind) {
   return (ts as any).SyntaxKind[kind];
+}
+
+export function getVirtualViewModelCompletion(textDocumentPosition: TextDocumentPositionParams, document: TextDocument, aureliaProgram: AureliaProgram) {
+  // 1. From the region get the part, that should be made virtual.
+  const documentUri = textDocumentPosition.textDocument.uri;
+  const region = getDocumentRegionAtPosition(textDocumentPosition.position).get(document);
+
+  const virtualContent = document.getText().slice(region.start, region.end);
+
+  // 2. Get original viewmodel file from view
+  const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
+  const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
+  const viewBaseName = path.parse(documentUri).name;
+  const targetSourceFile = aureliaFiles?.find(aureliaFile => {
+    return scriptExtensions.find(extension => {
+      const toViewModelName = `${viewBaseName}${extension}`;
+      const aureliaFileName = path.basename(aureliaFile.fileName);
+      return aureliaFileName === toViewModelName;
+    });
+  });
+
+  if (!targetSourceFile) {
+    throw new Error(`No source file found for current view: ${documentUri}`);
+  }
+
+  // 3. Create virtual completion
+  const virtualViewModelSourceFile = ts.createSourceFile('virtual.ts', targetSourceFile?.getText(), 99);
+  const customElementClassName = 'MyCompoCustomElement';
+  const {
+    targetVirtualSourcefile,
+    completionIndex
+  } = createVirtualCompletionSourceFile(virtualViewModelSourceFile, virtualContent, customElementClassName);
+
+  const virtualCompletions = getVirtualCompletion(
+    targetVirtualSourcefile,
+    completionIndex
+  );
+
+  if (!virtualCompletions) {
+    console.log(`
+      We were trying to find completions for: ${virtualContent},
+      but couldn't find anything in the view model: ${documentUri}
+    `)
+    return [];
+  }
+
+  const result = virtualCompletions.map(tsCompletion => {
+    // const kindMap = {
+
+    // }
+    const completionItem: CompletionItem = {
+      detail: tsCompletion.kind,
+      insertTextFormat: InsertTextFormat.Snippet,
+      label: tsCompletion.name,
+    }
+    /**
+        documentation: {
+        kind: MarkupKind.Markdown,
+        value: documentation,
+      },
+      detail: `${elementName}`,
+      insertText: `${elementName}$2>$1</${elementName}>$0`,
+      insertTextFormat: InsertTextFormat.Snippet,
+      kind: CompletionItemKind.Class,
+      label: `${elementName} (Au Class Declaration)`,
+     */
+    return completionItem;
+  })
+
+  return result;
 }

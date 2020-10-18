@@ -35,9 +35,9 @@ import { TextDocumentChange } from './textDocumentChange/TextDocumentChange';
 import { aureliaProgram } from './viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram';
 import { getAureliaComponentMap } from './viewModel/getAureliaComponentMap';
-import { LanguageModes, getLanguageModes, getDocumentRegionAtPosition} from './embeddedLanguages/languageModes';
+import { LanguageModes, getLanguageModes } from './embeddedLanguages/languageModes';
 import { aureliaLanguageId } from './embeddedLanguages/embeddedSupport';
-import { getVirtualCompletion, createVirtualCompletionSourceFile } from './virtualCompletion/virtualCompletion';
+import { getVirtualCompletion, createVirtualCompletionSourceFile, getVirtualViewModelCompletion } from './virtualCompletion/virtualCompletion';
 
 import * as path from 'path';
 import * as ts from 'typescript';
@@ -190,72 +190,8 @@ connection.onCompletion(
 		// Embedded Language
 
 		// Virtual file
-		// 1. From the region get the part, that should be made virtual.
-		const region = getDocumentRegionAtPosition(_textDocumentPosition.position).get(document);
-		const virtualContent = document.getText().slice(region.start, region.end);
-
-		// 2. Get original viewmodel file from view
-		const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
-		const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
-		const viewBaseName = path.parse(documentUri).name;
-		const targetSourceFile = aureliaFiles?.find(aureliaFile => {
-			return scriptExtensions.find(extension => {
-				const toViewModelName = `${viewBaseName}${extension}`;
-				const aureliaFileName = path.basename(aureliaFile.fileName);
-				return aureliaFileName === toViewModelName;
-			});
-		});
-
-		if (!targetSourceFile) {
-			throw new Error(`No source file found for current view: ${documentUri}`);
-		}
-
-		// 3. Create virtual completion
-		const virtualViewModelSourceFile = ts.createSourceFile('virtual.ts', targetSourceFile?.getText(), 99);
-		const customElementClassName = 'MyCompoCustomElement';
-		const {
-			targetVirtualSourcefile,
-			completionIndex
-		} = createVirtualCompletionSourceFile(virtualViewModelSourceFile, virtualContent, customElementClassName);
-
-		// createVirtualCompletion(virtualProgram, targetSourceFile.getText(), virtualContent);
-		const virtualCompletions = getVirtualCompletion(
-			targetVirtualSourcefile,
-			completionIndex
-		);
-
-		if (!virtualCompletions) {
-			console.log(`
-				We were trying to find completions for: ${virtualContent},
-				but couldn't find anything in the view model: ${documentUri}
-			`)
-			return [];
-		}
-
-		const result = virtualCompletions.map(tsCompletion => {
-			// const kindMap = {
-
-			// }
-			const completionItem: CompletionItem = {
-				detail: tsCompletion.kind,
-				insertTextFormat: InsertTextFormat.Snippet,
-				label: tsCompletion.name,
-			}
-			/**
-			    documentation: {
-					kind: MarkupKind.Markdown,
-					value: documentation,
-				},
-				detail: `${elementName}`,
-				insertText: `${elementName}$2>$1</${elementName}>$0`,
-				insertTextFormat: InsertTextFormat.Snippet,
-				kind: CompletionItemKind.Class,
-				label: `${elementName} (Au Class Declaration)`,
-			 */
-			return completionItem;
-		})
-
-		return result
+		const virtualCompletions = getVirtualViewModelCompletion(_textDocumentPosition, document, aureliaProgram);
+		return virtualCompletions;
 
 
 		// const text = document.getText();

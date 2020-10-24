@@ -5,7 +5,17 @@
 
 import * as path from "path";
 import * as vscode from "vscode";
-import { workspace, commands, ExtensionContext, OutputChannel } from "vscode";
+import {
+  workspace,
+  commands,
+  ExtensionContext,
+  OutputChannel,
+  CompletionItemProvider,
+  CancellationToken,
+  CompletionList,
+  CompletionContext,
+  CompletionItem,
+} from "vscode";
 import * as WebSocket from "ws";
 
 import {
@@ -18,6 +28,24 @@ import { registerDiagramPreview } from "./webview/diagramPreview";
 import { RelatedFiles } from "./feature/relatedFiles";
 
 let client: LanguageClient;
+
+class CompletionItemProviderInView implements CompletionItemProvider {
+  public constructor(private readonly client: LanguageClient) {}
+
+  public async provideCompletionItems(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token: CancellationToken,
+    context: CompletionContext
+  ): Promise<CompletionItem[] | CompletionList> {
+    const text = document.getText();
+    const offset = document.offsetAt(position);
+    const triggerCharacter = text.substring(offset - 1, offset);
+    return this.client.sendRequest<any>(
+      "aurelia-get-component-class-declarations"
+    );
+  }
+}
 
 export function activate(context: ExtensionContext) {
   const socketPort = workspace
@@ -108,6 +136,14 @@ export function activate(context: ExtensionContext) {
   );
 
   context.subscriptions.push(new RelatedFiles());
+
+  /** TODO: This is only needed for test files, in tests, the server.ts completion listener does not trigger as to my current knowledge */
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      { scheme: "file", language: "html" },
+      new CompletionItemProviderInView(client)
+    )
+  );
 
   registerDiagramPreview(context, client);
 

@@ -43,19 +43,21 @@ suite.only("Completion", () => {
   const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
   const aureliaProgram = getAureliaProgramForTesting();
 
-  const classDeclarationTestItems = getTestItems(
-    aureliaProgram,
-    "classDeclarations"
+  const classDeclarationTestItems = map(
+    getTestItems(aureliaProgram, "classDeclarations"),
+    "label"
   );
   // const classMemberTestItems = getTestItems(aureliaProgram, "classMembers");
   const classMemberTestItems = ["counter", "message", "thisIsMe"];
   const bindablesTestItems = ["increaseCounter"];
 
-  // test("Complete class declaration", async () => {
-  //   await testCompletion(docUri, new vscode.Position(1, 23), {
-  //     items: classDeclarationTestItems,
-  //   });
-  // });
+  test("Complete class declaration", async () => {
+    await testCompletion(
+      docUri,
+      new vscode.Position(1, 0),
+      classDeclarationTestItems
+    );
+  });
 
   test("Should complete class members", async () => {
     await testCompletion(
@@ -77,7 +79,8 @@ suite.only("Completion", () => {
 async function testCompletion(
   docUri: vscode.Uri,
   position: vscode.Position,
-  expectedCompletionList: string[]
+  expectedCompletionList: string[],
+  triggerCharacter?: string
 ) {
   await activate(docUri);
 
@@ -85,7 +88,8 @@ async function testCompletion(
   const actualCompletionList = (await vscode.commands.executeCommand(
     "vscode.executeCompletionItemProvider",
     docUri,
-    position
+    position,
+    triggerCharacter
   )) as vscode.CompletionList;
 
   // assert.ok(actualCompletionList.items.length >= 2);

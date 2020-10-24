@@ -50,7 +50,7 @@ export async function createAureliaWatchProgram(aureliaProgram: AureliaProgram, 
 		};
 		// 2.2 We also overwrite afterProgramCreate to avoid actually running a compile towards the file system
 		host.afterProgramCreate = program => {
-			aureliaProgram.watcherProgram = program;
+			aureliaProgram.setProgram(program);
 		};
 
 		// 2.3 Create initial watch program with our specially crafted host for aurelia component handling

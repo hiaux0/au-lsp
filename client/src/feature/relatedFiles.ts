@@ -1,12 +1,25 @@
-import { commands, Disposable, TextEditor, TextEditorEdit, Uri, workspace } from 'vscode';
-import * as path from 'path';
-import * as fs from 'fs';
+import {
+  commands,
+  Disposable,
+  TextEditor,
+  TextEditorEdit,
+  Uri,
+  workspace,
+} from "vscode";
+import * as path from "path";
+import * as fs from "fs";
 
 export class RelatedFiles implements Disposable {
   private readonly disposables: Disposable[] = [];
 
   constructor() {
-    this.disposables.push(commands.registerTextEditorCommand('extension.auOpenRelated', this.onOpenRelated, this));
+    this.disposables.push(
+      commands.registerTextEditorCommand(
+        "extension.auOpenRelated",
+        this.onOpenRelated,
+        this
+      )
+    );
 
     const fileExtensionsConfig = this.getRelatedFilePathExtensions();
     const {
@@ -16,10 +29,34 @@ export class RelatedFiles implements Disposable {
       viewExtensions,
     } = fileExtensionsConfig;
 
-    this.disposables.push(commands.registerTextEditorCommand('extension.auOpenRelatedScript', this.openRelatedFactory(scriptExtensions), this));
-    this.disposables.push(commands.registerTextEditorCommand('extension.auOpenRelatedStyle', this.openRelatedFactory(styleExtensions), this));
-    this.disposables.push(commands.registerTextEditorCommand('extension.auOpenRelatedUnit', this.openRelatedFactory(unitExtensions), this));
-    this.disposables.push(commands.registerTextEditorCommand('extension.auOpenRelatedView', this.openRelatedFactory(viewExtensions), this));
+    this.disposables.push(
+      commands.registerTextEditorCommand(
+        "extension.auOpenRelatedScript",
+        this.openRelatedFactory(scriptExtensions),
+        this
+      )
+    );
+    this.disposables.push(
+      commands.registerTextEditorCommand(
+        "extension.auOpenRelatedStyle",
+        this.openRelatedFactory(styleExtensions),
+        this
+      )
+    );
+    this.disposables.push(
+      commands.registerTextEditorCommand(
+        "extension.auOpenRelatedUnit",
+        this.openRelatedFactory(unitExtensions),
+        this
+      )
+    );
+    this.disposables.push(
+      commands.registerTextEditorCommand(
+        "extension.auOpenRelatedView",
+        this.openRelatedFactory(viewExtensions),
+        this
+      )
+    );
   }
 
   public dispose() {
@@ -51,10 +88,7 @@ export class RelatedFiles implements Disposable {
     const fileName = editor.document.fileName;
     const extension = path.extname(fileName).toLowerCase();
     const fileExtensionsConfig = this.getRelatedFilePathExtensions();
-    const {
-      viewExtensions,
-      scriptExtensions,
-    } = fileExtensionsConfig;
+    const { viewExtensions, scriptExtensions } = fileExtensionsConfig;
 
     if (viewExtensions.includes(extension)) {
       relatedFile = this.getRelatedFilePath(fileName, scriptExtensions);
@@ -63,7 +97,11 @@ export class RelatedFiles implements Disposable {
     }
 
     if (relatedFile) {
-      commands.executeCommand('vscode.open', Uri.file(relatedFile), editor.viewColumn);
+      commands.executeCommand(
+        "vscode.open",
+        Uri.file(relatedFile),
+        editor.viewColumn
+      );
     }
   }
 
@@ -83,11 +121,15 @@ export class RelatedFiles implements Disposable {
        * '.spec' is not recognized as an file extension.
        * Thus, `replace`, so we are able to switch from, eg. 'unit' to 'style'.
        * */
-      const fileName = editor.document.fileName.replace('.spec', '');
+      const fileName = editor.document.fileName.replace(".spec", "");
       const extension = path.extname(fileName).toLowerCase();
       const relatedFile = this.getRelatedFilePath(fileName, switchToExtensions);
       if (relatedFile) {
-        commands.executeCommand('vscode.open', Uri.file(relatedFile), editor.viewColumn);
+        commands.executeCommand(
+          "vscode.open",
+          Uri.file(relatedFile),
+          editor.viewColumn
+        );
       }
     };
   }
@@ -99,9 +141,11 @@ export class RelatedFiles implements Disposable {
    */
   private getRelatedFilePath(fullPath: string, relatedExts: string[]): string {
     let targetFile: string;
-    relatedExts.forEach(ext => {
-      const fileName = `${path.basename(fullPath, path.extname(fullPath))}${ext}`
-        .replace('.spec.spec', '.spec'); // Quick fix because we are appending eg. '.spec.ts' to 'file.spec'
+    relatedExts.forEach((ext) => {
+      const fileName = `${path.basename(
+        fullPath,
+        path.extname(fullPath)
+      )}${ext}`.replace(".spec.spec", ".spec"); // Quick fix because we are appending eg. '.spec.ts' to 'file.spec'
       fullPath = path.join(path.dirname(fullPath), fileName);
       if (!fs.existsSync(fullPath)) return;
       targetFile = fullPath;

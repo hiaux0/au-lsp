@@ -1,13 +1,13 @@
-import { bindable } from 'aurelia-framework';
+import { bindable } from "aurelia-framework";
 
 export class CompoUser {
-    @bindable thisIsMe: string = 'hello';
+  @bindable thisIsMe: string = "hello";
 
-    message: string = 'compo user'
+  message: string = "compo user";
 
-    counter: number = 0;
+  counter: number = 0;
 
-    increaseCounter(): number {
-        return 1;
-    }
+  increaseCounter(): number {
+    return 1;
+  }
 }

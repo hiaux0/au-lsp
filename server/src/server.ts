@@ -102,7 +102,8 @@ connection.onInitialize(async (params: InitializeParams) => {
 			completionProvider: {
 				resolveProvider: false,
 				triggerCharacters: [' ', '.', '[', '"', '\'', '{', '<'],
-			}
+			},
+			definitionProvider: true 
 		}
 	};
 	if (hasWorkspaceFolderCapability) {

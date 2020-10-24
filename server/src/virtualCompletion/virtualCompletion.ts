@@ -137,14 +137,12 @@ export function getVirtualCompletion(
     throw new Error('No completions found')
   }
 
-  const virtualQuickInfo = cls.getQuickInfoAtPosition(sourceFile.fileName, positionOfAutocomplete);
-
   const virtualCompletionEntryDetails = virtualCompletions.map(completion=> {
     return cls.getCompletionEntryDetails(sourceFile.fileName, positionOfAutocomplete, completion.name, undefined, undefined, undefined) /*?*/
   });
 
 
-  return { virtualCompletions, virtualQuickInfo, virtualCompletionEntryDetails };
+  return { virtualCompletions, virtualCompletionEntryDetails };
   // return map(virtualCompletions, "name");
 }
 
@@ -248,7 +246,6 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
 
   const {
     virtualCompletions,
-    virtualQuickInfo,
     virtualCompletionEntryDetails,
   }= getVirtualCompletion(
     targetVirtualSourcefile,
@@ -267,13 +264,24 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
     return [];
   }
 
-  const documentation = virtualCompletionEntryDetails.map(
-    (entryDetail) => {
-      return entryDetail?.displayParts?.map((part) => part.text).join('') ||
-      "No documenation found."
+  interface EntryDetailsMap {
+    [key: string]: {
+      displayParts: string | undefined;
+      documentation: string | undefined;
     }
-  )
+  }
+  const documentationMap:EntryDetailsMap = {};
 
+  virtualCompletionEntryDetails.reduce(
+    (acc, entryDetail) => {
+      acc[entryDetail?.name!] = {
+        displayParts: entryDetail?.displayParts?.map((part) => part.text).join(''),
+        documentation: entryDetail?.documentation?.map((doc) => doc.text).join('') ,
+      } 
+      return acc;
+     }, documentationMap
+  )
+  
   const result = virtualCompletions.map(tsCompletion => {
     // const kindMap = {
 
@@ -281,9 +289,9 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
     const completionItem: CompletionItem = {
       documentation: {
         kind: MarkupKind.Markdown,
-        value: documentation.join(''),
+        value: documentationMap[tsCompletion.name].documentation || '',
       },
-      detail: tsCompletion.kind,
+      detail:documentationMap[tsCompletion.name].displayParts || '',
       insertTextFormat: InsertTextFormat.Snippet,
       label: tsCompletion.name,
     }

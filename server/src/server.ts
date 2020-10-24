@@ -35,7 +35,7 @@ import {
 import { TextDocumentChange } from "./textDocumentChange/TextDocumentChange";
 import { aureliaProgram } from "./viewModel/AureliaProgram";
 import { createAureliaWatchProgram } from "./viewModel/createAureliaWatchProgram";
-// import { getAureliaComponentMap } from './viewModel/getAureliaComponentMap';
+import { getAureliaComponentMap } from "./viewModel/getAureliaComponentMap";
 import { getAureliaComponentList } from "./viewModel/getAureliaComponentList";
 import {
   LanguageModes,
@@ -152,7 +152,7 @@ connection.onInitialized(async () => {
     );
 
     await createAureliaWatchProgram(aureliaProgram);
-    // getAureliaComponentMap(aureliaProgram);
+    getAureliaComponentMap(aureliaProgram);
     const componentList = getAureliaComponentList(aureliaProgram);
     if (componentList) {
       aureliaProgram.setComponentList(componentList);
@@ -202,7 +202,7 @@ documents.onDidChangeContent(async (change) => {
   console.log(
     "------------------------------------------------------------------------------------------"
   );
-  // getAureliaComponentMap(aureliaProgram);
+  getAureliaComponentMap(aureliaProgram);
   const componentList = getAureliaComponentList(aureliaProgram);
   if (componentList) {
     aureliaProgram.setComponentList(componentList);
@@ -237,25 +237,25 @@ connection.onCompletion(
       document,
       aureliaProgram
     );
-    return virtualCompletions;
 
-    // const text = document.getText();
-    // const offset = document.offsetAt(_textDocumentPosition.position);
-    // const triggerCharacter = text.substring(offset - 1, offset);
+    if (virtualCompletions.length > 0) {
+      return virtualCompletions;
+    }
 
-    // switch(triggerCharacter) {
-    // 	case '<': {
-    // 		return [
-    // 			...aureliaProgram.getComponentMap().classDeclarations!,
-    // 		]
-    // 	}
-    // 	case ' ': {
-    // 		// only return compone specific
-    // 		return [
-    // 			...aureliaProgram.getComponentMap().bindables!,
-    // 		]
-    // 	}
-    // }
+    const text = document.getText();
+    const offset = document.offsetAt(_textDocumentPosition.position);
+    const triggerCharacter = text.substring(offset - 1, offset);
+
+    switch (triggerCharacter) {
+      case "<": {
+        return [...aureliaProgram.getComponentMap().classDeclarations!];
+      }
+      case " ": {
+        return [...aureliaProgram.getComponentMap().bindables!];
+      }
+    }
+
+    return [];
 
     // const mode = languageModes.getModeAtPosition(document!, _textDocumentPosition.position);
     // // console.log("TCL: mode", mode)
@@ -359,6 +359,10 @@ connection.onRequest("aurelia-class-diagram", async (filePath: string) => {
 
 connection.onRequest("aurelia-get-component-list", () => {
   return aureliaProgram.getComponentList();
+});
+
+connection.onRequest("aurelia-get-component-class-declarations", () => {
+  return aureliaProgram.getComponentMap().classDeclarations;
 });
 
 // Make the text document manager listen on the connection

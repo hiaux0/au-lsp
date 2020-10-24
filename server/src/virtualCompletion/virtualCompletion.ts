@@ -25,6 +25,10 @@ import { AureliaProgram } from '../viewModel/AureliaProgram';
 const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
 const VIRTUAL_METHOD_NAME = '__vir'
 
+const PARAMETER_NAME = 'parameterName';
+const PROPERTY_NAME = 'propertyName';
+const METHOD_NAME = 'methodName';
+
 /**
  * With a virtual file, create a completions from a virtual progrm.
  *
@@ -275,10 +279,10 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
   }
   const entryDetailsMap:EntryDetailsMap = {};
 
-    const kindMap = {
-      [ts.ScriptElementKind['memberVariableElement'] as ts.ScriptElementKind]: CompletionItemKind.Field,
-      [ts.ScriptElementKind['memberFunctionElement'] as ts.ScriptElementKind]: CompletionItemKind.Method
-    }
+  const kindMap = {
+    [ts.ScriptElementKind['memberVariableElement'] as ts.ScriptElementKind]: CompletionItemKind.Field,
+    [ts.ScriptElementKind['memberFunctionElement'] as ts.ScriptElementKind]: CompletionItemKind.Method
+  }
 
   virtualCompletionEntryDetails.reduce(
     (acc, entryDetail) => {
@@ -289,7 +293,7 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
         displayParts: entryDetail.displayParts?.map((part) => part.text).join(''),
         documentation: entryDetail.documentation?.map((doc) => doc.text).join('') ,
         kind: kindMap[entryDetail.kind],
-        methodArguments: entryDetail.displayParts.filter(part => part.kind === 'parameterName').map(part => part.text),
+        methodArguments: entryDetail.displayParts.filter(part => part.kind === PARAMETER_NAME).map(part => part.text),
       }
       return acc;
      }, entryDetailsMap

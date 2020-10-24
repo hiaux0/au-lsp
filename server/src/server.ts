@@ -16,7 +16,9 @@ import {
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
-	CompletionList
+	CompletionList,
+	InsertTextFormat,
+	Definition
 } from 'vscode-languageserver';
 
 import {
@@ -36,6 +38,8 @@ import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram
 import { getAureliaComponentMap } from './viewModel/getAureliaComponentMap';
 import { LanguageModes, getLanguageModes } from './embeddedLanguages/languageModes';
 import { aureliaLanguageId } from './embeddedLanguages/embeddedSupport';
+import { getVirtualCompletion, createVirtualCompletionSourceFile, getVirtualViewModelCompletion } from './virtualCompletion/virtualCompletion';
+
 import * as path from 'path';
 import * as ts from 'typescript';
 import { createDiagram } from './viewModel/createDiagram';
@@ -99,7 +103,8 @@ connection.onInitialize(async (params: InitializeParams) => {
 			completionProvider: {
 				resolveProvider: false,
 				triggerCharacters: [' ', '.', '[', '"', '\'', '{', '<'],
-			}
+			},
+			definitionProvider: true 
 		}
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -119,9 +124,7 @@ connection.onInitialize(async (params: InitializeParams) => {
 
 connection.onInitialized(async () => {
 	console.log('------------------------------------------------------------------------------------------');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('2. TCL: onInitialized');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('------------------------------------------------------------------------------------------');
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
@@ -139,9 +142,7 @@ connection.onInitialized(async () => {
 
 connection.onDidChangeConfiguration(change => {
 	console.log('------------------------------------------------------------------------------------------');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('3. TCL: onDidChangeConfiguration');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('------------------------------------------------------------------------------------------');
 	if (hasConfigurationCapability) {
 		// Reset all cached document settings
@@ -166,9 +167,7 @@ documents.onDidClose(e => {
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(async change => {
 	console.log('------------------------------------------------------------------------------------------');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('4. TCL: onDidChangeContent');
-	console.log('------------------------------------------------------------------------------------------');
 	console.log('------------------------------------------------------------------------------------------');
 	getAureliaComponentMap(aureliaProgram);
 
@@ -184,58 +183,52 @@ connection.onDidChangeWatchedFiles(_change => {
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
 	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-		// Embedded Language
-		const document = documents.get(_textDocumentPosition.textDocument.uri);
+		const documentUri = _textDocumentPosition.textDocument.uri;
+		const document = documents.get(documentUri);
 		if (!document) {
 			throw new Error('No document found')
 			return [];
 		}
-		const text = document.getText();
-		const offset = document.offsetAt(_textDocumentPosition.position);
-		const triggerCharacter = text.substring(offset - 1, offset);
+		// Embedded Language
 
-		switch(triggerCharacter) {
-			case '<': {
-				return [
-					...aureliaProgram.getComponentMap().classDeclarations!,
-				]
-			}
-			case ' ': {
-				console.log('space')
-				// only return compone specific
-				return [
-					...aureliaProgram.getComponentMap().bindables!,
-				]
-			}
-		}
+		// Virtual file
+		const virtualCompletions = getVirtualViewModelCompletion(_textDocumentPosition, document, aureliaProgram);
+		return virtualCompletions;
 
-		const mode = languageModes.getModeAtPosition(document!, _textDocumentPosition.position);
-		// console.log("TCL: mode", mode)
-		if (typeof mode === 'string') {
-			console.log('heeeeeeeeeeeeeeee')
-			return [CompletionItem.create('LETS DO IT')]
-		}
 
-		// The pass parameter contains the position of the text document in
-		// which code complete got requested. For the example we ignore this
-		// info and always provide the same completion items.
-		return [
-			...aureliaProgram.getComponentMap().classDeclarations!,
-			...aureliaProgram.getComponentMap().classMembers!,
-			...aureliaProgram.getComponentMap().bindables!,
-		]
-		return [
-			{
-				label: 'TypeScript',
-				kind: CompletionItemKind.Text,
-				data: 1
-			},
-			{
-				label: 'JavaScript',
-				kind: CompletionItemKind.Text,
-				data: 2
-			}
-		];
+		// const text = document.getText();
+		// const offset = document.offsetAt(_textDocumentPosition.position);
+		// const triggerCharacter = text.substring(offset - 1, offset);
+
+		// switch(triggerCharacter) {
+		// 	case '<': {
+		// 		return [
+		// 			...aureliaProgram.getComponentMap().classDeclarations!,
+		// 		]
+		// 	}
+		// 	case ' ': {
+		// 		// only return compone specific
+		// 		return [
+		// 			...aureliaProgram.getComponentMap().bindables!,
+		// 		]
+		// 	}
+		// }
+
+		// const mode = languageModes.getModeAtPosition(document!, _textDocumentPosition.position);
+		// // console.log("TCL: mode", mode)
+		// if (typeof mode === 'string') {
+		// 	console.log('heeeeeeeeeeeeeeee')
+		// 	return [CompletionItem.create('LETS DO IT')]
+		// }
+
+		// // The pass parameter contains the position of the text document in
+		// // which code complete got requested. For the example we ignore this
+		// // info and always provide the same completion items.
+		// return [
+		// 	...aureliaProgram.getComponentMap().classDeclarations!,
+		// 	...aureliaProgram.getComponentMap().classMembers!,
+		// 	...aureliaProgram.getComponentMap().bindables!,
+		// ]
 	}
 );
 
@@ -253,6 +246,16 @@ connection.onCompletionResolve(
 		return item;
 	}
 );
+
+connection.onDefinition((_: TextDocumentPositionParams): Definition | null => {
+	/**
+	 * Need to have this onDefinition here, else we get following error in the console
+	 * Request textDocument/definition failed.
+	 * Message: Unhandled method textDocument/definition
+	 * Code: -32601
+	 */
+	return null;
+  });
 
 /*
 connection.onDidOpenTextDocument((params) => {

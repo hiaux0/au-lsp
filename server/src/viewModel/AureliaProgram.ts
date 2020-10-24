@@ -77,10 +77,16 @@ export class AureliaProgram {
 		}
 	}
 
+	public setProgram(program: ts.SemanticDiagnosticsBuilderProgram): void {
+		this.watcherProgram = program;
+	}
+
 	/**
 	 * Only get relevant aurelia source files from the program.
 	 */
 	public getAureliaSourceFiles() {
+		if (this.aureliaSourceFiles) return this.aureliaSourceFiles;
+
 		const sourceFiles = this.watcherProgram?.getSourceFiles();
 		this.aureliaSourceFiles = sourceFiles?.filter(sourceFile => {
 			if (sourceFile.fileName.includes('node_modules')) return

@@ -14,6 +14,13 @@ export interface IComponentMap {
 	bindables: CompletionItem[] | undefined
 }
 
+export interface IComponentList {
+	/** The base file name (without file extension) */
+	baseFileName: string;
+	viewModelName: string;
+	view: string;
+}
+
 interface IClassDiagram {
 
 }
@@ -31,6 +38,7 @@ export class AureliaProgram {
 	public componentMap: IComponentMap;
 	public classDiagram: IClassDiagram;
 	public aureliaSourceFiles?: ts.SourceFile[];
+	componentList: IComponentList[];
 
 	constructor(documentSettings: DocumentSettings) {
 		this.documentSettings = documentSettings;
@@ -42,6 +50,14 @@ export class AureliaProgram {
 
 	public getComponentMap() {
 		return this.componentMap
+	}
+
+	public setComponentList(componentList: IComponentList[]) {
+		this.componentList = componentList;
+	}
+
+	public getComponentList() {
+		return this.componentList
 	}
 
 	public setClassDiagram(classDiagram: IClassDiagram) {

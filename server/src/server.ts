@@ -17,7 +17,8 @@ import {
 	TextDocumentSyncKind,
 	InitializeResult,
 	CompletionList,
-	InsertTextFormat
+	InsertTextFormat,
+	Definition
 } from 'vscode-languageserver';
 
 import {
@@ -245,6 +246,16 @@ connection.onCompletionResolve(
 		return item;
 	}
 );
+
+connection.onDefinition((_: TextDocumentPositionParams): Definition | null => {
+	/**
+	 * Need to have this onDefinition here, else we get following error in the console
+	 * Request textDocument/definition failed.
+	 * Message: Unhandled method textDocument/definition
+	 * Code: -32601
+	 */
+	return null;
+  });
 
 /*
 connection.onDidOpenTextDocument((params) => {

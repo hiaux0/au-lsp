@@ -153,7 +153,10 @@ connection.onInitialized(async () => {
 
     await createAureliaWatchProgram(aureliaProgram);
     // getAureliaComponentMap(aureliaProgram);
-    getAureliaComponentList(aureliaProgram);
+    const componentList = getAureliaComponentList(aureliaProgram);
+    if (componentList) {
+      aureliaProgram.setComponentList(componentList);
+    }
   }
   if (hasWorkspaceFolderCapability) {
     connection.workspace.onDidChangeWorkspaceFolders((_event) => {
@@ -200,7 +203,10 @@ documents.onDidChangeContent(async (change) => {
     "------------------------------------------------------------------------------------------"
   );
   // getAureliaComponentMap(aureliaProgram);
-  getAureliaComponentList(aureliaProgram);
+  const componentList = getAureliaComponentList(aureliaProgram);
+  if (componentList) {
+    aureliaProgram.setComponentList(componentList);
+  }
 
   TextDocumentChangeClass.inject(
     connection,
@@ -351,8 +357,8 @@ connection.onRequest("aurelia-class-diagram", async (filePath: string) => {
   return classDiagram;
 });
 
-connection.onRequest("aurelia-get-components", () => {
-  return aureliaProgram.getComponentMap();
+connection.onRequest("aurelia-get-component-list", () => {
+  return aureliaProgram.getComponentList();
 });
 
 // Make the text document manager listen on the connection

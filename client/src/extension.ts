@@ -97,7 +97,10 @@ export function activate(context: ExtensionContext) {
     vscode.commands.registerCommand(
       "aurelia.getAureliaComponents",
       async () => {
-        const components = await client.sendRequest("aurelia-get-components");
+        console.log("Getting...");
+        const components = await client.sendRequest(
+          "aurelia-get-component-list"
+        );
         console.clear();
         console.log("TCL: activate -> components", components);
       }

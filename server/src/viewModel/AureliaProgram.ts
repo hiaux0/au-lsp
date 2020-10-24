@@ -5,6 +5,7 @@ import {
   Container,
 } from "aurelia-dependency-injection";
 import * as ts from "typescript";
+import * as Path from "path";
 import { CompletionItem } from "vscode-languageserver";
 import { DocumentSettings } from "../configuration/DocumentSettings";
 const globalContainer = new Container();
@@ -18,10 +19,17 @@ export interface IComponentMap {
 }
 
 export interface IComponentList {
-  /** The base file name (without file extension) */
+  sourceFile?: ts.SourceFile;
+  /** export class >ComponentName< {} */
+  className: string;
+  /** component-name.ts */
   baseFileName: string;
+  /**
+   * @customElement(">component-name<")
+   * export class >ComponentName< {} --> component-name
+   * */
   viewModelName: string;
-  view: string;
+  viewFileName: string;
 }
 
 interface IClassDiagram {}

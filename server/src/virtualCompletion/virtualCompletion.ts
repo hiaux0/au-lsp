@@ -14,13 +14,15 @@
  * 6. Get completions
  */
 
-interface EntryDetailsMap {
-  [key: string]: {
+interface EntryDetailsMapData {
     displayParts: string | undefined;
     documentation: string | undefined;
     kind: CompletionItemKind;
     methodArguments: string[];
-  };
+}
+
+interface EntryDetailsMap {
+  [key: string]: EntryDetailsMapData;
 }
 
 import * as ts from "typescript";
@@ -343,23 +345,24 @@ function enhanceCompletionItemDocumentation(
     return acc;
   }, entryDetailsMap);
 
-  const result = virtualCompletions.map((tsCompletion) => {
-    const entryDetail = entryDetailsMap[tsCompletion.name];
-    const isMethod = entryDetail.kind === CompletionItemKind.Method;
-    /** Default value is just the method name */
-    let insertMethodTextWithArguments = tsCompletion.name;
-    if (isMethod) {
       /** ${1: argName1}, ${2: argName2} */
-      function createArgCompletion() {
-        const numOfArguments = entryDetail.methodArguments.length;
+  function createArgCompletion(entryDetail: EntryDetailsMapData) {
+    const numOfArguments = entryDetail;
         return entryDetail.methodArguments
           .map((argName, index) => {
             return `\${${index + 1}:${argName}}`;
           })
           .join(", ");
       }
+
+  const result = virtualCompletions.map((tsCompletion) => {
+    const entryDetail = entryDetailsMap[tsCompletion.name];
+    const isMethod = entryDetail.kind === CompletionItemKind.Method;
+    /** Default value is just the method name */
+    let insertMethodTextWithArguments = tsCompletion.name;
+    if (isMethod) {
       insertMethodTextWithArguments =
-        tsCompletion.name + "(" + createArgCompletion() + ")";
+        tsCompletion.name + "(" + createArgCompletion(entryDetail) + ")";
     }
 
     const completionItem: CompletionItem = {

@@ -305,6 +305,20 @@ export function getVirtualViewModelCompletion(
 
   const entryDetailsMap: EntryDetailsMap = {};
 
+  const result = enhanceCompletionItemDocumentation(
+    virtualCompletionEntryDetails,
+    entryDetailsMap,
+    virtualCompletions
+  );
+
+  return result;
+}
+
+function enhanceCompletionItemDocumentation(
+  virtualCompletionEntryDetails: (ts.CompletionEntryDetails | undefined)[],
+  entryDetailsMap: EntryDetailsMap,
+  virtualCompletions: ts.CompletionEntry[]
+) {
   const kindMap = {
     [ts.ScriptElementKind[
       "memberVariableElement"
@@ -316,8 +330,8 @@ export function getVirtualViewModelCompletion(
 
   virtualCompletionEntryDetails.reduce((acc, entryDetail) => {
     if (!entryDetail) return acc;
-    // if (entryDetail?.name === VIRTUAL_METHOD_NAME) return acc;
 
+    // if (entryDetail?.name === VIRTUAL_METHOD_NAME) return acc;
     acc[entryDetail.name!] = {
       displayParts: entryDetail.displayParts?.map((part) => part.text).join(""),
       documentation: entryDetail.documentation?.map((doc) => doc.text).join(""),
@@ -372,6 +386,5 @@ export function getVirtualViewModelCompletion(
      */
     return completionItem;
   });
-
   return result;
 }

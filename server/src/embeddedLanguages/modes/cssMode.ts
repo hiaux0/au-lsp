@@ -3,32 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LanguageService as CSSLanguageService } from 'vscode-css-languageservice';
-import { HTMLDocumentRegions } from '../embeddedSupport';
-import { LanguageModelCache } from '../languageModelCache';
-import { LanguageMode, Position, TextDocument } from '../languageModes';
+import { LanguageService as CSSLanguageService } from "vscode-css-languageservice";
+import { HTMLDocumentRegions } from "../embeddedSupport";
+import { LanguageModelCache } from "../languageModelCache";
+import { LanguageMode, Position, TextDocument } from "../languageModes";
 
 export function getCSSMode(
-	cssLanguageService: CSSLanguageService,
-	documentRegions: LanguageModelCache<HTMLDocumentRegions>
+  cssLanguageService: CSSLanguageService,
+  documentRegions: LanguageModelCache<HTMLDocumentRegions>
 ): LanguageMode {
-	return {
-		getId() {
-			return 'css';
-		},
-		doValidation(document: TextDocument) {
-			// Get virtual CSS document, with all non-CSS code replaced with whitespace
-			const embedded = documentRegions.get(document).getEmbeddedDocument('css');
-			const stylesheet = cssLanguageService.parseStylesheet(embedded);
-			return cssLanguageService.doValidation(embedded, stylesheet);
-		},
-		doComplete(document: TextDocument, position: Position) {
-			// Get virtual CSS document, with all non-CSS code replaced with whitespace
-			const embedded = documentRegions.get(document).getEmbeddedDocument('css');
-			const stylesheet = cssLanguageService.parseStylesheet(embedded);
-			return cssLanguageService.doComplete(embedded, position, stylesheet);
-		},
-		onDocumentRemoved(_document: TextDocument) { },
-		dispose() { }
-	};
+  return {
+    getId() {
+      return "css";
+    },
+    doValidation(document: TextDocument) {
+      // Get virtual CSS document, with all non-CSS code replaced with whitespace
+      const embedded = documentRegions.get(document).getEmbeddedDocument("css");
+      const stylesheet = cssLanguageService.parseStylesheet(embedded);
+      return cssLanguageService.doValidation(embedded, stylesheet);
+    },
+    doComplete(document: TextDocument, position: Position) {
+      // Get virtual CSS document, with all non-CSS code replaced with whitespace
+      const embedded = documentRegions.get(document).getEmbeddedDocument("css");
+      const stylesheet = cssLanguageService.parseStylesheet(embedded);
+      return cssLanguageService.doComplete(embedded, position, stylesheet);
+    },
+    onDocumentRemoved(_document: TextDocument) {},
+    dispose() {},
+  };
 }

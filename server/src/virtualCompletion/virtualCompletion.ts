@@ -262,6 +262,8 @@ export function getVirtualViewModelCompletion(
   const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
   const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
   const viewBaseName = path.parse(documentUri).name;
+  console.log("TCL: MyCustomElement -> viewBaseName", viewBaseName);
+
   const targetSourceFile = aureliaFiles?.find((aureliaFile) => {
     return scriptExtensions.find((extension) => {
       const toViewModelName = `${viewBaseName}${extension}`;

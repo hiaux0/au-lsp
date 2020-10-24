@@ -134,7 +134,7 @@ function getAureliaViewModelClassDeclaration(
         insertText: `${elementName}$2>$1</${elementName}>$0`,
         insertTextFormat: InsertTextFormat.Snippet,
         kind: CompletionItemKind.Class,
-        label: `${elementName} (Au Class Declaration)`,
+        label: `(Au Class) ${elementName}`,
       };
     }
   });
@@ -221,7 +221,7 @@ function getAureliaViewModelClassMembers(
       const documentation = `${commentDoc}\n\n${memberTypeText}\n\n${defaultValueText}`;
 
       const kind: CompletionItemKind = ts.isPropertyDeclaration(classMember)
-        ? CompletionItemKind.Variable
+        ? CompletionItemKind.Field
         : CompletionItemKind.Method;
 
       // const quote = this.settings.quote;
@@ -240,8 +240,8 @@ function getAureliaViewModelClassMembers(
         kind,
         label:
           "" +
-          `${isBindable ? varAsKebabCase : classMemberName} ` +
-          `(Au ${isBindable ? "Bindable" : "Class member"})`,
+          `(Au ${isBindable ? "Bindable" : "Class member"}) ` +
+          `${isBindable ? varAsKebabCase : classMemberName} `,
       };
 
       if (isBindable) {

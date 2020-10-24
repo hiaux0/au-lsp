@@ -17,12 +17,13 @@
 import * as ts from "typescript";
 import * as path from "path";
 import { CompletionItem, InsertTextFormat, TextDocument } from 'vscode-css-languageservice';
-import { MarkupKind, TextDocumentPositionParams } from 'vscode-languageserver';
+import { CompletionItemKind, MarkupKind, TextDocumentPositionParams } from 'vscode-languageserver';
 import { EmbeddedRegion } from '../embeddedLanguages/embeddedSupport';
 import { getDocumentRegionAtPosition } from '../embeddedLanguages/languageModes';
 import { AureliaProgram } from '../viewModel/AureliaProgram';
 
 const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
+const VIRTUAL_METHOD_NAME = '__vir'
 
 /**
  * With a virtual file, create a completions from a virtual progrm.
@@ -70,7 +71,7 @@ export function createVirtualCompletionSourceFile(
   const ender = virtualViewModelContent.slice(classOpeningBracketIndex);
 
   /**  Create temp content */
-  const tempMethodTextStart = `temp() {this.`;
+  const tempMethodTextStart = `${VIRTUAL_METHOD_NAME}() {this.`;
   const tempMethodTextEnd = "};\n  ";
   const tempMethodText =
     tempMethodTextStart + virtualContent + tempMethodTextEnd;
@@ -268,31 +269,41 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
     [key: string]: {
       displayParts: string | undefined;
       documentation: string | undefined;
+      kind?: CompletionItemKind;
     }
   }
-  const documentationMap:EntryDetailsMap = {};
+  const entryDetailsMap:EntryDetailsMap = {};
+
+    const kindMap = {
+      [ts.ScriptElementKind['memberVariableElement'] as ts.ScriptElementKind]: CompletionItemKind.Field,
+      [ts.ScriptElementKind['memberFunctionElement'] as ts.ScriptElementKind]: CompletionItemKind.Method
+    }
 
   virtualCompletionEntryDetails.reduce(
     (acc, entryDetail) => {
-      acc[entryDetail?.name!] = {
-        displayParts: entryDetail?.displayParts?.map((part) => part.text).join(''),
-        documentation: entryDetail?.documentation?.map((doc) => doc.text).join('') ,
-      } 
-      return acc;
-     }, documentationMap
-  )
-  
-  const result = virtualCompletions.map(tsCompletion => {
-    // const kindMap = {
+      if (!entryDetail) return acc;
+      // if (entryDetail?.name === VIRTUAL_METHOD_NAME) return acc;
 
-    // }
+      acc[entryDetail.name!] = {
+        displayParts: entryDetail.displayParts?.map((part) => part.text).join(''),
+        documentation: entryDetail.documentation?.map((doc) => doc.text).join('') ,
+        kind: kindMap[entryDetail.kind],
+      }
+      return acc;
+     }, entryDetailsMap
+  )
+
+  const result = virtualCompletions.map(tsCompletion => {
+    const entryDetail = entryDetailsMap[tsCompletion.name];
+
     const completionItem: CompletionItem = {
       documentation: {
         kind: MarkupKind.Markdown,
-        value: documentationMap[tsCompletion.name].documentation || '',
+        value: entryDetail.documentation || '',
       },
-      detail:documentationMap[tsCompletion.name].displayParts || '',
+      detail:entryDetail.displayParts || '',
       insertTextFormat: InsertTextFormat.Snippet,
+      kind: entryDetail.kind,
       label: tsCompletion.name,
     }
     /**

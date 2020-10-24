@@ -1,3 +1,20 @@
+export interface AureliaClassDecorators {
+  customElement: string;
+  useView: string;
+  noView: string;
+}
+
+type AureliaClassDecoratorPossibilites =
+  | "customElement"
+  | "useView"
+  | "noView"
+  | "";
+
+interface DecoratorInfo {
+  decoratorName: AureliaClassDecoratorPossibilites;
+  decoratorArgument: any;
+}
+
 import {
   AureliaProgram,
   IComponentList,
@@ -13,6 +30,8 @@ import {
 } from "vscode-languageserver";
 import { kebabCase } from "@aurelia/kernel";
 import { createDiagram } from "./createDiagram";
+
+const CUSTOM_ELEMENT_SUFFIX = "CustomElement";
 
 export function getAureliaComponentList(
   aureliaProgram: AureliaProgram,
@@ -50,10 +69,14 @@ export function getAureliaComponentList(
         }
 
         /* export class MyCustomElement */
-        const componentList = getAureliaComponentInfoFromClassDeclaration(
+        const componentInfo = getAureliaComponentInfoFromClassDeclaration(
           sourceFile!,
           checker
         );
+
+        if (componentInfo) {
+          componentList.push(componentInfo);
+        }
 
         break;
       }
@@ -66,16 +89,20 @@ export function getAureliaComponentList(
     }
   });
 
-  aureliaProgram.setComponentList(componentList);
+  if (componentList.length === 0) {
+    console.log("Error: No Aurelia class found");
+  }
+
+  return componentList;
 }
 
 function getAureliaComponentInfoFromClassDeclaration(
   sourceFile: ts.SourceFile,
   checker: ts.TypeChecker
-): IComponentList[] {
+): IComponentList | undefined {
   // if (sourceFile?.fileName !== '/Users/hdn/Desktop/aurelia-lsp/client/testFixture/src/my-compo/my-compo.ts') return;
-  let result: IComponentList;
-  let componentList: IComponentList[] = [];
+  let result: IComponentList | undefined;
+  let componentList: IComponentList;
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
 
   sourceFile.forEachChild((node) => {
@@ -86,12 +113,17 @@ function getAureliaComponentInfoFromClassDeclaration(
        * && classDeclarationHasUseViewOrNoView
        * && hasCorrectNamingConvention */
     ) {
-      // Save the class for further processing later on.
       targetClassDeclaration = node;
+      const classDecoratorInfos = getClassDecoratorInfos(
+        targetClassDeclaration
+      );
 
-      // const viewModelName = targetClassDeclaration.name?.getText() || '';
+      const viewModelName =
+        classDecoratorInfos.find(
+          (info) => info.decoratorName === "customElement"
+        )?.decoratorArgument ||
+        getElementNameFromClassDeclaration(targetClassDeclaration);
 
-      const elementName = getElementNameFromClassDeclaration(node);
       // Note the `!` in the argument: `getSymbolAtLocation` expects a `Node` arg, but returns undefined
       const symbol = checker.getSymbolAtLocation(node.name!);
       if (symbol === undefined) {
@@ -100,23 +132,53 @@ function getAureliaComponentInfoFromClassDeclaration(
       }
 
       result = {
-        viewModelName: targetClassDeclaration.name?.getText() || "",
-        baseFileName: Path.basename(sourceFile.fileName),
-        view: "TODO",
+        className: targetClassDeclaration.name?.getText() || "",
+        viewModelName,
+        baseFileName: Path.parse(sourceFile.fileName).name,
+        viewFileName: "TODO",
       };
-      componentList.push(result);
     }
   });
 
-  return componentList;
+  return result;
 }
 
 function isNodeExported(node: ts.ClassDeclaration): boolean {
   return (ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Export) !== 0;
 }
 
+function getClassDecoratorInfos(
+  classDeclaration: ts.ClassDeclaration
+): DecoratorInfo[] {
+  let classDecoratorInfos: DecoratorInfo[] = [];
+
+  const aureliaDecorators = ["customElement", "useView", "noView"];
+  classDeclaration.decorators?.forEach((decorator) => {
+    let result: DecoratorInfo = {
+      decoratorName: "",
+      decoratorArgument: "",
+    };
+
+    decorator.expression.forEachChild((decoratorChild) => {
+      const childName = decoratorChild.getText() as AureliaClassDecoratorPossibilites;
+      const isAureliaDecorator = aureliaDecorators.includes(childName);
+
+      if (isAureliaDecorator) {
+        if (ts.isIdentifier(decoratorChild)) {
+          result.decoratorName = childName;
+        }
+      } else if (ts.isToken(decoratorChild)) {
+        result.decoratorArgument = childName;
+      }
+    });
+    classDecoratorInfos.push(result);
+  });
+
+  return classDecoratorInfos.filter((info) => info.decoratorName !== "");
+}
+
 /**
- * classDeclarationHasUseViewOrNoView checks whether a classDeclaration has a useView or noView
+ * Checks whether a classDeclaration has a useView or noView
  *
  * @param classDeclaration - ClassDeclaration to check
  */
@@ -139,5 +201,10 @@ function classDeclarationHasUseViewOrNoView(
 function getElementNameFromClassDeclaration(
   classDeclaration: ts.ClassDeclaration
 ): string {
-  return kebabCase(classDeclaration.name?.getText()!);
+  const className = classDeclaration.name?.getText() || "";
+  const withoutCustomElementSuffix = className.replace(
+    CUSTOM_ELEMENT_SUFFIX,
+    ""
+  );
+  return kebabCase(withoutCustomElementSuffix);
 }

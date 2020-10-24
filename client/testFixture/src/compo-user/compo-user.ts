@@ -1,5 +1,6 @@
-import { bindable } from "aurelia-framework";
+import { bindable, customElement } from "aurelia-framework";
 
+@customElement("compo-user")
 export class CompoUser {
   @bindable thisIsMe: string = "hello";
 

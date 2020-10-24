@@ -16,18 +16,26 @@
 
 import * as ts from "typescript";
 import * as path from "path";
-import { CompletionItem, InsertTextFormat, TextDocument } from 'vscode-css-languageservice';
-import { CompletionItemKind, MarkupKind, TextDocumentPositionParams } from 'vscode-languageserver';
-import { EmbeddedRegion } from '../embeddedLanguages/embeddedSupport';
-import { getDocumentRegionAtPosition } from '../embeddedLanguages/languageModes';
-import { AureliaProgram } from '../viewModel/AureliaProgram';
+import {
+  CompletionItem,
+  InsertTextFormat,
+  TextDocument,
+} from "vscode-css-languageservice";
+import {
+  CompletionItemKind,
+  MarkupKind,
+  TextDocumentPositionParams,
+} from "vscode-languageserver";
+import { EmbeddedRegion } from "../embeddedLanguages/embeddedSupport";
+import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
+import { AureliaProgram } from "../viewModel/AureliaProgram";
 
 const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
-const VIRTUAL_METHOD_NAME = '__vir'
+const VIRTUAL_METHOD_NAME = "__vir";
 
-const PARAMETER_NAME = 'parameterName';
-const PROPERTY_NAME = 'propertyName';
-const METHOD_NAME = 'methodName';
+const PARAMETER_NAME = "parameterName";
+const PROPERTY_NAME = "propertyName";
+const METHOD_NAME = "methodName";
 
 /**
  * With a virtual file, create a completions from a virtual progrm.
@@ -130,7 +138,7 @@ export function getVirtualCompletion(
   };
   const cls = ts.createLanguageService(host, ts.createDocumentRegistry());
 
-  if (!cls) throw new Error('No cls')
+  if (!cls) throw new Error("No cls");
 
   const virtualCompletions = cls.getCompletionsAtPosition(
     sourceFile.fileName,
@@ -139,13 +147,19 @@ export function getVirtualCompletion(
   )?.entries;
 
   if (!virtualCompletions) {
-    throw new Error('No completions found')
+    throw new Error("No completions found");
   }
 
-  const virtualCompletionEntryDetails = virtualCompletions.map(completion=> {
-    return cls.getCompletionEntryDetails(sourceFile.fileName, positionOfAutocomplete, completion.name, undefined, undefined, undefined) /*?*/
+  const virtualCompletionEntryDetails = virtualCompletions.map((completion) => {
+    return cls.getCompletionEntryDetails(
+      sourceFile.fileName,
+      positionOfAutocomplete,
+      completion.name,
+      undefined,
+      undefined,
+      undefined
+    ); /*?*/
   });
-
 
   return { virtualCompletions, virtualCompletionEntryDetails };
   // return map(virtualCompletions, "name");
@@ -218,10 +232,16 @@ function getKindName(kind: ts.SyntaxKind) {
   return (ts as any).SyntaxKind[kind];
 }
 
-export function getVirtualViewModelCompletion(textDocumentPosition: TextDocumentPositionParams, document: TextDocument, aureliaProgram: AureliaProgram) {
+export function getVirtualViewModelCompletion(
+  textDocumentPosition: TextDocumentPositionParams,
+  document: TextDocument,
+  aureliaProgram: AureliaProgram
+) {
   // 1. From the region get the part, that should be made virtual.
   const documentUri = textDocumentPosition.textDocument.uri;
-  const region = getDocumentRegionAtPosition(textDocumentPosition.position).get(document);
+  const region = getDocumentRegionAtPosition(textDocumentPosition.position).get(
+    document
+  );
 
   const virtualContent = document.getText().slice(region.start, region.end);
 
@@ -229,8 +249,8 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
   const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
   const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
   const viewBaseName = path.parse(documentUri).name;
-  const targetSourceFile = aureliaFiles?.find(aureliaFile => {
-    return scriptExtensions.find(extension => {
+  const targetSourceFile = aureliaFiles?.find((aureliaFile) => {
+    return scriptExtensions.find((extension) => {
       const toViewModelName = `${viewBaseName}${extension}`;
       const aureliaFileName = path.basename(aureliaFile.fileName);
       return aureliaFileName === toViewModelName;
@@ -242,26 +262,31 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
   }
 
   // 3. Create virtual completion
-  const virtualViewModelSourceFile = ts.createSourceFile('virtual.ts', targetSourceFile?.getText(), 99);
-  const customElementClassName = 'MyCompoCustomElement';
+  const virtualViewModelSourceFile = ts.createSourceFile(
+    "virtual.ts",
+    targetSourceFile?.getText(),
+    99
+  );
+  const customElementClassName = "MyCompoCustomElement";
   const {
     targetVirtualSourcefile,
-    completionIndex
-  } = createVirtualCompletionSourceFile(virtualViewModelSourceFile, virtualContent, customElementClassName);
+    completionIndex,
+  } = createVirtualCompletionSourceFile(
+    virtualViewModelSourceFile,
+    virtualContent,
+    customElementClassName
+  );
 
   const {
     virtualCompletions,
     virtualCompletionEntryDetails,
-  }= getVirtualCompletion(
-    targetVirtualSourcefile,
-    completionIndex
-  );
+  } = getVirtualCompletion(targetVirtualSourcefile, completionIndex);
 
   if (!virtualCompletions) {
     console.log(`
       We were trying to find completions for: ${virtualContent},
       but couldn't find anything in the view model: ${documentUri}
-    `)
+    `);
     return [];
   }
 
@@ -275,31 +300,35 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
       documentation: string | undefined;
       kind: CompletionItemKind;
       methodArguments: string[];
-    }
+    };
   }
-  const entryDetailsMap:EntryDetailsMap = {};
+  const entryDetailsMap: EntryDetailsMap = {};
 
   const kindMap = {
-    [ts.ScriptElementKind['memberVariableElement'] as ts.ScriptElementKind]: CompletionItemKind.Field,
-    [ts.ScriptElementKind['memberFunctionElement'] as ts.ScriptElementKind]: CompletionItemKind.Method
-  }
+    [ts.ScriptElementKind[
+      "memberVariableElement"
+    ] as ts.ScriptElementKind]: CompletionItemKind.Field,
+    [ts.ScriptElementKind[
+      "memberFunctionElement"
+    ] as ts.ScriptElementKind]: CompletionItemKind.Method,
+  };
 
-  virtualCompletionEntryDetails.reduce(
-    (acc, entryDetail) => {
-      if (!entryDetail) return acc;
-      // if (entryDetail?.name === VIRTUAL_METHOD_NAME) return acc;
+  virtualCompletionEntryDetails.reduce((acc, entryDetail) => {
+    if (!entryDetail) return acc;
+    // if (entryDetail?.name === VIRTUAL_METHOD_NAME) return acc;
 
-      acc[entryDetail.name!] = {
-        displayParts: entryDetail.displayParts?.map((part) => part.text).join(''),
-        documentation: entryDetail.documentation?.map((doc) => doc.text).join('') ,
-        kind: kindMap[entryDetail.kind],
-        methodArguments: entryDetail.displayParts.filter(part => part.kind === PARAMETER_NAME).map(part => part.text),
-      }
-      return acc;
-     }, entryDetailsMap
-  )
+    acc[entryDetail.name!] = {
+      displayParts: entryDetail.displayParts?.map((part) => part.text).join(""),
+      documentation: entryDetail.documentation?.map((doc) => doc.text).join(""),
+      kind: kindMap[entryDetail.kind],
+      methodArguments: entryDetail.displayParts
+        .filter((part) => part.kind === PARAMETER_NAME)
+        .map((part) => part.text),
+    };
+    return acc;
+  }, entryDetailsMap);
 
-  const result = virtualCompletions.map(tsCompletion => {
+  const result = virtualCompletions.map((tsCompletion) => {
     const entryDetail = entryDetailsMap[tsCompletion.name];
     const isMethod = entryDetail.kind === CompletionItemKind.Method;
     /** Default value is just the method name */
@@ -308,27 +337,27 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
       /** ${1: argName1}, ${2: argName2} */
       function createArgCompletion() {
         const numOfArguments = entryDetail.methodArguments.length;
-        return entryDetail.methodArguments.map((argName, index) => {
-          return `\${${index + 1}:${argName}}`
-        }).join(', ')
+        return entryDetail.methodArguments
+          .map((argName, index) => {
+            return `\${${index + 1}:${argName}}`;
+          })
+          .join(", ");
       }
-      insertMethodTextWithArguments = tsCompletion.name
-      + '('
-      + createArgCompletion()
-      + ')'
+      insertMethodTextWithArguments =
+        tsCompletion.name + "(" + createArgCompletion() + ")";
     }
 
     const completionItem: CompletionItem = {
       documentation: {
         kind: MarkupKind.Markdown,
-        value: entryDetail.documentation || '',
+        value: entryDetail.documentation || "",
       },
-      detail:entryDetail.displayParts || '',
+      detail: entryDetail.displayParts || "",
       insertText: isMethod ? insertMethodTextWithArguments : tsCompletion.name,
       insertTextFormat: InsertTextFormat.Snippet,
       kind: entryDetail.kind,
       label: tsCompletion.name,
-    }
+    };
     /**
       documentation: {
         kind: MarkupKind.Markdown,
@@ -341,7 +370,7 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
       label: `${elementName} (Au Class Declaration)`,
      */
     return completionItem;
-  })
+  });
 
   return result;
 }

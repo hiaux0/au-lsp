@@ -15,10 +15,10 @@
  */
 
 interface EntryDetailsMapData {
-    displayParts: string | undefined;
-    documentation: string | undefined;
-    kind: CompletionItemKind;
-    methodArguments: string[];
+  displayParts: string | undefined;
+  documentation: string | undefined;
+  kind: CompletionItemKind;
+  methodArguments: string[];
 }
 
 interface EntryDetailsMap {
@@ -345,15 +345,15 @@ function enhanceCompletionItemDocumentation(
     return acc;
   }, entryDetailsMap);
 
-      /** ${1: argName1}, ${2: argName2} */
+  /** ${1: argName1}, ${2: argName2} */
   function createArgCompletion(entryDetail: EntryDetailsMapData) {
     const numOfArguments = entryDetail;
-        return entryDetail.methodArguments
-          .map((argName, index) => {
-            return `\${${index + 1}:${argName}}`;
-          })
-          .join(", ");
-      }
+    return entryDetail.methodArguments
+      .map((argName, index) => {
+        return `\${${index + 1}:${argName}}`;
+      })
+      .join(", ");
+  }
 
   const result = virtualCompletions.map((tsCompletion) => {
     const entryDetail = entryDetailsMap[tsCompletion.name];

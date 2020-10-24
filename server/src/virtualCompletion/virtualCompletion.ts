@@ -14,6 +14,15 @@
  * 6. Get completions
  */
 
+interface EntryDetailsMap {
+  [key: string]: {
+    displayParts: string | undefined;
+    documentation: string | undefined;
+    kind: CompletionItemKind;
+    methodArguments: string[];
+  };
+}
+
 import * as ts from "typescript";
 import * as path from "path";
 import {
@@ -294,14 +303,6 @@ export function getVirtualViewModelCompletion(
     return [];
   }
 
-  interface EntryDetailsMap {
-    [key: string]: {
-      displayParts: string | undefined;
-      documentation: string | undefined;
-      kind: CompletionItemKind;
-      methodArguments: string[];
-    };
-  }
   const entryDetailsMap: EntryDetailsMap = {};
 
   const kindMap = {

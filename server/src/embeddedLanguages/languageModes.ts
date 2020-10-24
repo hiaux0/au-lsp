@@ -46,9 +46,8 @@ export function getDocumentRegionAtPosition(position: Position) {
 	const htmlLanguageService = getHTMLLanguageService();
 	const cssLanguageService = getCSSLanguageService();
 
-	const documentRegion = getLanguageModelCache<EmbeddedRegion>(10, 60, document => {
+	const documentRegion = getLanguageModelCache<EmbeddedRegion | undefined>(10, 60, document => {
 		const region = getDocumentRegions(htmlLanguageService, document).getRegionAtPosition(position)
-		if (!region) throw new Error('No Region')
 		return region;
 	}
 	);

@@ -222,6 +222,8 @@ export function getRegionAtPosition(document: TextDocument, regions: EmbeddedReg
 			break;
 		}
 	}
+
+	console.error('embeddedSupport -> getRegionAtPosition -> No Region found')
 	return undefined;
 }
 

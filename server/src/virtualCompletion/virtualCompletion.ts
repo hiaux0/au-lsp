@@ -254,6 +254,8 @@ export function getVirtualViewModelCompletion(
     document
   );
 
+  if (!region) return [];
+
   const virtualContent = document.getText().slice(region.start, region.end);
 
   // 2. Get original viewmodel file from view

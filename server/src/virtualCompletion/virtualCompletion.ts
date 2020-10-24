@@ -269,7 +269,8 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
     [key: string]: {
       displayParts: string | undefined;
       documentation: string | undefined;
-      kind?: CompletionItemKind;
+      kind: CompletionItemKind;
+      methodArguments: string[];
     }
   }
   const entryDetailsMap:EntryDetailsMap = {};
@@ -288,6 +289,7 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
         displayParts: entryDetail.displayParts?.map((part) => part.text).join(''),
         documentation: entryDetail.documentation?.map((doc) => doc.text).join('') ,
         kind: kindMap[entryDetail.kind],
+        methodArguments: entryDetail.displayParts.filter(part => part.kind === 'parameterName').map(part => part.text),
       }
       return acc;
      }, entryDetailsMap
@@ -295,6 +297,22 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
 
   const result = virtualCompletions.map(tsCompletion => {
     const entryDetail = entryDetailsMap[tsCompletion.name];
+    const isMethod = entryDetail.kind === CompletionItemKind.Method;
+    /** Default value is just the method name */
+    let insertMethodTextWithArguments = tsCompletion.name;
+    if (isMethod) {
+      /** ${1: argName1}, ${2: argName2} */
+      function createArgCompletion() {
+        const numOfArguments = entryDetail.methodArguments.length;
+        return entryDetail.methodArguments.map((argName, index) => {
+          return `\${${index + 1}:${argName}}`
+        }).join(', ')
+      }
+      insertMethodTextWithArguments = tsCompletion.name
+      + '('
+      + createArgCompletion()
+      + ')'
+    }
 
     const completionItem: CompletionItem = {
       documentation: {
@@ -302,6 +320,7 @@ export function getVirtualViewModelCompletion(textDocumentPosition: TextDocument
         value: entryDetail.documentation || '',
       },
       detail:entryDetail.displayParts || '',
+      insertText: isMethod ? insertMethodTextWithArguments : tsCompletion.name,
       insertTextFormat: InsertTextFormat.Snippet,
       kind: entryDetail.kind,
       label: tsCompletion.name,

@@ -5,7 +5,7 @@
 
 import * as vscode from "vscode";
 import * as assert from "assert";
-import { intersectionWith } from "lodash";
+import { intersection, map } from "lodash";
 import { AureliaProgram } from "./../../../server/src/viewModel/AureliaProgram";
 import { IComponentMap } from "./../../../server/src/viewModel/AureliaProgram";
 
@@ -47,28 +47,37 @@ suite.only("Completion", () => {
     aureliaProgram,
     "classDeclarations"
   );
-  const classMemberTestItems = getTestItems(aureliaProgram, "classMembers");
-  const bindablesTestItems = getTestItems(aureliaProgram, "bindables");
+  // const classMemberTestItems = getTestItems(aureliaProgram, "classMembers");
+  const classMemberTestItems = ["counter", "message", "thisIsMe"];
+  const bindablesTestItems = ["increaseCounter"];
 
-  test("Complete class declaration", async () => {
-    await testCompletion(docUri, new vscode.Position(0, 0), {
-      items: classDeclarationTestItems,
-    });
+  // test("Complete class declaration", async () => {
+  //   await testCompletion(docUri, new vscode.Position(1, 23), {
+  //     items: classDeclarationTestItems,
+  //   });
+  // });
+
+  test("Should complete class members", async () => {
+    await testCompletion(
+      docUri,
+      new vscode.Position(1, 23),
+      classMemberTestItems
+    );
   });
 
-  // test('Should complete class members', async () => {
-  // 	await testCompletion(docUri, new vscode.Position(0, 0), { items: classMemberTestItems });
-  // });
-
-  // test('Should complete class members - bindables', async () => {
-  // 	await testCompletion(docUri, new vscode.Position(0, 0), { items: bindablesTestItems });
-  // });
+  test("Should complete class members - bindables", async () => {
+    await testCompletion(
+      docUri,
+      new vscode.Position(1, 23),
+      bindablesTestItems
+    );
+  });
 });
 
 async function testCompletion(
   docUri: vscode.Uri,
   position: vscode.Position,
-  expectedCompletionList: vscode.CompletionList
+  expectedCompletionList: string[]
 ) {
   await activate(docUri);
 
@@ -80,14 +89,10 @@ async function testCompletion(
   )) as vscode.CompletionList;
 
   // assert.ok(actualCompletionList.items.length >= 2);
-  const result = intersectionWith(
-    actualCompletionList.items,
-    expectedCompletionList.items,
-    (act: vscode.CompletionItem, exp: vscode.CompletionItem) => {
-      return act.label === exp.label;
-      // && act.kind === exp.kind; // actual returns 6 for Markupkind.Class ??
-    }
+  const result = intersection(
+    map(actualCompletionList.items, "label"),
+    expectedCompletionList
   );
   // If expected shows up in actual, we are done.
-  assert.equal(result.length, expectedCompletionList.items.length);
+  assert.equal(result.length, expectedCompletionList.length);
 }

@@ -276,13 +276,20 @@ export function getVirtualViewModelCompletion(
     throw new Error(`No source file found for current view: ${documentUri}`);
   }
 
+  const componentList = aureliaProgram.getComponentList();
+  const customElementClassName = componentList.find(
+    (component) =>
+      component.baseFileName === path.parse(targetSourceFile.fileName).name
+  )?.className;
+
+  if (!customElementClassName) return [];
+
   // 3. Create virtual completion
   const virtualViewModelSourceFile = ts.createSourceFile(
     "virtual.ts",
     targetSourceFile?.getText(),
     99
   );
-  const customElementClassName = "MyCompoCustomElement";
   const {
     targetVirtualSourcefile,
     completionIndex,

@@ -9,6 +9,7 @@ import {
 } from "vscode-languageserver";
 import { kebabCase } from "@aurelia/kernel";
 import { createDiagram } from "./createDiagram";
+import { getElementNameFromClassDeclaration } from "../common/className";
 
 export function getAureliaComponentMap(
   aureliaProgram: AureliaProgram,
@@ -163,17 +164,6 @@ function classDeclarationHasUseViewOrNoView(
       decorator.getText().includes("@noView")
     );
   });
-}
-
-/**
- * Fetches the equivalent component name based on the given class declaration
- *
- * @param sourceFile - The class declaration to map a component name from
- */
-function getElementNameFromClassDeclaration(
-  classDeclaration: ts.ClassDeclaration
-): string {
-  return kebabCase(classDeclaration.name?.getText()!);
 }
 
 /**

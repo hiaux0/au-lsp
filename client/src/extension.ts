@@ -61,22 +61,19 @@ class SearchDefinitionInView implements vscode.DefinitionProvider {
   ): Promise<vscode.DefinitionLink[]> {
     const goToSourceWordRange = document.getWordRangeAtPosition(position);
     const goToSourceWord = document.getText(goToSourceWordRange);
-    const result = await this.client.sendRequest<ts.LineAndCharacter>(
-      "get-virtual-definition",
-      {
-        goToSourceWord,
-        filePath: document.uri.path,
-      }
-    );
+    const result = await this.client.sendRequest<{
+      lineAndCharacter: ts.LineAndCharacter;
+      viewModelFilePath: string;
+    }>("get-virtual-definition", {
+      goToSourceWord,
+      filePath: document.uri.path,
+    });
 
-    const { line, character } = result;
+    const { line, character } = result.lineAndCharacter;
 
     return [
       {
-        targetUri: vscode.Uri.file(
-          // "/home/hdn/dev/repos/au-lsp/client/testFixture/src/compo-user/compo-user.ts"
-          "/home/hdn/dev/repos/au-lsp/client/testFixture/src/my-compo/my-compo.ts"
-        ),
+        targetUri: vscode.Uri.file(result.viewModelFilePath),
         targetRange: new vscode.Range(
           new vscode.Position(line - 1, character),
           new vscode.Position(line, character)

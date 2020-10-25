@@ -81,11 +81,14 @@ export function createVirtualFileWithContent(
     99
   );
 
-  return createVirtualCompletionSourceFile(
-    virtualViewModelSourceFile,
-    content,
-    customElementClassName
-  );
+  return {
+    ...createVirtualCompletionSourceFile(
+      virtualViewModelSourceFile,
+      content,
+      customElementClassName
+    ),
+    viewModelFilePath: targetSourceFile.fileName,
+  };
 }
 
 export function getVirtualDefinition(
@@ -93,7 +96,7 @@ export function getVirtualDefinition(
   aureliaProgram: AureliaProgram,
   goToSourceWord: string
 ) {
-  const { targetVirtualSourcefile, completionIndex } =
+  const { targetVirtualSourcefile, completionIndex, viewModelFilePath } =
     createVirtualFileWithContent(aureliaProgram, filePath, goToSourceWord) ||
     ({} as VirtualCompletionSourceFileInfo);
 
@@ -104,9 +107,13 @@ export function getVirtualDefinition(
     completionIndex
   );
   console.log("TCL: result", result);
-  return targetVirtualSourcefile.getLineAndCharacterOfPosition(
-    result![0].contextSpan?.start || 0
-  );
+  return {
+    lineAndCharacter: targetVirtualSourcefile.getLineAndCharacterOfPosition(
+      result![0].contextSpan?.start || 0
+    ),
+    viewModelFilePath,
+  };
+
   // 1. Create virtual file
   // 2. with goToSourceWord
   // 3. return definition

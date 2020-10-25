@@ -28,6 +28,7 @@ interface EntryDetailsMap {
 export interface VirtualCompletionSourceFileInfo {
   targetVirtualSourcefile: ts.SourceFile;
   completionIndex: number;
+  viewModelFilePath?: string;
 }
 
 import * as ts from "typescript";

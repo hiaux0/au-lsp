@@ -69,10 +69,10 @@ class SearchDefinitionInView implements vscode.DefinitionProvider {
         lineAndCharacter: ts.LineAndCharacter;
         viewModelFilePath: string;
       }>("get-virtual-definition", {
-        position,
         documentContent: document.getText(),
+        position,
         goToSourceWord,
-        filePath: document.uri,
+        filePath: document.uri.path,
       });
 
       const { line, character } = result.lineAndCharacter;

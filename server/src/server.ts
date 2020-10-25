@@ -374,7 +374,6 @@ connection.onRequest(
   "get-virtual-definition",
   ({
     documentContent,
-    document,
     position,
     goToSourceWord,
     filePath,
@@ -386,6 +385,16 @@ connection.onRequest(
         0,
         documentContent
       );
+      const definitions = getDefinition(
+        document,
+        position,
+        aureliaProgram,
+        goToSourceWord
+      );
+
+      if (!definitions.viewModelFilePath)
+        throw new Error(`No file found for: >>${goToSourceWord}<<`);
+
       return getDefinition(document, position, aureliaProgram, goToSourceWord);
     } catch (err) {
       return getVirtualDefinition(filePath, aureliaProgram, goToSourceWord);

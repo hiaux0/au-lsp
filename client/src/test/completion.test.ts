@@ -38,7 +38,7 @@ function getTestItems(
   return testItems;
 }
 
-suite.only("Completion", () => {
+suite("Completion", () => {
   const applicationFile = getTestApplicationFiles();
   const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
   const aureliaProgram = getAureliaProgramForTesting();

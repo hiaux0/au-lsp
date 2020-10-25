@@ -3,12 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { TextDocument } from "vscode-languageserver-textdocument";
+import { AST, SAXParser, MarkupData } from "parse5";
 import {
-  TextDocument,
   Position,
   LanguageService,
   TokenType,
   Range,
+  Scanner,
 } from "./languageModes";
 import { AURELIA_ATTRIBUTES_KEYWORDS } from "../configuration/DocumentSettings";
 
@@ -36,9 +38,12 @@ export interface EmbeddedRegion {
   start: number;
   end: number;
   attributeValue?: boolean;
+  tagName?: string;
 }
 
 export const aureliaLanguageId = "aurelia";
+
+export function getDocumentRegionsV2(document: TextDocument) {}
 
 export function getDocumentRegions(
   languageService: LanguageService,
@@ -55,13 +60,24 @@ export function getDocumentRegions(
   let token = scanner.scan();
   // [1.] token parsing
   while (token !== TokenType.EOS) {
-    // // console.log('START ------------------------------------------------------------------------------------------')
     switch (token) {
       case TokenType.StartTag:
         lastTagName = scanner.getTokenText();
         lastAttributeName = null;
         languageIdFromType = "javascript";
         break;
+      case TokenType.StartTagClose: {
+        if (lastTagName === "my-compo") {
+          console.log("TCL: lastTagName", lastTagName);
+          const aureliaRegion = createRegion(
+            scanner,
+            document,
+            aureliaLanguageId,
+            lastTagName
+          );
+          regions.push(aureliaRegion);
+        }
+      }
       case TokenType.Styles:
         // regions.push({ languageId: 'typescript', start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
         // regions.push({ languageId: 'javascript', start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
@@ -281,6 +297,9 @@ export function getRegionAtPosition(
 ): EmbeddedRegion | undefined {
   let offset = document.offsetAt(position);
   for (let region of regions) {
+    if (region.tagName) {
+      console.log("TCL: region.tagName", region.tagName);
+    }
     if (region.start <= offset) {
       if (offset <= region.end) {
         return region;
@@ -401,4 +420,26 @@ function getAttributeLanguage(attributeName: string): string | null {
     return null;
   }
   return match[1] ? "css" : "javascript";
+}
+
+function createRegion(
+  scanner: Scanner,
+  document: TextDocument,
+  languageId: string,
+  tagName: string
+) {
+  let start = scanner.getTokenOffset();
+  let end = scanner.getTokenEnd();
+  let firstChar = document.getText()[start];
+  if (firstChar === "'" || firstChar === '"') {
+    start++;
+    end--;
+  }
+  return {
+    languageId: aureliaLanguageId,
+    start,
+    end,
+    attributeValue: true,
+    tagName,
+  };
 }

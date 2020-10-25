@@ -55,6 +55,7 @@ import {
   getVirtualDefinition,
   VirtualDefinitionResult,
 } from "./virtual/virtualDefinition";
+import { getDefinition } from "./definition/getDefinition";
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -371,28 +372,23 @@ connection.onRequest("aurelia-get-component-class-declarations", () => {
 
 connection.onRequest(
   "get-virtual-definition",
-  ({ goToSourceWord, filePath }): VirtualDefinitionResult => {
+  ({
+    documentContent,
+    document,
+    position,
+    goToSourceWord,
+    filePath,
+  }): VirtualDefinitionResult | any => {
     try {
-      const result = getVirtualDefinition(
+      const document = TextDocument.create(
         filePath,
-        aureliaProgram,
-        goToSourceWord
+        "html",
+        0,
+        documentContent
       );
-      return result;
+      return getDefinition(document, position, aureliaProgram, goToSourceWord);
     } catch (err) {
-      const aureliaSourceFiles = aureliaProgram.getAureliaSourceFiles();
-      const targetAureliaFile = aureliaSourceFiles?.find((sourceFile) => {
-        return path.parse(sourceFile.fileName).name === goToSourceWord;
-      });
-
-      return {
-        lineAndCharacter: {
-          line: 1,
-          character: 1,
-        } /** TODO: Find class declaration position. Currently default to top of file */,
-        viewModelFilePath: targetAureliaFile?.fileName,
-      };
-
+      return getVirtualDefinition(filePath, aureliaProgram, goToSourceWord);
       console.log(err);
     }
   }

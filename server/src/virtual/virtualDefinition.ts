@@ -100,7 +100,7 @@ export function getVirtualDefinition(
   filePath: string,
   aureliaProgram: AureliaProgram,
   goToSourceWord: string
-): VirtualDefinitionResult {
+): VirtualDefinitionResult | undefined {
   const { targetVirtualSourcefile, completionIndex, viewModelFilePath } =
     createVirtualFileWithContent(aureliaProgram, filePath, goToSourceWord) ||
     ({} as VirtualCompletionSourceFileInfo);
@@ -111,7 +111,9 @@ export function getVirtualDefinition(
     targetVirtualSourcefile.fileName,
     completionIndex
   );
-  console.log("TCL: result", result);
+
+  if (result?.length === 0) return;
+
   return {
     lineAndCharacter: targetVirtualSourcefile.getLineAndCharacterOfPosition(
       result![0].contextSpan?.start || 0

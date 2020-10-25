@@ -20,14 +20,22 @@ suite("Definition", () => {
   const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
 
   test("Complete class declaration", async () => {
+    // <!-- Test: Go to definition [METHOD] -->
     await testCompletion(docUri, new vscode.Position(5, 30), {
       position: new vscode.Position(10, 2),
       partOfFilePath: "testFixture/src/compo-user/compo-user.ts",
     });
 
+    // <!-- Test: Go to definition [VARIABLE] -->
     await testCompletion(docUri, new vscode.Position(8, 21), {
       position: new vscode.Position(8, 2),
       partOfFilePath: "testFixture/src/compo-user/compo-user.ts",
+    });
+
+    // <!-- Test: Go to definition [CUSTOM_ELEMENT] -->
+    await testCompletion(docUri, new vscode.Position(11, 3), {
+      position: new vscode.Position(1, 1),
+      partOfFilePath: "testFixture/src/my-compo/my-compo.ts",
     });
   });
 });

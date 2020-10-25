@@ -51,7 +51,10 @@ import {
 import * as path from "path";
 import * as ts from "typescript";
 import { createDiagram } from "./viewModel/createDiagram";
-import { getVirtualDefinition } from "./virtual/virtualDefinition";
+import {
+  getVirtualDefinition,
+  VirtualDefinitionResult,
+} from "./virtual/virtualDefinition";
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -368,13 +371,30 @@ connection.onRequest("aurelia-get-component-class-declarations", () => {
 
 connection.onRequest(
   "get-virtual-definition",
-  ({ goToSourceWord, filePath }) => {
-    const result = getVirtualDefinition(
-      filePath,
-      aureliaProgram,
-      goToSourceWord
-    );
-    return result;
+  ({ goToSourceWord, filePath }): VirtualDefinitionResult => {
+    try {
+      const result = getVirtualDefinition(
+        filePath,
+        aureliaProgram,
+        goToSourceWord
+      );
+      return result;
+    } catch (err) {
+      const aureliaSourceFiles = aureliaProgram.getAureliaSourceFiles();
+      const targetAureliaFile = aureliaSourceFiles?.find((sourceFile) => {
+        return path.parse(sourceFile.fileName).name === goToSourceWord;
+      });
+
+      return {
+        lineAndCharacter: {
+          line: 1,
+          character: 1,
+        } /** TODO: Find class declaration position. Currently default to top of file */,
+        viewModelFilePath: targetAureliaFile?.fileName,
+      };
+
+      console.log(err);
+    }
   }
 );
 

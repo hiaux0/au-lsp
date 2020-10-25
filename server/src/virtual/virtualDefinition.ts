@@ -1,3 +1,8 @@
+export interface VirtualDefinitionResult {
+  lineAndCharacter: ts.LineAndCharacter;
+  viewModelFilePath?: string;
+}
+
 import * as path from "path";
 import * as ts from "typescript";
 import { AureliaProgram } from "../viewModel/AureliaProgram";
@@ -95,7 +100,7 @@ export function getVirtualDefinition(
   filePath: string,
   aureliaProgram: AureliaProgram,
   goToSourceWord: string
-) {
+): VirtualDefinitionResult {
   const { targetVirtualSourcefile, completionIndex, viewModelFilePath } =
     createVirtualFileWithContent(aureliaProgram, filePath, goToSourceWord) ||
     ({} as VirtualCompletionSourceFileInfo);

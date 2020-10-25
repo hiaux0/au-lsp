@@ -3,6 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import "reflect-metadata";
 import * as path from "path";
 import * as vscode from "vscode";
 import {
@@ -27,6 +28,7 @@ import {
 } from "vscode-languageclient";
 import { registerDiagramPreview } from "./webview/diagramPreview";
 import { RelatedFiles } from "./feature/relatedFiles";
+import { aureliaProgram } from "../../server/src/viewModel/AureliaProgram";
 
 let client: LanguageClient;
 
@@ -61,25 +63,30 @@ class SearchDefinitionInView implements vscode.DefinitionProvider {
   ): Promise<vscode.DefinitionLink[]> {
     const goToSourceWordRange = document.getWordRangeAtPosition(position);
     const goToSourceWord = document.getText(goToSourceWordRange);
-    const result = await this.client.sendRequest<{
-      lineAndCharacter: ts.LineAndCharacter;
-      viewModelFilePath: string;
-    }>("get-virtual-definition", {
-      goToSourceWord,
-      filePath: document.uri.path,
-    });
 
-    const { line, character } = result.lineAndCharacter;
+    try {
+      const result = await this.client.sendRequest<{
+        lineAndCharacter: ts.LineAndCharacter;
+        viewModelFilePath: string;
+      }>("get-virtual-definition", {
+        goToSourceWord,
+        filePath: document.uri.path,
+      });
 
-    return [
-      {
-        targetUri: vscode.Uri.file(result.viewModelFilePath),
-        targetRange: new vscode.Range(
-          new vscode.Position(line - 1, character),
-          new vscode.Position(line, character)
-        ),
-      },
-    ];
+      const { line, character } = result.lineAndCharacter;
+
+      return [
+        {
+          targetUri: vscode.Uri.file(result.viewModelFilePath),
+          targetRange: new vscode.Range(
+            new vscode.Position(line - 1, character),
+            new vscode.Position(line, character)
+          ),
+        },
+      ];
+    } catch (err) {
+      console.log("TCL: SearchDefinitionInView -> err", err);
+    }
   }
 }
 

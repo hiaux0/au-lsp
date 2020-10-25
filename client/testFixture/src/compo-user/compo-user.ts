@@ -1,5 +1,15 @@
 import { bindable, customElement } from "aurelia-framework";
 
+interface Alliteration {
+  wait: string;
+}
+
+interface Grammar {
+  id: number;
+  saying: string;
+  alliteration: Alliteration;
+}
+
 @customElement("compo-user")
 export class CompoUser {
   @bindable thisIsMe: string = "hello";
@@ -7,6 +17,10 @@ export class CompoUser {
   message: string = "compo user";
 
   counter: number = 0;
+
+  grammarRules: Grammar[];
+
+  rule: Grammar;
 
   increaseCounter(): number {
     return 1;

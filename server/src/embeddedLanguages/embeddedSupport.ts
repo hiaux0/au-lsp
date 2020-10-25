@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { AST, SAXParser, MarkupData } from "parse5";
+import { parse } from "parse5";
 import {
   Position,
   LanguageService,

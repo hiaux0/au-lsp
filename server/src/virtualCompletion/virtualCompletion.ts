@@ -25,6 +25,11 @@ interface EntryDetailsMap {
   [key: string]: EntryDetailsMapData;
 }
 
+export interface VirtualCompletionSourceFileInfo {
+  targetVirtualSourcefile: ts.SourceFile;
+  completionIndex: number;
+}
+
 import * as ts from "typescript";
 import * as path from "path";
 import {
@@ -41,7 +46,7 @@ import { EmbeddedRegion } from "../embeddedLanguages/embeddedSupport";
 import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
 import { AureliaProgram } from "../viewModel/AureliaProgram";
 
-const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
+export const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
 const VIRTUAL_METHOD_NAME = "__vir";
 
 const PARAMETER_NAME = "parameterName";
@@ -64,7 +69,7 @@ export function createVirtualCompletionSourceFile(
   virtualViewModelSourceFile: ts.SourceFile,
   virtualContent: string,
   customElementClassName: string
-) {
+): VirtualCompletionSourceFileInfo {
   /** Match [...] export class MyCustomElement { [...] */
   const virtualViewModelContent = virtualViewModelSourceFile.getText();
   const classDeclaration = "class ";
@@ -243,6 +248,8 @@ function getKindName(kind: ts.SyntaxKind) {
   return (ts as any).SyntaxKind[kind];
 }
 
+function getSourceFileForVirtualViewModel() {}
+
 export function getVirtualViewModelCompletion(
   textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument,
@@ -262,7 +269,6 @@ export function getVirtualViewModelCompletion(
   const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
   const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
   const viewBaseName = path.parse(documentUri).name;
-  console.log("TCL: MyCustomElement -> viewBaseName", viewBaseName);
 
   const targetSourceFile = aureliaFiles?.find((aureliaFile) => {
     return scriptExtensions.find((extension) => {

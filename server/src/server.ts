@@ -51,6 +51,7 @@ import {
 import * as path from "path";
 import * as ts from "typescript";
 import { createDiagram } from "./viewModel/createDiagram";
+import { getVirtualDefinition } from "./virtual/virtualDefinition";
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -364,6 +365,18 @@ connection.onRequest("aurelia-get-component-list", () => {
 connection.onRequest("aurelia-get-component-class-declarations", () => {
   return aureliaProgram.getComponentMap().classDeclarations;
 });
+
+connection.onRequest(
+  "get-virtual-definition",
+  ({ goToSourceWord, filePath }) => {
+    const result = getVirtualDefinition(
+      filePath,
+      aureliaProgram,
+      goToSourceWord
+    );
+    return result;
+  }
+);
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events

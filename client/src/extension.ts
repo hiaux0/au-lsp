@@ -17,6 +17,7 @@ import {
   CompletionItem,
 } from "vscode";
 import * as WebSocket from "ws";
+import * as ts from "typescript";
 
 import {
   LanguageClient,
@@ -44,6 +45,44 @@ class CompletionItemProviderInView implements CompletionItemProvider {
     return this.client.sendRequest<any>(
       "aurelia-get-component-class-declarations"
     );
+  }
+}
+
+class SearchDefinitionInView implements vscode.DefinitionProvider {
+  public client: LanguageClient;
+
+  public constructor(client: LanguageClient) {
+    this.client = client;
+  }
+
+  public async provideDefinition(
+    document: vscode.TextDocument,
+    position: vscode.Position
+  ): Promise<vscode.DefinitionLink[]> {
+    const goToSourceWordRange = document.getWordRangeAtPosition(position);
+    const goToSourceWord = document.getText(goToSourceWordRange);
+    const result = await this.client.sendRequest<ts.LineAndCharacter>(
+      "get-virtual-definition",
+      {
+        goToSourceWord,
+        filePath: document.uri.path,
+      }
+    );
+
+    const { line, character } = result;
+
+    return [
+      {
+        targetUri: vscode.Uri.file(
+          // "/home/hdn/dev/repos/au-lsp/client/testFixture/src/compo-user/compo-user.ts"
+          "/home/hdn/dev/repos/au-lsp/client/testFixture/src/my-compo/my-compo.ts"
+        ),
+        targetRange: new vscode.Range(
+          new vscode.Position(line - 1, character),
+          new vscode.Position(line, character)
+        ),
+      },
+    ];
   }
 }
 
@@ -142,6 +181,13 @@ export function activate(context: ExtensionContext) {
     vscode.languages.registerCompletionItemProvider(
       { scheme: "file", language: "html" },
       new CompletionItemProviderInView(client)
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerDefinitionProvider(
+      { scheme: "file", language: "html" },
+      new SearchDefinitionInView(client)
     )
   );
 

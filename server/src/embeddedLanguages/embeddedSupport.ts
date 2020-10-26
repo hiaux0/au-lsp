@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TextDocument } from "vscode-languageserver-textdocument";
-import { parse } from "parse5";
+import * as fs from "fs";
+import * as parse5 from "parse5";
+import * as SaxStream from "parse5-sax-parser";
 import {
   Position,
   LanguageService,
@@ -13,6 +14,9 @@ import {
   Scanner,
 } from "./languageModes";
 import { AURELIA_ATTRIBUTES_KEYWORDS } from "../configuration/DocumentSettings";
+import { TextDocument } from "vscode-languageserver-textdocument";
+import { AureliaView } from "../common/constants";
+import { aureliaProgram } from "../viewModel/AureliaProgram";
 
 export interface LanguageRange extends Range {
   languageId: string | undefined;
@@ -41,9 +45,184 @@ export interface EmbeddedRegion {
   tagName?: string;
 }
 
+enum ViewRegionType {
+  Attribute = "Attribute",
+  AttributeInterpolation = "AttributeInterpolation",
+  TextInterpolation = "TextInterpolation",
+  CustomElement = "CustomElement",
+}
+
+interface ViewRegionInfo {
+  type: ViewRegionType;
+  languageId: string;
+  start?: number;
+  end?: number;
+  attributeName?: string;
+  tagName?: string;
+}
+
+interface ViewRegions {
+  interpolatedRegions: ViewRegionInfo[];
+  customElementRegions: ViewRegionInfo[];
+}
+
 export const aureliaLanguageId = "aurelia";
 
-export function getDocumentRegionsV2(document: TextDocument) {}
+export function getDocumentRegionsV2(document: TextDocument) {
+  return new Promise((resolve) => {
+    const saxStream = new SaxStream({ sourceCodeLocationInfo: true });
+    const fileStream = fs.createReadStream(document.uri, { encoding: "utf-8" });
+    const viewRegions: ViewRegionInfo[] = [];
+    const interpolationRegex = /\$(?:\s*)\{(?!\s*`)(?<interpolationValue>.*?)\}/g;
+
+    const aureliaCustomElementNames = aureliaProgram.componentList.map(
+      (component) => component.viewModelName
+    );
+
+    // 1. Check if in <template>
+    let hasTemplateTag = false;
+
+    saxStream.on("startTag", (startTag) => {
+      const { tagName } = startTag;
+      const isTemplateTag = tagName === AureliaView.TEMPLATE_TAG_NAME;
+      if (isTemplateTag) {
+        hasTemplateTag = true;
+      }
+
+      if (!hasTemplateTag) return;
+
+      // Attributes and Interpolation
+      startTag.attrs.forEach((attr) => {
+        // Attributes
+        const isAttributeKeyword = AURELIA_ATTRIBUTES_KEYWORDS.some(
+          (keyword) => {
+            return attr.name.includes(keyword);
+          }
+        );
+        if (isAttributeKeyword) {
+          const viewRegion = createRegionV2({
+            attributeName: attr.name,
+            sourceCodeLocation: startTag.sourceCodeLocation?.attrs[attr.name], // TODO: Currently we get the whole attribute, and not just its value (>click.delegate=""<, instead of just >""<)
+            type: ViewRegionType.Attribute,
+          });
+          viewRegions.push(viewRegion);
+        } else {
+          // Interpolation
+          const interpolationMatch = interpolationRegex.exec(attr.value);
+          if (interpolationMatch !== null) {
+            const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
+            if (!attrLocation) return;
+
+            /** Eg. >css="width: ${<message}px;" */
+            const startInterpolationLength =
+              attr.name.length + // css
+              2 + // ="
+              interpolationMatch.index + // width:_
+              2; // ${
+
+            /** Eg. >css="width: ${message}<px;" */
+            const endInterpolationLength =
+              attrLocation.startOffset +
+              startInterpolationLength +
+              Number(interpolationMatch.groups?.interpolationValue.length) + // message
+              1; // }
+
+            const updatedLocation: parse5.Location = {
+              ...attrLocation,
+              startOffset: attrLocation.startOffset + startInterpolationLength,
+              endOffset: endInterpolationLength,
+            };
+
+            const viewRegion = createRegionV2({
+              attributeName: attr.name,
+              sourceCodeLocation: updatedLocation,
+              type: ViewRegionType.AttributeInterpolation,
+            });
+            viewRegions.push(viewRegion);
+          }
+        }
+      });
+
+      // Custom elements
+      const isCustomElement = aureliaCustomElementNames.includes(tagName);
+      if (isCustomElement) {
+        const viewRegion = createRegionV2({
+          tagName,
+          sourceCodeLocation: startTag.sourceCodeLocation,
+          type: ViewRegionType.CustomElement,
+        });
+        viewRegions.push(viewRegion);
+      }
+    });
+
+    saxStream.on("text", (text) => {
+      const interpolationMatch = interpolationRegex.exec(text.text);
+      if (interpolationMatch !== null) {
+        text;
+        const attrLocation = text.sourceCodeLocation;
+        if (!attrLocation) return;
+
+        /** Eg. \n\n  ${grammarRules.length} */
+        const startInterpolationLength =
+          interpolationMatch.index + // width:_
+          2; // ${
+
+        /** Eg. >css="width: ${message}<px;" */
+        const endInterpolationLength =
+          attrLocation.startOffset +
+          startInterpolationLength +
+          Number(interpolationMatch.groups?.interpolationValue.length) + // message
+          1; // }
+
+        const updatedLocation: parse5.Location = {
+          ...attrLocation,
+          startOffset: attrLocation.startOffset + startInterpolationLength,
+          endOffset: endInterpolationLength,
+        };
+
+        const viewRegion = createRegionV2({
+          sourceCodeLocation: updatedLocation,
+          type: ViewRegionType.TextInterpolation,
+        });
+        viewRegions.push(viewRegion);
+      }
+    });
+
+    saxStream.on("endTag", (endTag) => {
+      const isTemplateTag = endTag.tagName === AureliaView.TEMPLATE_TAG_NAME;
+      if (isTemplateTag) {
+        resolve(viewRegions);
+      }
+    });
+
+    saxStream.write(document.getText());
+  });
+}
+
+function createRegionV2({
+  sourceCodeLocation,
+  type,
+  attributeName,
+  tagName,
+  languageId = aureliaLanguageId,
+}: {
+  sourceCodeLocation:
+    | SaxStream.StartTagToken["sourceCodeLocation"]
+    | parse5.AttributesLocation[string];
+  type: ViewRegionType;
+  attributeName?: string;
+  tagName?: string;
+  languageId?: string;
+}) {
+  return {
+    type,
+    languageId,
+    start: sourceCodeLocation?.startOffset,
+    end: sourceCodeLocation?.endOffset,
+    attributeName,
+    tagName,
+  };
+}
 
 export function getDocumentRegions(
   languageService: LanguageService,
@@ -68,7 +247,6 @@ export function getDocumentRegions(
         break;
       case TokenType.StartTagClose: {
         if (lastTagName === "my-compo") {
-          console.log("TCL: lastTagName", lastTagName);
           const aureliaRegion = createRegion(
             scanner,
             document,
@@ -298,7 +476,7 @@ export function getRegionAtPosition(
   let offset = document.offsetAt(position);
   for (let region of regions) {
     if (region.tagName) {
-      console.log("TCL: region.tagName", region.tagName);
+      // console.log("TCL: region.tagName", region.tagName);
     }
     if (region.start <= offset) {
       if (offset <= region.end) {

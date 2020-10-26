@@ -18,6 +18,7 @@ import {
   HTMLDocumentRegions,
   EmbeddedRegion,
   aureliaLanguageId,
+  getDocumentRegionsV2,
 } from "./embeddedSupport";
 import { getHTMLMode } from "./modes/htmlMode";
 import {
@@ -61,6 +62,7 @@ export function getDocumentRegionAtPosition(position: Position) {
     10,
     60,
     (document) => {
+      (getDocumentRegionsV2(document) as unknown) as EmbeddedRegion;
       const region = getDocumentRegions(
         htmlLanguageService,
         document

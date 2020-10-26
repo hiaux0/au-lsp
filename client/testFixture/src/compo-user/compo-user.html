@@ -9,7 +9,7 @@
 
   <!-- Test: Go to definition [VARIABLE] -->
   <!-- Interpolated region -->
-  <div css="width: ${}px;"></div>
+  <div css="width: ${message}px;"></div>
 
   <!-- Test: Go to definition [CUSTOM_ELEMENT] -->
   <!-- Custom element region -->
@@ -19,8 +19,8 @@
   <!-- Custom element region -->
   <my-compo inter-bindable.bind="increaseCounter()"></my-compo>
 
+  ${grammarRules.length}
   <div id="class-name">
-    ${grammarRules.length}
     <label repeat.for="rule of grammarRules">
       <input type="checkbox" model.one-time="rule" />
       ${rule.id}-${rule.saying}

@@ -44,9 +44,14 @@ class CompletionItemProviderInView implements CompletionItemProvider {
     const text = document.getText();
     const offset = document.offsetAt(position);
     const triggerCharacter = text.substring(offset - 1, offset);
-    return this.client.sendRequest<any>(
-      "aurelia-get-component-class-declarations"
-    );
+
+    if (triggerCharacter === "<") {
+      return this.client.sendRequest<any>(
+        "aurelia-get-component-class-declarations"
+      );
+    }
+
+    return [];
   }
 }
 

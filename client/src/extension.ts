@@ -73,6 +73,7 @@ class SearchDefinitionInView implements vscode.DefinitionProvider {
       const result = await this.client.sendRequest<{
         lineAndCharacter: ts.LineAndCharacter;
         viewModelFilePath: string;
+        viewFilePath: string;
       }>("get-virtual-definition", {
         documentContent: document.getText(),
         position,
@@ -81,10 +82,11 @@ class SearchDefinitionInView implements vscode.DefinitionProvider {
       });
 
       const { line, character } = result.lineAndCharacter;
+      const targetPath = result.viewFilePath || result.viewModelFilePath;
 
       return [
         {
-          targetUri: vscode.Uri.file(result.viewModelFilePath),
+          targetUri: vscode.Uri.file(targetPath),
           targetRange: new vscode.Range(
             new vscode.Position(line - 1, character),
             new vscode.Position(line, character)

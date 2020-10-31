@@ -1,6 +1,7 @@
 export interface VirtualDefinitionResult {
   lineAndCharacter: ts.LineAndCharacter;
   viewModelFilePath?: string;
+  viewFilePath?: string;
 }
 
 import * as path from "path";

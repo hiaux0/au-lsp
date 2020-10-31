@@ -45,9 +45,10 @@ export interface EmbeddedRegion {
   tagName?: string;
 }
 
-enum ViewRegionType {
+export enum ViewRegionType {
   Attribute = "Attribute",
   AttributeInterpolation = "AttributeInterpolation",
+  RepeatFor = "RepeatFor",
   TextInterpolation = "TextInterpolation",
   CustomElement = "CustomElement",
 }
@@ -56,7 +57,10 @@ export interface ViewRegionInfo {
   type: ViewRegionType;
   languageId: string;
   start?: number;
+  startCol?: number;
+  startLine?: number;
   end?: number;
+  endLine?: number;
   attributeName?: string;
   tagName?: string;
 }
@@ -83,9 +87,17 @@ export function getDocumentRegionsV2(
     // 1. Check if in <template>
     let hasTemplateTag = false;
 
+    /**
+     * 1. Template Tag
+     * 2. Attributes
+     * 3. Attribute Interpolation
+     * 4. Custom element
+     * 5. repeat.for=""
+     */
     saxStream.on("startTag", (startTag) => {
       const { tagName } = startTag;
       const isTemplateTag = tagName === AureliaView.TEMPLATE_TAG_NAME;
+      // 1. Template tag
       if (isTemplateTag) {
         hasTemplateTag = true;
       }
@@ -94,12 +106,14 @@ export function getDocumentRegionsV2(
 
       // Attributes and Interpolation
       startTag.attrs.forEach((attr) => {
-        // Attributes
         const isAttributeKeyword = AURELIA_ATTRIBUTES_KEYWORDS.some(
           (keyword) => {
             return attr.name.includes(keyword);
           }
         );
+        const isRepeatFor = attr.name === AureliaView.REPEAT_FOR;
+
+        // 2. Attributes
         if (isAttributeKeyword) {
           const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
 
@@ -123,8 +137,39 @@ export function getDocumentRegionsV2(
             type: ViewRegionType.Attribute,
           });
           viewRegions.push(viewRegion);
+        } else if (isRepeatFor) {
+          const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
+
+          if (!attrLocation) return;
+          /** Eg. >repeat.for="<rule of grammarRules" */
+          const startInterpolationLength =
+            attr.name.length + // click.delegate
+            2; // ="
+
+          /** Eg. click.delegate="increaseCounter()>"< */
+          const endInterpolationLength = attrLocation.endOffset - 1;
+
+          // __<label repeat.for="rule of grammarRules">
+          const startColAdjust =
+            attrLocation.startCol + // __<label_
+            attr.name.length + // repeat.for
+            2 - // ="
+            1; // index starts from 0
+
+          const updatedLocation: parse5.Location = {
+            ...attrLocation,
+            startOffset: attrLocation.startOffset + startInterpolationLength,
+            startCol: startColAdjust,
+            endOffset: endInterpolationLength,
+          };
+          const viewRegion = createRegionV2({
+            attributeName: attr.name,
+            sourceCodeLocation: updatedLocation,
+            type: ViewRegionType.RepeatFor,
+          });
+          viewRegions.push(viewRegion);
         } else {
-          // Interpolation
+          // 3. Attribute Interpolation
           const interpolationMatch = interpolationRegex.exec(attr.value);
           if (interpolationMatch !== null) {
             const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
@@ -159,7 +204,7 @@ export function getDocumentRegionsV2(
         }
       });
 
-      // Custom elements
+      // 4. Custom elements
       const isCustomElement = aureliaCustomElementNames.includes(tagName);
       if (isCustomElement) {
         const viewRegion = createRegionV2({
@@ -230,7 +275,7 @@ function createRegionV2({
   attributeName?: string;
   tagName?: string;
   languageId?: string;
-}) {
+}): ViewRegionInfo {
   let calculatedStart = sourceCodeLocation?.startOffset;
   let calculatedEnd = sourceCodeLocation?.endOffset;
 
@@ -238,7 +283,10 @@ function createRegionV2({
     type,
     languageId,
     start: calculatedStart,
+    startCol: sourceCodeLocation?.startCol,
+    startLine: sourceCodeLocation?.startLine,
     end: calculatedEnd,
+    endLine: sourceCodeLocation?.endLine,
     attributeName,
     tagName,
   };

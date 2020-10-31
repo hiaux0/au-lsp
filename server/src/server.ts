@@ -379,12 +379,12 @@ connection.onRequest("aurelia-get-component-class-declarations", () => {
 
 connection.onRequest(
   "get-virtual-definition",
-  ({
+  async ({
     documentContent,
     position,
     goToSourceWord,
     filePath,
-  }): VirtualDefinitionResult | any => {
+  }): Promise<VirtualDefinitionResult | any> => {
     try {
       const document = TextDocument.create(
         filePath,
@@ -392,17 +392,14 @@ connection.onRequest(
         0,
         documentContent
       );
-      const definitions = getDefinition(
+      const definitions = await getDefinition(
         document,
         position,
         aureliaProgram,
         goToSourceWord
       );
 
-      if (!definitions.viewModelFilePath)
-        throw new Error(`No file found for: >>${goToSourceWord}<<`);
-
-      return getDefinition(document, position, aureliaProgram, goToSourceWord);
+      return definitions;
     } catch (err) {
       return getVirtualDefinition(filePath, aureliaProgram, goToSourceWord);
       console.log(err);

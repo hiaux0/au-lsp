@@ -73,6 +73,8 @@ export interface RepeatForRegionData {
   iterator: string;
 }
 
+export type CustomElementRegionData = ViewRegionInfo[];
+
 interface ViewRegions {
   interpolatedRegions: ViewRegionInfo[];
   customElementRegions: ViewRegionInfo[];
@@ -80,9 +82,9 @@ interface ViewRegions {
 
 export const aureliaLanguageId = "aurelia";
 
-export function getDocumentRegionsV2(
+export function getDocumentRegionsV2<RegionDataType>(
   document: TextDocument
-): Promise<ViewRegionInfo[]> {
+): Promise<ViewRegionInfo<RegionDataType>[]> {
   return new Promise((resolve) => {
     const saxStream = new SaxStream({ sourceCodeLocationInfo: true });
     const viewRegions: ViewRegionInfo[] = [];
@@ -103,6 +105,7 @@ export function getDocumentRegionsV2(
      * 5. repeat.for=""
      */
     saxStream.on("startTag", (startTag) => {
+      const customElementAttributeRegions: ViewRegionInfo[] = [];
       const { tagName } = startTag;
       const isTemplateTag = tagName === AureliaView.TEMPLATE_TAG_NAME;
       // 1. Template tag
@@ -145,6 +148,7 @@ export function getDocumentRegionsV2(
             type: ViewRegionType.Attribute,
           });
           viewRegions.push(viewRegion);
+          customElementAttributeRegions.push(viewRegion);
         } else if (isRepeatFor) {
           // 5. Repeat for
           const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
@@ -225,12 +229,13 @@ export function getDocumentRegionsV2(
       // 4. Custom elements
       const isCustomElement = aureliaCustomElementNames.includes(tagName);
       if (isCustomElement) {
-        const viewRegion = createRegionV2({
+        const customElementViewRegion = createRegionV2({
           tagName,
           sourceCodeLocation: startTag.sourceCodeLocation,
           type: ViewRegionType.CustomElement,
+          data: customElementAttributeRegions,
         });
-        viewRegions.push(viewRegion);
+        viewRegions.push(customElementViewRegion);
       }
     });
 

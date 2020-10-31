@@ -22,6 +22,7 @@ import {
 } from "vscode-languageserver";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { Position } from "./embeddedLanguages/languageModes";
 
 // We need to import this to include reflect functionality
 import "reflect-metadata";
@@ -41,7 +42,13 @@ import {
   LanguageModes,
   getLanguageModes,
 } from "./embeddedLanguages/languageModes";
-import { aureliaLanguageId } from "./embeddedLanguages/embeddedSupport";
+import {
+  aureliaLanguageId,
+  CustomElementRegionData,
+  getDocumentRegionsV2,
+  getRegionAtPositionV2,
+  ViewRegionType,
+} from "./embeddedLanguages/embeddedSupport";
 import {
   getVirtualCompletion,
   createVirtualCompletionSourceFile,
@@ -56,6 +63,7 @@ import {
   VirtualDefinitionResult,
 } from "./virtual/virtualDefinition";
 import { getDefinition } from "./definition/getDefinition";
+import { camelCase } from "@aurelia/kernel";
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -384,14 +392,9 @@ connection.onRequest(
     position,
     goToSourceWord,
     filePath,
-  }): Promise<VirtualDefinitionResult | any> => {
+  }): Promise<VirtualDefinitionResult | undefined> => {
+    const document = TextDocument.create(filePath, "html", 0, documentContent);
     try {
-      const document = TextDocument.create(
-        filePath,
-        "html",
-        0,
-        documentContent
-      );
       const definitions = await getDefinition(
         document,
         position,
@@ -401,7 +404,45 @@ connection.onRequest(
 
       return definitions;
     } catch (err) {
-      return getVirtualDefinition(filePath, aureliaProgram, goToSourceWord);
+      /**
+       * 1. >inter-bindable<.bind="increaseCounter()"
+       */
+
+      /** Region from FE starts at index 0, BE region starts at 1 */
+      const adjustedPosition: Position = {
+        character: position.character + 1,
+        line: position.line + 1,
+      };
+      const regions = await getDocumentRegionsV2<CustomElementRegionData>(
+        document
+      );
+      const targetCustomElementRegion = regions
+        .filter((region) => region.type === ViewRegionType.CustomElement)
+        .find((customElementRegion) => {
+          return customElementRegion.data?.find((customElementAttribute) =>
+            customElementAttribute.attributeName?.includes(goToSourceWord)
+          );
+        });
+
+      if (!targetCustomElementRegion) return;
+
+      const aureliaSourceFiles = aureliaProgram.getAureliaSourceFiles();
+      const targetAureliaFile = aureliaSourceFiles?.find((sourceFile) => {
+        return (
+          path.parse(sourceFile.fileName).name ===
+          targetCustomElementRegion.tagName
+        );
+      });
+
+      if (!targetAureliaFile) return;
+
+      const sourceWordCamelCase = camelCase(goToSourceWord);
+      return getVirtualDefinition(
+        targetAureliaFile.fileName,
+        aureliaProgram,
+        sourceWordCamelCase
+      );
+
       console.log(err);
     }
   }

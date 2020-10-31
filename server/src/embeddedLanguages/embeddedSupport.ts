@@ -101,9 +101,25 @@ export function getDocumentRegionsV2(
           }
         );
         if (isAttributeKeyword) {
+          const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
+
+          if (!attrLocation) return;
+          /** Eg. >click.delegate="<increaseCounter()" */
+          const startInterpolationLength =
+            attr.name.length + // click.delegate
+            2; // ="
+
+          /** Eg. click.delegate="increaseCounter()>"< */
+          const endInterpolationLength = attrLocation.endOffset - 1;
+
+          const updatedLocation: parse5.Location = {
+            ...attrLocation,
+            startOffset: attrLocation.startOffset + startInterpolationLength,
+            endOffset: endInterpolationLength,
+          };
           const viewRegion = createRegionV2({
             attributeName: attr.name,
-            sourceCodeLocation: startTag.sourceCodeLocation?.attrs[attr.name], // TODO: Currently we get the whole attribute, and not just its value (>click.delegate=""<, instead of just >""<)
+            sourceCodeLocation: updatedLocation,
             type: ViewRegionType.Attribute,
           });
           viewRegions.push(viewRegion);
@@ -125,8 +141,7 @@ export function getDocumentRegionsV2(
             const endInterpolationLength =
               attrLocation.startOffset +
               startInterpolationLength +
-              Number(interpolationMatch.groups?.interpolationValue.length) + // message
-              1; // }
+              Number(interpolationMatch.groups?.interpolationValue.length); // message
 
             const updatedLocation: parse5.Location = {
               ...attrLocation,
@@ -165,19 +180,18 @@ export function getDocumentRegionsV2(
 
         /** Eg. \n\n  ${grammarRules.length} */
         const startInterpolationLength =
+          attrLocation.startOffset +
           interpolationMatch.index + // width:_
           2; // ${
 
         /** Eg. >css="width: ${message}<px;" */
         const endInterpolationLength =
-          attrLocation.startOffset +
           startInterpolationLength +
-          Number(interpolationMatch.groups?.interpolationValue.length) + // message
-          1; // }
+          Number(interpolationMatch.groups?.interpolationValue.length); // message
 
         const updatedLocation: parse5.Location = {
           ...attrLocation,
-          startOffset: attrLocation.startOffset + startInterpolationLength,
+          startOffset: startInterpolationLength,
           endOffset: endInterpolationLength,
         };
 
@@ -217,12 +231,6 @@ function createRegionV2({
 }) {
   let calculatedStart = sourceCodeLocation?.startOffset;
   let calculatedEnd = sourceCodeLocation?.endOffset;
-  if (attributeName) {
-    // calSt + "attrName" + '=
-    calculatedStart = calculatedStart! + attributeName.length + 2;
-    // - '"'
-    calculatedEnd = calculatedEnd! - 1; // I thought It should be -1, but why -2 here?
-  }
 
   return {
     type,

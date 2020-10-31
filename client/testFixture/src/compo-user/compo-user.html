@@ -1,14 +1,14 @@
 <template>
   <!-- Test: Completion -->
-  <!-- Interpolated region -->
+  <!-- Attribute region -->
   <div click.delegate=""></div>
 
   <!-- Test: Go to definition [METHOD] -->
-  <!-- Interpolated region -->
+  <!-- Attribute region -->
   <div click.delegate="increaseCounter()"></div>
 
   <!-- Test: Go to definition [VARIABLE] -->
-  <!-- Interpolated region -->
+  <!-- Attribute Interpolated region -->
   <div css="width: ${message}px;"></div>
 
   <!-- Test: Go to definition [CUSTOM_ELEMENT] -->
@@ -19,10 +19,12 @@
   <!-- Custom element region -->
   <my-compo inter-bindable.bind="increaseCounter()"></my-compo>
 
-  ${grammarRules.length}
+  <!-- Text interpolated region -->
+  ${} ${grammarRules.length}
   <div id="class-name">
     <label repeat.for="rule of grammarRules">
       <input type="checkbox" model.one-time="rule" />
+      <!-- Text interpolated region -->
       ${rule.id}-${rule.saying}
     </label>
   </div>

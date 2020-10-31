@@ -172,34 +172,36 @@ export function getDocumentRegionsV2(
     });
 
     saxStream.on("text", (text) => {
-      const interpolationMatch = interpolationRegex.exec(text.text);
-      if (interpolationMatch !== null) {
-        text;
-        const attrLocation = text.sourceCodeLocation;
-        if (!attrLocation) return;
+      let interpolationMatch;
+      while ((interpolationMatch = interpolationRegex.exec(text.text))) {
+        if (interpolationMatch !== null) {
+          text;
+          const attrLocation = text.sourceCodeLocation;
+          if (!attrLocation) return;
 
-        /** Eg. \n\n  ${grammarRules.length} */
-        const startInterpolationLength =
-          attrLocation.startOffset +
-          interpolationMatch.index + // width:_
-          2; // ${
+          /** Eg. \n\n  ${grammarRules.length} */
+          const startInterpolationLength =
+            attrLocation.startOffset +
+            interpolationMatch.index + // width:_
+            2; // ${
 
-        /** Eg. >css="width: ${message}<px;" */
-        const endInterpolationLength =
-          startInterpolationLength +
-          Number(interpolationMatch.groups?.interpolationValue.length); // message
+          /** Eg. >css="width: ${message}<px;" */
+          const endInterpolationLength =
+            startInterpolationLength +
+            Number(interpolationMatch.groups?.interpolationValue.length); // message
 
-        const updatedLocation: parse5.Location = {
-          ...attrLocation,
-          startOffset: startInterpolationLength,
-          endOffset: endInterpolationLength,
-        };
+          const updatedLocation: parse5.Location = {
+            ...attrLocation,
+            startOffset: startInterpolationLength,
+            endOffset: endInterpolationLength,
+          };
 
-        const viewRegion = createRegionV2({
-          sourceCodeLocation: updatedLocation,
-          type: ViewRegionType.TextInterpolation,
-        });
-        viewRegions.push(viewRegion);
+          const viewRegion = createRegionV2({
+            sourceCodeLocation: updatedLocation,
+            type: ViewRegionType.TextInterpolation,
+          });
+          viewRegions.push(viewRegion);
+        }
       }
     });
 

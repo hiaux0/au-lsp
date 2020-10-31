@@ -107,14 +107,14 @@ connection.onInitialize(async (params: InitializeParams) => {
   /** ********************** */
   /** Embedded Language Mode */
   /** ********************** */
-  languageModes = getLanguageModes();
+  // languageModes = getLanguageModes();
 
-  documents.onDidClose((e) => {
-    languageModes.onDocumentRemoved(e.document);
-  });
-  connection.onShutdown(() => {
-    languageModes.dispose();
-  });
+  // documents.onDidClose((e) => {
+  //   languageModes.onDocumentRemoved(e.document);
+  // });
+  // connection.onShutdown(() => {
+  //   languageModes.dispose();
+  // });
 
   const result: InitializeResult = {
     capabilities: {
@@ -227,7 +227,9 @@ connection.onDidChangeWatchedFiles((_change) => {
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-  (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+  async (
+    _textDocumentPosition: TextDocumentPositionParams
+  ): Promise<CompletionItem[]> => {
     const documentUri = _textDocumentPosition.textDocument.uri;
     const document = documents.get(documentUri);
     if (!document) {
@@ -237,11 +239,16 @@ connection.onCompletion(
     // Embedded Language
 
     // Virtual file
-    const virtualCompletions = getVirtualViewModelCompletion(
-      _textDocumentPosition,
-      document,
-      aureliaProgram
-    );
+    let virtualCompletions: CompletionItem[] = [];
+    try {
+      virtualCompletions = await getVirtualViewModelCompletion(
+        _textDocumentPosition,
+        document,
+        aureliaProgram
+      );
+    } catch (err) {
+      console.log("onCompletion 249 TCL: err", err);
+    }
 
     if (virtualCompletions.length > 0) {
       return virtualCompletions;

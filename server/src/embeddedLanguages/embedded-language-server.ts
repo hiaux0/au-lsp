@@ -26,14 +26,14 @@ let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let languageModes: LanguageModes;
 
 connection.onInitialize((_params: InitializeParams) => {
-  languageModes = getLanguageModes();
+  // languageModes = getLanguageModes();
 
-  documents.onDidClose((e) => {
-    languageModes.onDocumentRemoved(e.document);
-  });
-  connection.onShutdown(() => {
-    languageModes.dispose();
-  });
+  // documents.onDidClose((e) => {
+  //   languageModes.onDocumentRemoved(e.document);
+  // });
+  // connection.onShutdown(() => {
+  //   languageModes.dispose();
+  // });
 
   return {
     capabilities: {
@@ -63,24 +63,24 @@ async function validateTextDocument(textDocument: TextDocument) {
   try {
     const version = textDocument.version;
     const diagnostics: Diagnostic[] = [];
-    if (textDocument.languageId === "html1") {
-      const modes = languageModes.getAllModesInDocument(textDocument);
-      const latestTextDocument = documents.get(textDocument.uri);
-      if (latestTextDocument && latestTextDocument.version === version) {
-        // check no new version has come in after in after the async op
-        modes.forEach((mode) => {
-          if (mode.doValidation) {
-            mode.doValidation(latestTextDocument).forEach((d) => {
-              diagnostics.push(d);
-            });
-          }
-        });
-        connection.sendDiagnostics({
-          uri: latestTextDocument.uri,
-          diagnostics,
-        });
-      }
-    }
+    // if (textDocument.languageId === "html1") {
+    //   const modes = languageModes.getAllModesInDocument(textDocument);
+    //   const latestTextDocument = documents.get(textDocument.uri);
+    //   if (latestTextDocument && latestTextDocument.version === version) {
+    //     // check no new version has come in after in after the async op
+    //     modes.forEach((mode) => {
+    //       if (mode.doValidation) {
+    //         mode.doValidation(latestTextDocument).forEach((d) => {
+    //           diagnostics.push(d);
+    //         });
+    //       }
+    //     });
+    //     connection.sendDiagnostics({
+    //       uri: latestTextDocument.uri,
+    //       diagnostics,
+    //     });
+    //   }
+    // }
   } catch (e) {
     connection.console.error(`Error while validating ${textDocument.uri}`);
     connection.console.error(e);
@@ -93,16 +93,16 @@ connection.onCompletion(async (textDocumentPosition, token) => {
     return null;
   }
 
-  const mode = languageModes.getModeAtPosition(
-    document,
-    textDocumentPosition.position
-  );
-  if (!mode || !mode.doComplete) {
-    return CompletionList.create();
-  }
-  const doComplete = mode.doComplete!;
+  // const mode = languageModes.getModeAtPosition(
+  //   document,
+  //   textDocumentPosition.position
+  // );
+  // if (!mode || !mode.doComplete) {
+  //   return CompletionList.create();
+  // }
+  // const doComplete = mode.doComplete!;
 
-  return doComplete(document, textDocumentPosition.position);
+  // return doComplete(document, textDocumentPosition.position);
 });
 
 // Make the text document manager listen on the connection

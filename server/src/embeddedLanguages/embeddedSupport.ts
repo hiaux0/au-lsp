@@ -52,7 +52,7 @@ enum ViewRegionType {
   CustomElement = "CustomElement",
 }
 
-interface ViewRegionInfo {
+export interface ViewRegionInfo {
   type: ViewRegionType;
   languageId: string;
   start?: number;
@@ -68,10 +68,11 @@ interface ViewRegions {
 
 export const aureliaLanguageId = "aurelia";
 
-export function getDocumentRegionsV2(document: TextDocument) {
+export function getDocumentRegionsV2(
+  document: TextDocument
+): Promise<ViewRegionInfo[]> {
   return new Promise((resolve) => {
     const saxStream = new SaxStream({ sourceCodeLocationInfo: true });
-    const fileStream = fs.createReadStream(document.uri, { encoding: "utf-8" });
     const viewRegions: ViewRegionInfo[] = [];
     const interpolationRegex = /\$(?:\s*)\{(?!\s*`)(?<interpolationValue>.*?)\}/g;
 
@@ -214,11 +215,20 @@ function createRegionV2({
   tagName?: string;
   languageId?: string;
 }) {
+  let calculatedStart = sourceCodeLocation?.startOffset;
+  let calculatedEnd = sourceCodeLocation?.endOffset;
+  if (attributeName) {
+    // calSt + "attrName" + '=
+    calculatedStart = calculatedStart! + attributeName.length + 2;
+    // - '"'
+    calculatedEnd = calculatedEnd! - 1; // I thought It should be -1, but why -2 here?
+  }
+
   return {
     type,
     languageId,
-    start: sourceCodeLocation?.startOffset,
-    end: sourceCodeLocation?.endOffset,
+    start: calculatedStart,
+    end: calculatedEnd,
     attributeName,
     tagName,
   };
@@ -466,6 +476,26 @@ function getLanguageAtPosition(
     }
   }
   return "html";
+}
+
+export function getRegionAtPositionV2(
+  document: TextDocument,
+  regions: ViewRegionInfo[],
+  position: Position
+): ViewRegionInfo | undefined {
+  let offset = document.offsetAt(position);
+  for (let region of regions) {
+    if (region.start! <= offset) {
+      if (offset <= region.end!) {
+        return region;
+      }
+    } else {
+      break;
+    }
+  }
+
+  console.error("embeddedSupport -> getRegionAtPosition -> No Region found");
+  return undefined;
 }
 
 export function getRegionAtPosition(

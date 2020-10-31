@@ -251,16 +251,16 @@ function getKindName(kind: ts.SyntaxKind) {
 
 function getSourceFileForVirtualViewModel() {}
 
-export function getVirtualViewModelCompletion(
+export async function getVirtualViewModelCompletion(
   textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument,
   aureliaProgram: AureliaProgram
 ) {
   // 1. From the region get the part, that should be made virtual.
   const documentUri = textDocumentPosition.textDocument.uri;
-  const region = getDocumentRegionAtPosition(textDocumentPosition.position).get(
-    document
-  );
+  const region = await getDocumentRegionAtPosition(
+    textDocumentPosition.position
+  ).get(document);
 
   if (!region) return [];
 

@@ -404,8 +404,23 @@ connection.onRequest(
 
       return definitions;
     } catch (err) {
+      const virtualDefinition = getVirtualDefinition(
+        filePath,
+        aureliaProgram,
+        goToSourceWord
+      );
       /**
-       * 1. >inter-bindable<.bind="increaseCounter()"
+       * 1. inter-bindable.bind=">increaseCounter()<"
+       */
+      if (
+        virtualDefinition?.lineAndCharacter.line !== 0 &&
+        virtualDefinition?.lineAndCharacter.character !== 0
+      ) {
+        return virtualDefinition;
+      }
+
+      /**
+       * 2. >inter-bindable<.bind="increaseCounter()"
        */
 
       /** Region from FE starts at index 0, BE region starts at 1 */

@@ -65,19 +65,6 @@ export async function getDefinition(
       } /** TODO: Find class declaration position. Currently default to top of file */,
       viewModelFilePath: document.uri,
     };
-  } else {
-    /** Triggered on <my-component |that-compo.bind="someVar"> */
-    const componentMap = aureliaProgram.getComponentMap();
-    const region = getDocumentRegionAtPosition(position).get(document);
-
-    // TODO: below only placeholder to have TS not error out
-    return {
-      lineAndCharacter: {
-        line: 1,
-        character: 1,
-      } /** TODO: Find class declaration position. Currently default to top of file */,
-      viewModelFilePath: document.uri,
-    };
   }
 
   throw new Error(`No file found for: >>${goToSourceWord}<<`);

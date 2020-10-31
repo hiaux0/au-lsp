@@ -1,3 +1,7 @@
+import {
+  RepeatForRegionData,
+  ViewRegionInfo,
+} from "./../embeddedLanguages/embeddedSupport";
 import { AureliaView } from "./../common/constants";
 import { Position, TextDocument } from "vscode-languageserver-textdocument";
 import { AureliaProgram } from "./../viewModel/AureliaProgram";
@@ -33,17 +37,20 @@ export async function getDefinition(
   }
 
   const regions = await getDocumentRegionsV2(document);
-  const repeatForRegion = regions.find(
+  const repeatForRegions = regions.filter(
     (region) => region.type === ViewRegionType.RepeatFor
+  ) as ViewRegionInfo<RepeatForRegionData>[];
+  const targetRepeatForRegion = repeatForRegions.find(
+    (repeatForRegion) => repeatForRegion.data?.iterator === goToSourceWord
   );
 
-  if (repeatForRegion) {
+  if (targetRepeatForRegion) {
     /** repeat.for="" */
 
     if (
-      !repeatForRegion?.startLine ||
-      !repeatForRegion.start ||
-      !repeatForRegion.startCol
+      !targetRepeatForRegion?.startLine ||
+      !targetRepeatForRegion.start ||
+      !targetRepeatForRegion.startCol
     ) {
       console.error(
         `RepeatFor-Region does not have a start (line). cSearched for ${goToSourceWord}`
@@ -53,8 +60,8 @@ export async function getDefinition(
 
     return {
       lineAndCharacter: {
-        line: repeatForRegion.startLine,
-        character: repeatForRegion.startCol,
+        line: targetRepeatForRegion.startLine,
+        character: targetRepeatForRegion.startCol,
       } /** TODO: Find class declaration position. Currently default to top of file */,
       viewModelFilePath: document.uri,
     };

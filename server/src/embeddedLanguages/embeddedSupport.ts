@@ -53,7 +53,7 @@ export enum ViewRegionType {
   CustomElement = "CustomElement",
 }
 
-export interface ViewRegionInfo {
+export interface ViewRegionInfo<RegionDataType = any> {
   type: ViewRegionType;
   languageId: string;
   start?: number;
@@ -63,6 +63,14 @@ export interface ViewRegionInfo {
   endLine?: number;
   attributeName?: string;
   tagName?: string;
+  data?: RegionDataType;
+}
+
+export interface RepeatForRegionData {
+  /** repeat.for="num of >numbers<" */
+  iterableName: string;
+  /** repeat.for=">num< of numbers" */
+  iterator: string;
 }
 
 interface ViewRegions {
@@ -138,6 +146,7 @@ export function getDocumentRegionsV2(
           });
           viewRegions.push(viewRegion);
         } else if (isRepeatFor) {
+          // 5. Repeat for
           const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
 
           if (!attrLocation) return;
@@ -162,12 +171,21 @@ export function getDocumentRegionsV2(
             startCol: startColAdjust,
             endOffset: endInterpolationLength,
           };
-          const viewRegion = createRegionV2({
+          function getRepeatForData() {
+            const splitUpRepeatFor = attr.value.split(" ");
+            const repeatForData: RepeatForRegionData = {
+              iterator: splitUpRepeatFor[0],
+              iterableName: splitUpRepeatFor[2],
+            };
+            return repeatForData;
+          }
+          const repeatForViewRegion = createRegionV2<RepeatForRegionData>({
             attributeName: attr.name,
             sourceCodeLocation: updatedLocation,
             type: ViewRegionType.RepeatFor,
+            data: getRepeatForData(),
           });
-          viewRegions.push(viewRegion);
+          viewRegions.push(repeatForViewRegion);
         } else {
           // 3. Attribute Interpolation
           const interpolationMatch = interpolationRegex.exec(attr.value);
@@ -261,11 +279,12 @@ export function getDocumentRegionsV2(
   });
 }
 
-function createRegionV2({
+function createRegionV2<RegionDataType = any>({
   sourceCodeLocation,
   type,
   attributeName,
   tagName,
+  data,
   languageId = aureliaLanguageId,
 }: {
   sourceCodeLocation:
@@ -274,6 +293,7 @@ function createRegionV2({
   type: ViewRegionType;
   attributeName?: string;
   tagName?: string;
+  data?: RegionDataType;
   languageId?: string;
 }): ViewRegionInfo {
   let calculatedStart = sourceCodeLocation?.startOffset;
@@ -289,6 +309,7 @@ function createRegionV2({
     endLine: sourceCodeLocation?.endLine,
     attributeName,
     tagName,
+    data,
   };
 }
 

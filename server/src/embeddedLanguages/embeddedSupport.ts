@@ -56,10 +56,10 @@ export enum ViewRegionType {
 export interface ViewRegionInfo<RegionDataType = any> {
   type: ViewRegionType;
   languageId: string;
-  start?: number;
+  startOffset?: number;
   startCol?: number;
   startLine?: number;
-  end?: number;
+  endOffset?: number;
   endCol?: number;
   endLine?: number;
   attributeName?: string;
@@ -308,10 +308,10 @@ function createRegionV2<RegionDataType = any>({
   return {
     type,
     languageId,
-    start: calculatedStart,
+    startOffset: calculatedStart,
     startCol: sourceCodeLocation?.startCol,
     startLine: sourceCodeLocation?.startLine,
-    end: calculatedEnd,
+    endOffset: calculatedEnd,
     endCol: sourceCodeLocation?.endCol,
     endLine: sourceCodeLocation?.endLine,
     attributeName,
@@ -583,8 +583,8 @@ export function getRegionAtPositionV2(
 ): ViewRegionInfo | undefined {
   let offset = document.offsetAt(position);
   for (let region of regions) {
-    if (region.start! <= offset) {
-      if (offset <= region.end!) {
+    if (region.startOffset! <= offset) {
+      if (offset <= region.endOffset!) {
         return region;
       }
     } else {

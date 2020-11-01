@@ -268,7 +268,9 @@ export async function getVirtualViewModelCompletion(
 
   if (!region) return [];
 
-  const virtualContent = document.getText().slice(region.start, region.end);
+  const virtualContent = document
+    .getText()
+    .slice(region.startOffset, region.endOffset);
 
   // 2. Get original viewmodel file from view
   const aureliaFiles = aureliaProgram.getAureliaSourceFiles();

@@ -49,7 +49,7 @@ export async function getDefinition(
 
     if (
       !targetRepeatForRegion?.startLine ||
-      !targetRepeatForRegion.start ||
+      !targetRepeatForRegion.startOffset ||
       !targetRepeatForRegion.startCol
     ) {
       console.error(

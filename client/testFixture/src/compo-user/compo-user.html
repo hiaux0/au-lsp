@@ -1,30 +1,36 @@
 <template>
-  <!-- Test: Completion -->
+  <!-- Test: Completion {{ISSUE-9WZg54qT}}-->
   <!-- Attribute region -->
   <div click.delegate=""></div>
 
-  <!-- Test: Go to definition [METHOD] -->
+  <!-- Test: Go to definition [METHOD] {{ISSUE-15pHmj6C}}-->
   <!-- Attribute region -->
   <div click.delegate="increaseCounter()"></div>
 
-  <!-- Test: Go to definition [VARIABLE] -->
+  <!-- Test: Go to definition [VARIABLE] {{ISSUE-oITTCXJc}}-->
   <!-- Attribute Interpolated region -->
   <div css="width: ${message}px;"></div>
 
-  <!-- Test: Go to definition [CUSTOM_ELEMENT] -->
+  <!-- Test: Go to definition [CUSTOM_ELEMENT] {{ISSUE-lj6q5QtN}}-->
   <!-- Custom element region -->
   <my-compo></my-compo>
 
-  <!-- Test: Go to definition [CUSTOM_ELEMENT_BINDABLE] -->
+  <!-- Test: Go to definition [CUSTOM_ELEMENT_BINDABLE] {{ISSUE-8Q6EL3Ui}}-->
   <!-- Custom element region -->
-  <my-compo inter-bindable.bind="increaseCounter()"></my-compo>
+  <my-compo
+    inter-bindable.bind="increaseCounter()"
+    string-bindable.bind="increaseCounter()"
+    hello="saht"
+  >
+  </my-compo>
 
-  <!-- Text interpolated region -->
+  <!-- Text interpolated region {{ISSUE-sCxw9bfm}}-->
   ${} ${grammarRules.length}
   <div id="class-name">
+    <!-- Text interpolated repeat-for region {{ISSUE-uMZ1grJD}}-->
     <label repeat.for="rule of grammarRules">
-      <input type="checkbox" model.one-time="rule" />
-      <!-- Text interpolated region -->
+      <!-- Test: Definition - Repeat for {{ISSUE-5ugNzvtm}} -->
+      <!-- Text interpolated region {{ISSUE-vKaChQeb}}-->
       ${rule.id}-${rule.saying}
     </label>
   </div>

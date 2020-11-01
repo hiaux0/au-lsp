@@ -258,9 +258,13 @@ export async function getVirtualViewModelCompletion(
 ) {
   // 1. From the region get the part, that should be made virtual.
   const documentUri = textDocumentPosition.textDocument.uri;
-  const region = await getDocumentRegionAtPosition(
-    textDocumentPosition.position
-  ).get(document);
+  const adjustedPosition: TextDocumentPositionParams["position"] = {
+    character: textDocumentPosition.position.character + 1,
+    line: textDocumentPosition.position.line + 1,
+  };
+  const region = await getDocumentRegionAtPosition(adjustedPosition).get(
+    document
+  );
 
   if (!region) return [];
 

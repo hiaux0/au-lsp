@@ -173,8 +173,10 @@ function getAureliaViewModelClassMembers(
   classDeclaration: ts.ClassDeclaration,
   checker: ts.TypeChecker
 ) {
+  const elementName = getElementNameFromClassDeclaration(classDeclaration);
   let classMembers: CompletionItem[] = [];
   let bindables: CompletionItem[] = [];
+
   classDeclaration.forEachChild((classMember) => {
     ts;
     if (
@@ -217,7 +219,7 @@ function getAureliaViewModelClassMembers(
       // const quote = this.settings.quote;
       const quote = '"';
       const varAsKebabCase = kebabCase(classMemberName);
-      const result = {
+      const result: CompletionItem = {
         documentation: {
           kind: MarkupKind.Markdown,
           value: documentation,
@@ -232,6 +234,9 @@ function getAureliaViewModelClassMembers(
           "" +
           `(Au ${isBindable ? "Bindable" : "Class member"}) ` +
           `${isBindable ? varAsKebabCase : classMemberName} `,
+        data: {
+          elementName,
+        },
       };
 
       if (isBindable) {

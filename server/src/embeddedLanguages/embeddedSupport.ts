@@ -60,6 +60,7 @@ export interface ViewRegionInfo<RegionDataType = any> {
   startCol?: number;
   startLine?: number;
   end?: number;
+  endCol?: number;
   endLine?: number;
   attributeName?: string;
   tagName?: string;
@@ -311,6 +312,7 @@ function createRegionV2<RegionDataType = any>({
     startCol: sourceCodeLocation?.startCol,
     startLine: sourceCodeLocation?.startLine,
     end: calculatedEnd,
+    endCol: sourceCodeLocation?.endCol,
     endLine: sourceCodeLocation?.endLine,
     attributeName,
     tagName,
@@ -560,6 +562,18 @@ function getLanguageAtPosition(
     }
   }
   return "html";
+}
+
+export function getRegionFromLineAndCharacter(
+  regions: ViewRegionInfo[],
+  position: Position
+) {
+  const { line, character } = position;
+
+  const targetRegion = regions.find(
+    (region) => region.startLine! <= line && line <= region.endLine!
+  );
+  return targetRegion;
 }
 
 export function getRegionAtPositionV2(

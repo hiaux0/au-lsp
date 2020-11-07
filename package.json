@@ -46,23 +46,23 @@
 			{
 				"command": "extension.auOpenRelated",
 				"title": "Switch between Aurelia view and view model"
-			  },
-			  {
+			},
+			{
 				"command": "extension.auOpenRelatedScript",
 				"title": "Open Related Aurelia File: Script"
-			  },
-			  {
+			},
+			{
 				"command": "extension.auOpenRelatedStyle",
 				"title": "Open Related Aurelia File: Style"
-			  },
-			  {
+			},
+			{
 				"command": "extension.auOpenRelatedUnit",
 				"title": "Open Related Aurelia File: Unit"
-			  },
-			  {
+			},
+			{
 				"command": "extension.auOpenRelatedView",
 				"title": "Open Related Aurelia File: View"
-			  }
+			}
 		],
 		"configuration": {
 			"type": "object",
@@ -125,11 +125,15 @@
 		"@code-dependency/cli": "^0.5.0",
 		"@types/mocha": "^5.2.7",
 		"@types/node": "^12.11.7",
-		"@typescript-eslint/parser": "^2.3.0",
+		"@typescript-eslint/eslint-plugin": "^4.6.1",
+		"core-js": "^3.6.5",
 		"eslint": "^6.4.0",
+		"eslint-plugin-compat": "^3.8.0",
+		"eslint-plugin-import": "^2.22.1",
+		"eslint-plugin-jsdoc": "^30.7.7",
+		"eslint-plugin-sonarjs": "^0.5.0",
 		"mocha": "^6.2.2",
-		"typescript": "^3.8.3",
-		"core-js": "^3.6.5"
+		"typescript": "^3.8.3"
 	},
 	"dependencies": {
 		"aurelia-dependency-injection": "^1.5.2",

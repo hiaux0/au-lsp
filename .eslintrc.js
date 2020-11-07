@@ -1,5 +1,4 @@
 module.exports = {
-	parser: '@typescript-eslint/parser',
 	root: true,
 	extends: [
 		'eslint:recommended',
@@ -47,7 +46,7 @@ module.exports = {
 		'no-dupe-class-members': 'off',
 		// Opinionated non default rules:
 		'@typescript-eslint/camelcase': 'error',
-		'@typescript-eslint/explicit-member-accessibility': 'error',
+		'@typescript-eslint/explicit-member-accessibility': 'off', // DEV
 		'@typescript-eslint/await-thenable': 'error',
 		'@typescript-eslint/adjacent-overload-signatures': 'error',
 		'@typescript-eslint/array-type': 'error',
@@ -146,7 +145,7 @@ module.exports = {
 		],
 		'import/no-absolute-path': 'error',
 		'import/no-duplicates': 'error',
-		'import/no-extraneous-dependencies': ['error',
+		'import/no-extraneous-dependencies': ['off', // DEV
 			{
 				devDependencies: [
 					'examples /**',
@@ -250,7 +249,7 @@ module.exports = {
 		'@typescript-eslint/require-array-sort-compare': 'warn',
 		'@typescript-eslint/restrict-plus-operands': ['warn', { 'checkCompoundAssignments': true }],
 		'@typescript-eslint/restrict-template-expressions': ['warn', { 'allowNumber': true, 'allowBoolean': true, 'allowNullable': false }],
-		'@typescript-eslint/strict-boolean-expressions': 'warn',
+		'@typescript-eslint/strict-boolean-expressions': 'off', // DEV
 		'@typescript-eslint/typedef': ['warn', { arrowParameter: false, parameter: false, variableDeclaration: false }],
 		'@typescript-eslint/unbound-method': 'off', // Only false positives seen so far
 		'jsdoc/check-examples': 'off',

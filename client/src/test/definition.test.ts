@@ -15,11 +15,12 @@ import * as assert from "assert";
 
 import { activate, getTestApplicationFiles } from "./helper";
 
-suite.only("Definition", () => {
+suite.only("View Definition", () => {
   const applicationFile = getTestApplicationFiles();
+
   const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
 
-  test("Complete class declaration", async () => {
+  test("Definition in (releated) View Model", async () => {
     // <!-- Test: Go to definition [METHOD] {{ISSUE-15pHmj6C}}-->
     await testCompletion(docUri, new vscode.Position(7, 23), {
       position: new vscode.Position(24, 2),
@@ -32,6 +33,14 @@ suite.only("Definition", () => {
       partOfFilePath: "testFixture/src/compo-user/compo-user.ts",
     });
 
+    // <!-- Text interpolated region {{ISSUE-sCxw9bfm}}-->
+    await testCompletion(docUri, new vscode.Position(27, 8), {
+      position: new vscode.Position(20, 2),
+      partOfFilePath: "testFixture/src/compo-user/compo-user.ts",
+    });
+  });
+
+  test("Definition in (different) View Model", async () => {
     // <!-- Test: Go to definition [CUSTOM_ELEMENT] {{ISSUE-lj6q5QtN}}-->
     await testCompletion(docUri, new vscode.Position(15, 3), {
       position: new vscode.Position(1, 1),
@@ -43,23 +52,19 @@ suite.only("Definition", () => {
       position: new vscode.Position(27, 2),
       partOfFilePath: "testFixture/src/my-compo/my-compo.ts",
     });
+  });
+
+  test("Definition in View", async () => {
+    // <!-- Text interpolated repeat-for region {{ISSUE-uMZ1grJD}}-->
+    await testCompletion(docUri, new vscode.Position(30, 31), {
+      position: new vscode.Position(20, 2),
+      partOfFilePath: "testFixture/src/compo-user/compo-user.ts",
+    });
 
     // <!-- Test: Definition - Repeat for {{ISSUE-5ugNzvtm}} -->
     await testCompletion(docUri, new vscode.Position(33, 8), {
       position: new vscode.Position(30, 23),
       partOfFilePath: "testFixture/src/compo-user/compo-user.html",
-    });
-
-    // <!-- Text interpolated region {{ISSUE-sCxw9bfm}}-->
-    await testCompletion(docUri, new vscode.Position(27, 8), {
-      position: new vscode.Position(20, 2),
-      partOfFilePath: "testFixture/src/compo-user/compo-user.ts",
-    });
-
-    // <!-- Text interpolated repeat-for region {{ISSUE-uMZ1grJD}}-->
-    await testCompletion(docUri, new vscode.Position(30, 31), {
-      position: new vscode.Position(20, 2),
-      partOfFilePath: "testFixture/src/compo-user/compo-user.ts",
     });
   });
 });

@@ -65,6 +65,8 @@ import {
 } from "./virtual/virtualDefinition";
 import { getDefinition } from "./definition/getDefinition";
 import { camelCase, kebabCase } from "@aurelia/kernel";
+import { AsyncReturnType } from "./common/global";
+import { AureliaLSP } from "./common/constants";
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -234,6 +236,59 @@ connection.onDidChangeWatchedFiles((_change) => {
   connection.console.log("We received an file change event");
 });
 
+async function getBindablesCompletion(
+  _textDocumentPosition: TextDocumentPositionParams,
+  document: TextDocument
+) {
+  const { position } = _textDocumentPosition;
+  const adjustedPosition: Position = {
+    character: position.character + 1,
+    line: position.line + 1,
+  };
+  const regions = await getDocumentRegionsV2<CustomElementRegionData>(document);
+  const customElementRegions = regions.filter(
+    (region) => region.type === ViewRegionType.CustomElement
+  );
+  const targetCustomElementRegion = getRegionFromLineAndCharacter(
+    customElementRegions,
+    adjustedPosition
+  );
+
+  if (!targetCustomElementRegion) return [];
+
+  return [...aureliaProgram.getComponentMap().bindables!].filter(
+    (bindable) =>
+      kebabCase(bindable.data.elementName) === targetCustomElementRegion.tagName
+  );
+}
+
+async function getAureliaVirtualCompletions(
+  _textDocumentPosition: TextDocumentPositionParams,
+  document: TextDocument
+) {
+  // Virtual file
+  let virtualCompletions: AsyncReturnType<typeof getVirtualViewModelCompletion> = [];
+  try {
+    virtualCompletions = await getVirtualViewModelCompletion(
+      _textDocumentPosition,
+      document,
+      aureliaProgram
+    );
+  } catch (err) {
+    console.log("onCompletion 261 TCL: err", err);
+  }
+
+  const aureliaVirtualCompletions = virtualCompletions.filter((completion) => {
+    const isAureliaRelated =
+      completion.data === AureliaLSP.AureliaCompletionItemDataType;
+    const isUnrelatedTypescriptCompletion = completion.kind === undefined;
+    const wantedResult = isAureliaRelated && !isUnrelatedTypescriptCompletion;
+    return wantedResult;
+  });
+
+  return aureliaVirtualCompletions;
+}
+
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
   async (
@@ -247,22 +302,6 @@ connection.onCompletion(
     }
     // Embedded Language
 
-    // Virtual file
-    let virtualCompletions: CompletionItem[] = [];
-    try {
-      virtualCompletions = await getVirtualViewModelCompletion(
-        _textDocumentPosition,
-        document,
-        aureliaProgram
-      );
-    } catch (err) {
-      console.log("onCompletion 249 TCL: err", err);
-    }
-
-    if (virtualCompletions.length > 0) {
-      return virtualCompletions;
-    }
-
     const text = document.getText();
     const offset = document.offsetAt(_textDocumentPosition.position);
     const triggerCharacter = text.substring(offset - 1, offset);
@@ -272,29 +311,21 @@ connection.onCompletion(
         return [...aureliaProgram.getComponentMap().classDeclarations!];
       }
       case " ": {
-        const { position } = _textDocumentPosition;
-        const adjustedPosition: Position = {
-          character: position.character + 1,
-          line: position.line + 1,
-        };
-        const regions = await getDocumentRegionsV2<CustomElementRegionData>(
+        const bindablesCompletion = await getBindablesCompletion(
+          _textDocumentPosition,
           document
         );
-        const customElementRegions = regions.filter(
-          (region) => region.type === ViewRegionType.CustomElement
-        );
-        const targetCustomElementRegion = getRegionFromLineAndCharacter(
-          customElementRegions,
-          adjustedPosition
+        if (bindablesCompletion.length > 0) return bindablesCompletion;
+      }
+      default: {
+        const aureliaVirtualCompletions = await getAureliaVirtualCompletions(
+          _textDocumentPosition,
+          document
         );
 
-        if (!targetCustomElementRegion) return [];
-
-        return [...aureliaProgram.getComponentMap().bindables!].filter(
-          (bindable) =>
-            kebabCase(bindable.data.elementName) ===
-            targetCustomElementRegion.tagName
-        );
+        if (aureliaVirtualCompletions.length > 0) {
+          return aureliaVirtualCompletions;
+        }
       }
     }
 

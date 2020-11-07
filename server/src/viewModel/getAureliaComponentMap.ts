@@ -233,7 +233,7 @@ function getAureliaViewModelClassMembers(
         label:
           "" +
           `(Au ${isBindable ? "Bindable" : "Class member"}) ` +
-          `${isBindable ? varAsKebabCase : classMemberName} `,
+          `${isBindable ? varAsKebabCase : classMemberName}`,
         data: {
           elementName,
         },

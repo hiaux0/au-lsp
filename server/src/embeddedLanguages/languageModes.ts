@@ -22,6 +22,7 @@ import {
   ViewRegionInfo,
   getRegionAtPosition,
   getRegionAtPositionV2,
+  getRegionFromLineAndCharacter,
 } from "./embeddedSupport";
 import { getHTMLMode } from "./modes/htmlMode";
 import {
@@ -72,7 +73,7 @@ export function getDocumentRegionAtPosition(position: Position) {
         console.log("72 TCL: getDocumentRegionAtPosition -> err", err);
       }
 
-      const reg = getRegionAtPositionV2(document, regions, position);
+      const reg = getRegionFromLineAndCharacter(regions, position);
 
       return reg;
       // const region = getDocumentRegions(

@@ -267,9 +267,10 @@ export async function getVirtualViewModelCompletion(
     character: textDocumentPosition.position.character + 1,
     line: textDocumentPosition.position.line + 1,
   };
-  const region = await getDocumentRegionAtPosition(adjustedPosition).get(
-    document
-  );
+  // const region = await getDocumentRegionAtPosition(adjustedPosition).get(
+  const region = await getDocumentRegionAtPosition(
+    textDocumentPosition.position
+  ).get(document);
 
   if (!region) return [];
 

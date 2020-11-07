@@ -64,6 +64,7 @@ export interface ViewRegionInfo<RegionDataType = any> {
   endLine?: number;
   attributeName?: string;
   tagName?: string;
+  regionValue?: string;
   data?: RegionDataType;
 }
 
@@ -193,36 +194,41 @@ export function getDocumentRegionsV2<RegionDataType>(
           viewRegions.push(repeatForViewRegion);
         } else {
           // 3. Attribute Interpolation
-          const interpolationMatch = interpolationRegex.exec(attr.value);
-          if (interpolationMatch !== null) {
-            const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
-            if (!attrLocation) return;
+          let interpolationMatch;
+          while ((interpolationMatch = interpolationRegex.exec(attr.value))) {
+            if (interpolationMatch !== null) {
+              const attrLocation =
+                startTag.sourceCodeLocation?.attrs[attr.name];
+              if (!attrLocation) return;
 
-            /** Eg. >css="width: ${<message}px;" */
-            const startInterpolationLength =
-              attr.name.length + // css
-              2 + // ="
-              interpolationMatch.index + // width:_
-              2; // ${
+              /** Eg. >css="width: ${<message}px;" */
+              const startInterpolationLength =
+                attr.name.length + // css
+                2 + // ="
+                interpolationMatch.index + // width:_
+                2; // ${
 
-            /** Eg. >css="width: ${message}<px;" */
-            const endInterpolationLength =
-              attrLocation.startOffset +
-              startInterpolationLength +
-              Number(interpolationMatch.groups?.interpolationValue.length); // message
+              /** Eg. >css="width: ${message}<px;" */
+              const endInterpolationLength =
+                attrLocation.startOffset +
+                startInterpolationLength +
+                Number(interpolationMatch.groups?.interpolationValue.length); // message
 
-            const updatedLocation: parse5.Location = {
-              ...attrLocation,
-              startOffset: attrLocation.startOffset + startInterpolationLength,
-              endOffset: endInterpolationLength,
-            };
+              const updatedLocation: parse5.Location = {
+                ...attrLocation,
+                startOffset:
+                  attrLocation.startOffset + startInterpolationLength,
+                endOffset: endInterpolationLength,
+              };
 
-            const viewRegion = createRegionV2({
-              attributeName: attr.name,
-              sourceCodeLocation: updatedLocation,
-              type: ViewRegionType.AttributeInterpolation,
-            });
-            viewRegions.push(viewRegion);
+              const viewRegion = createRegionV2({
+                attributeName: attr.name,
+                sourceCodeLocation: updatedLocation,
+                type: ViewRegionType.AttributeInterpolation,
+                regionValue: interpolationMatch[1],
+              });
+              viewRegions.push(viewRegion);
+            }
           }
         }
       });
@@ -291,12 +297,14 @@ function createRegionV2<RegionDataType = any>({
   attributeName,
   tagName,
   data,
+  regionValue,
   languageId = aureliaLanguageId,
 }: {
   sourceCodeLocation:
     | SaxStream.StartTagToken["sourceCodeLocation"]
     | parse5.AttributesLocation[string];
   type: ViewRegionType;
+  regionValue?: string;
   attributeName?: string;
   tagName?: string;
   data?: RegionDataType;
@@ -316,6 +324,7 @@ function createRegionV2<RegionDataType = any>({
     endLine: sourceCodeLocation?.endLine,
     attributeName,
     tagName,
+    regionValue,
     data,
   };
 }
@@ -570,9 +579,22 @@ export function getRegionFromLineAndCharacter(
 ) {
   const { line, character } = position;
 
-  const targetRegion = regions.find(
-    (region) => region.startLine! <= line && line <= region.endLine!
-  );
+  const targetRegion = regions.find((region) => {
+    const { startLine, endLine } = region;
+    if (!startLine || !endLine) return false;
+
+    const isSameLine = startLine === endLine;
+    if (isSameLine) {
+      const { startCol, endCol } = region;
+      if (!startCol || !endCol) return false;
+
+      const inBetweenColumns = startCol <= character && character <= endCol;
+      return inBetweenColumns;
+    }
+
+    const inBetweenLines = startLine <= line && line <= endLine;
+    return inBetweenLines;
+  });
   return targetRegion;
 }
 

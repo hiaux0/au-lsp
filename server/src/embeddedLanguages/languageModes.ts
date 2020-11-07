@@ -73,7 +73,8 @@ export function getDocumentRegionAtPosition(position: Position) {
         console.log("72 TCL: getDocumentRegionAtPosition -> err", err);
       }
 
-      const reg = getRegionFromLineAndCharacter(regions, position);
+      const reg = getRegionAtPositionV2(document, regions, position);
+      // const reg = getRegionFromLineAndCharacter(regions, position);
 
       return reg;
       // const region = getDocumentRegions(

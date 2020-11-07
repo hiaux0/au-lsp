@@ -46,6 +46,7 @@ import {
 import { EmbeddedRegion } from "../embeddedLanguages/embeddedSupport";
 import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
 import { AureliaProgram } from "../viewModel/AureliaProgram";
+import { AureliaLSP } from "../common/constants";
 
 export const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
 const VIRTUAL_METHOD_NAME = "__vir";
@@ -251,11 +252,15 @@ function getKindName(kind: ts.SyntaxKind) {
 
 function getSourceFileForVirtualViewModel() {}
 
+interface AureliaCompletionItem extends CompletionItem {
+  data?: AureliaLSP.AureliaCompletionItemDataType;
+}
+
 export async function getVirtualViewModelCompletion(
   textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument,
   aureliaProgram: AureliaProgram
-) {
+): Promise<AureliaCompletionItem[]> {
   // 1. From the region get the part, that should be made virtual.
   const documentUri = textDocumentPosition.textDocument.uri;
   const adjustedPosition: TextDocumentPositionParams["position"] = {
@@ -337,7 +342,7 @@ export async function getVirtualViewModelCompletion(
     virtualCompletions
   );
 
-  return result;
+  return result as AureliaCompletionItem[];
 }
 
 function enhanceCompletionItemDocumentation(
@@ -389,7 +394,7 @@ function enhanceCompletionItemDocumentation(
         tsCompletion.name + "(" + createArgCompletion(entryDetail) + ")";
     }
 
-    const completionItem: CompletionItem = {
+    const completionItem: AureliaCompletionItem = {
       documentation: {
         kind: MarkupKind.Markdown,
         value: entryDetail.documentation || "",
@@ -399,6 +404,7 @@ function enhanceCompletionItemDocumentation(
       insertTextFormat: InsertTextFormat.Snippet,
       kind: entryDetail.kind,
       label: tsCompletion.name,
+      data: AureliaLSP.AureliaCompletionItemDataType,
     };
     /**
       documentation: {

@@ -65,6 +65,8 @@ import {
 } from "./virtual/virtualDefinition";
 import { getDefinition } from "./definition/getDefinition";
 import { camelCase, kebabCase } from "@aurelia/kernel";
+import { AsyncReturnType } from "./common/global";
+import { AureliaLSP } from "./common/constants";
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -248,7 +250,7 @@ connection.onCompletion(
     // Embedded Language
 
     // Virtual file
-    let virtualCompletions: CompletionItem[] = [];
+    let virtualCompletions: AsyncReturnType<typeof getVirtualViewModelCompletion> = [];
     try {
       virtualCompletions = await getVirtualViewModelCompletion(
         _textDocumentPosition,
@@ -259,8 +261,13 @@ connection.onCompletion(
       console.log("onCompletion 249 TCL: err", err);
     }
 
-    if (virtualCompletions.length > 0) {
-      return virtualCompletions;
+    const aureliaVirtualCompletions = virtualCompletions.filter(
+      (completion) =>
+        completion.data === AureliaLSP.AureliaCompletionItemDataType
+    );
+
+    if (aureliaVirtualCompletions.length > 0) {
+      return aureliaVirtualCompletions;
     }
 
     const text = document.getText();

@@ -6,6 +6,7 @@
 import * as vscode from "vscode";
 import * as assert from "assert";
 import { intersection, map } from "lodash";
+import { kebabCase } from "@aurelia/kernel";
 import { AureliaProgram } from "./../../../server/src/viewModel/AureliaProgram";
 import { IComponentMap } from "./../../../server/src/viewModel/AureliaProgram";
 
@@ -47,6 +48,8 @@ suite("Completion", () => {
     getTestItems(aureliaProgram, "classDeclarations"),
     "label"
   );
+
+  /** compo-user */
   const classMemberTestItems = [
     "counter",
     "message",
@@ -55,6 +58,15 @@ suite("Completion", () => {
     "grammarRules",
   ];
   const bindablesTestItems = ["thisIsMe"];
+
+  /** my-compo */
+  const testPrefix = "(Au Bindable) ";
+  const bindablesTestItems_MyCompo = ["stringBindable", "interBindable"];
+  const bindablesTestItems_MyCompo__asKebab = bindablesTestItems_MyCompo.map(
+    (bindableName) => {
+      return `${testPrefix}${kebabCase(bindableName)}`;
+    }
+  );
 
   suite.skip("Completion - Custom Element", () => {
     test("Should complete custom element", async () => {
@@ -101,6 +113,16 @@ suite("Completion", () => {
         docUri,
         new vscode.Position(27, 3),
         bindablesTestItems
+      );
+    });
+  });
+
+  suite.only("Completion - Custom element region", () => {
+    test("Bindables", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(20, 4),
+        bindablesTestItems_MyCompo__asKebab
       );
     });
   });

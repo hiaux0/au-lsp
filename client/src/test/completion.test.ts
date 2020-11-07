@@ -40,39 +40,69 @@ function getTestItems(
 
 suite("Completion", () => {
   const applicationFile = getTestApplicationFiles();
-  const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
   const aureliaProgram = getAureliaProgramForTesting();
+  const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
 
   const classDeclarationTestItems = map(
     getTestItems(aureliaProgram, "classDeclarations"),
     "label"
   );
-  // const classMemberTestItems = getTestItems(aureliaProgram, "classMembers");
-  const classMemberTestItems = ["counter", "message", "thisIsMe"];
-  const bindablesTestItems = ["increaseCounter"];
+  const classMemberTestItems = [
+    "counter",
+    "message",
+    "increaseCounter",
+    "rule",
+    "grammarRules",
+  ];
+  const bindablesTestItems = ["thisIsMe"];
 
-  test("Complete class declaration", async () => {
-    await testCompletion(
-      docUri,
-      new vscode.Position(1, 0),
-      classDeclarationTestItems
-    );
+  suite.skip("Completion - Custom Element", () => {
+    test("Should complete custom element", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(0, 0),
+        classDeclarationTestItems,
+        "<"
+      );
+    });
   });
 
-  test("Should complete class members", async () => {
-    await testCompletion(
-      docUri,
-      new vscode.Position(2, 23),
-      classMemberTestItems
-    );
+  suite("Completion - Attribute region", () => {
+    // <!-- Test: Completion {{ISSUE-9WZg54qT}}-->
+    test("Should complete class members", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(3, 23),
+        classMemberTestItems
+      );
+    });
+
+    // <!-- Test: Completion {{ISSUE-9WZg54qT}}-->
+    test("Should complete class bindables", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(3, 23),
+        bindablesTestItems
+      );
+    });
   });
 
-  test("Should complete class members - bindables", async () => {
-    await testCompletion(
-      docUri,
-      new vscode.Position(2, 23),
-      bindablesTestItems
-    );
+  suite("Completion - Text interpolated region", () => {
+    test("Should complete class members", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(27, 3),
+        classMemberTestItems
+      );
+    });
+
+    test("Should complete class bindables", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(27, 3),
+        bindablesTestItems
+      );
+    });
   });
 });
 

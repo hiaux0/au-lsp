@@ -3,6 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import "reflect-metadata";
 import * as path from "path";
 import * as vscode from "vscode";
 import {
@@ -17,6 +18,7 @@ import {
   CompletionItem,
 } from "vscode";
 import * as WebSocket from "ws";
+import * as ts from "typescript";
 
 import {
   LanguageClient,
@@ -26,6 +28,7 @@ import {
 } from "vscode-languageclient";
 import { registerDiagramPreview } from "./webview/diagramPreview";
 import { RelatedFiles } from "./feature/relatedFiles";
+import { aureliaProgram } from "../../server/src/viewModel/AureliaProgram";
 
 let client: LanguageClient;
 
@@ -41,9 +44,58 @@ class CompletionItemProviderInView implements CompletionItemProvider {
     const text = document.getText();
     const offset = document.offsetAt(position);
     const triggerCharacter = text.substring(offset - 1, offset);
-    return this.client.sendRequest<any>(
-      "aurelia-get-component-class-declarations"
-    );
+
+    if (triggerCharacter === "<") {
+      return this.client.sendRequest<any>(
+        "aurelia-get-component-class-declarations"
+      );
+    }
+
+    return [];
+  }
+}
+
+class SearchDefinitionInView implements vscode.DefinitionProvider {
+  public client: LanguageClient;
+
+  public constructor(client: LanguageClient) {
+    this.client = client;
+  }
+
+  public async provideDefinition(
+    document: vscode.TextDocument,
+    position: vscode.Position
+  ): Promise<vscode.DefinitionLink[]> {
+    const goToSourceWordRange = document.getWordRangeAtPosition(position);
+    const goToSourceWord = document.getText(goToSourceWordRange);
+
+    try {
+      const result = await this.client.sendRequest<{
+        lineAndCharacter: ts.LineAndCharacter;
+        viewModelFilePath: string;
+        viewFilePath: string;
+      }>("get-virtual-definition", {
+        documentContent: document.getText(),
+        position,
+        goToSourceWord,
+        filePath: document.uri.path,
+      });
+
+      const { line, character } = result.lineAndCharacter;
+      const targetPath = result.viewFilePath || result.viewModelFilePath;
+
+      return [
+        {
+          targetUri: vscode.Uri.file(targetPath),
+          targetRange: new vscode.Range(
+            new vscode.Position(line - 1, character),
+            new vscode.Position(line, character)
+          ),
+        },
+      ];
+    } catch (err) {
+      console.log("TCL: SearchDefinitionInView -> err", err);
+    }
   }
 }
 
@@ -142,6 +194,13 @@ export function activate(context: ExtensionContext) {
     vscode.languages.registerCompletionItemProvider(
       { scheme: "file", language: "html" },
       new CompletionItemProviderInView(client)
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerDefinitionProvider(
+      { scheme: "file", language: "html" },
+      new SearchDefinitionInView(client)
     )
   );
 

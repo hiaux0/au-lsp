@@ -25,6 +25,12 @@ interface EntryDetailsMap {
   [key: string]: EntryDetailsMapData;
 }
 
+export interface VirtualCompletionSourceFileInfo {
+  targetVirtualSourcefile: ts.SourceFile;
+  completionIndex: number;
+  viewModelFilePath?: string;
+}
+
 import * as ts from "typescript";
 import * as path from "path";
 import {
@@ -41,7 +47,7 @@ import { EmbeddedRegion } from "../embeddedLanguages/embeddedSupport";
 import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
 import { AureliaProgram } from "../viewModel/AureliaProgram";
 
-const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
+export const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
 const VIRTUAL_METHOD_NAME = "__vir";
 
 const PARAMETER_NAME = "parameterName";
@@ -64,7 +70,7 @@ export function createVirtualCompletionSourceFile(
   virtualViewModelSourceFile: ts.SourceFile,
   virtualContent: string,
   customElementClassName: string
-) {
+): VirtualCompletionSourceFileInfo {
   /** Match [...] export class MyCustomElement { [...] */
   const virtualViewModelContent = virtualViewModelSourceFile.getText();
   const classDeclaration = "class ";
@@ -243,26 +249,33 @@ function getKindName(kind: ts.SyntaxKind) {
   return (ts as any).SyntaxKind[kind];
 }
 
-export function getVirtualViewModelCompletion(
+function getSourceFileForVirtualViewModel() {}
+
+export async function getVirtualViewModelCompletion(
   textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument,
   aureliaProgram: AureliaProgram
 ) {
   // 1. From the region get the part, that should be made virtual.
   const documentUri = textDocumentPosition.textDocument.uri;
-  const region = getDocumentRegionAtPosition(textDocumentPosition.position).get(
+  const adjustedPosition: TextDocumentPositionParams["position"] = {
+    character: textDocumentPosition.position.character + 1,
+    line: textDocumentPosition.position.line + 1,
+  };
+  const region = await getDocumentRegionAtPosition(adjustedPosition).get(
     document
   );
 
   if (!region) return [];
 
-  const virtualContent = document.getText().slice(region.start, region.end);
+  const virtualContent = document
+    .getText()
+    .slice(region.startOffset, region.endOffset);
 
   // 2. Get original viewmodel file from view
   const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
   const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
   const viewBaseName = path.parse(documentUri).name;
-  console.log("TCL: MyCustomElement -> viewBaseName", viewBaseName);
 
   const targetSourceFile = aureliaFiles?.find((aureliaFile) => {
     return scriptExtensions.find((extension) => {

@@ -9,6 +9,7 @@ import {
 } from "vscode-languageserver";
 import { kebabCase } from "@aurelia/kernel";
 import { createDiagram } from "./createDiagram";
+import { getElementNameFromClassDeclaration } from "../common/className";
 
 export function getAureliaComponentMap(
   aureliaProgram: AureliaProgram,
@@ -166,25 +167,16 @@ function classDeclarationHasUseViewOrNoView(
 }
 
 /**
- * Fetches the equivalent component name based on the given class declaration
- *
- * @param sourceFile - The class declaration to map a component name from
- */
-function getElementNameFromClassDeclaration(
-  classDeclaration: ts.ClassDeclaration
-): string {
-  return kebabCase(classDeclaration.name?.getText()!);
-}
-
-/**
  *
  */
 function getAureliaViewModelClassMembers(
   classDeclaration: ts.ClassDeclaration,
   checker: ts.TypeChecker
 ) {
+  const elementName = getElementNameFromClassDeclaration(classDeclaration);
   let classMembers: CompletionItem[] = [];
   let bindables: CompletionItem[] = [];
+
   classDeclaration.forEachChild((classMember) => {
     ts;
     if (
@@ -227,7 +219,7 @@ function getAureliaViewModelClassMembers(
       // const quote = this.settings.quote;
       const quote = '"';
       const varAsKebabCase = kebabCase(classMemberName);
-      const result = {
+      const result: CompletionItem = {
         documentation: {
           kind: MarkupKind.Markdown,
           value: documentation,
@@ -242,6 +234,9 @@ function getAureliaViewModelClassMembers(
           "" +
           `(Au ${isBindable ? "Bindable" : "Class member"}) ` +
           `${isBindable ? varAsKebabCase : classMemberName} `,
+        data: {
+          elementName,
+        },
       };
 
       if (isBindable) {

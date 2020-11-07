@@ -22,6 +22,7 @@ import {
 } from "vscode-languageserver";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { Position } from "./embeddedLanguages/languageModes";
 
 // We need to import this to include reflect functionality
 import "reflect-metadata";
@@ -41,7 +42,14 @@ import {
   LanguageModes,
   getLanguageModes,
 } from "./embeddedLanguages/languageModes";
-import { aureliaLanguageId } from "./embeddedLanguages/embeddedSupport";
+import {
+  aureliaLanguageId,
+  CustomElementRegionData,
+  getDocumentRegionsV2,
+  getRegionAtPositionV2,
+  getRegionFromLineAndCharacter,
+  ViewRegionType,
+} from "./embeddedLanguages/embeddedSupport";
 import {
   getVirtualCompletion,
   createVirtualCompletionSourceFile,
@@ -51,6 +59,12 @@ import {
 import * as path from "path";
 import * as ts from "typescript";
 import { createDiagram } from "./viewModel/createDiagram";
+import {
+  getVirtualDefinition,
+  VirtualDefinitionResult,
+} from "./virtual/virtualDefinition";
+import { getDefinition } from "./definition/getDefinition";
+import { camelCase, kebabCase } from "@aurelia/kernel";
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -102,14 +116,14 @@ connection.onInitialize(async (params: InitializeParams) => {
   /** ********************** */
   /** Embedded Language Mode */
   /** ********************** */
-  languageModes = getLanguageModes();
+  // languageModes = getLanguageModes();
 
-  documents.onDidClose((e) => {
-    languageModes.onDocumentRemoved(e.document);
-  });
-  connection.onShutdown(() => {
-    languageModes.dispose();
-  });
+  // documents.onDidClose((e) => {
+  //   languageModes.onDocumentRemoved(e.document);
+  // });
+  // connection.onShutdown(() => {
+  //   languageModes.dispose();
+  // });
 
   const result: InitializeResult = {
     capabilities: {
@@ -222,7 +236,9 @@ connection.onDidChangeWatchedFiles((_change) => {
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-  (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+  async (
+    _textDocumentPosition: TextDocumentPositionParams
+  ): Promise<CompletionItem[]> => {
     const documentUri = _textDocumentPosition.textDocument.uri;
     const document = documents.get(documentUri);
     if (!document) {
@@ -232,11 +248,16 @@ connection.onCompletion(
     // Embedded Language
 
     // Virtual file
-    const virtualCompletions = getVirtualViewModelCompletion(
-      _textDocumentPosition,
-      document,
-      aureliaProgram
-    );
+    let virtualCompletions: CompletionItem[] = [];
+    try {
+      virtualCompletions = await getVirtualViewModelCompletion(
+        _textDocumentPosition,
+        document,
+        aureliaProgram
+      );
+    } catch (err) {
+      console.log("onCompletion 249 TCL: err", err);
+    }
 
     if (virtualCompletions.length > 0) {
       return virtualCompletions;
@@ -251,7 +272,29 @@ connection.onCompletion(
         return [...aureliaProgram.getComponentMap().classDeclarations!];
       }
       case " ": {
-        return [...aureliaProgram.getComponentMap().bindables!];
+        const { position } = _textDocumentPosition;
+        const adjustedPosition: Position = {
+          character: position.character + 1,
+          line: position.line + 1,
+        };
+        const regions = await getDocumentRegionsV2<CustomElementRegionData>(
+          document
+        );
+        const customElementRegions = regions.filter(
+          (region) => region.type === ViewRegionType.CustomElement
+        );
+        const targetCustomElementRegion = getRegionFromLineAndCharacter(
+          customElementRegions,
+          adjustedPosition
+        );
+
+        if (!targetCustomElementRegion) return [];
+
+        return [...aureliaProgram.getComponentMap().bindables!].filter(
+          (bindable) =>
+            kebabCase(bindable.data.elementName) ===
+            targetCustomElementRegion.tagName
+        );
       }
     }
 
@@ -364,6 +407,84 @@ connection.onRequest("aurelia-get-component-list", () => {
 connection.onRequest("aurelia-get-component-class-declarations", () => {
   return aureliaProgram.getComponentMap().classDeclarations;
 });
+
+connection.onRequest(
+  "get-virtual-definition",
+  async ({
+    documentContent,
+    position,
+    goToSourceWord,
+    filePath,
+  }): Promise<VirtualDefinitionResult | undefined> => {
+    const document = TextDocument.create(filePath, "html", 0, documentContent);
+    try {
+      const definitions = await getDefinition(
+        document,
+        position,
+        aureliaProgram,
+        goToSourceWord
+      );
+
+      return definitions;
+    } catch (err) {
+      const virtualDefinition = getVirtualDefinition(
+        filePath,
+        aureliaProgram,
+        goToSourceWord
+      );
+      /**
+       * 1. inter-bindable.bind=">increaseCounter()<"
+       */
+      if (
+        virtualDefinition?.lineAndCharacter.line !== 0 &&
+        virtualDefinition?.lineAndCharacter.character !== 0
+      ) {
+        return virtualDefinition;
+      }
+
+      /**
+       * 2. >inter-bindable<.bind="increaseCounter()"
+       */
+
+      /** Region from FE starts at index 0, BE region starts at 1 */
+      const adjustedPosition: Position = {
+        character: position.character + 1,
+        line: position.line + 1,
+      };
+      const regions = await getDocumentRegionsV2<CustomElementRegionData>(
+        document
+      );
+      const targetCustomElementRegion = regions
+        .filter((region) => region.type === ViewRegionType.CustomElement)
+        .find((customElementRegion) => {
+          return customElementRegion.data?.find((customElementAttribute) =>
+            customElementAttribute.attributeName?.includes(goToSourceWord)
+          );
+        });
+
+      if (!targetCustomElementRegion) return;
+
+      const aureliaSourceFiles = aureliaProgram.getAureliaSourceFiles();
+      const targetAureliaFile = aureliaSourceFiles?.find((sourceFile) => {
+        return (
+          path.parse(sourceFile.fileName).name ===
+          targetCustomElementRegion.tagName
+        );
+      });
+
+      if (!targetAureliaFile) return;
+
+      const sourceWordCamelCase = camelCase(goToSourceWord);
+      return getVirtualDefinition(
+        targetAureliaFile.fileName,
+        aureliaProgram,
+        sourceWordCamelCase
+      );
+
+      console.log(err);
+    }
+  }
+);
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events

@@ -38,7 +38,7 @@ function getTestItems(
   return testItems;
 }
 
-suite.only("Completion", () => {
+suite("Completion", () => {
   const applicationFile = getTestApplicationFiles();
   const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
   const aureliaProgram = getAureliaProgramForTesting();
@@ -62,7 +62,7 @@ suite.only("Completion", () => {
   test("Should complete class members", async () => {
     await testCompletion(
       docUri,
-      new vscode.Position(1, 23),
+      new vscode.Position(2, 23),
       classMemberTestItems
     );
   });
@@ -70,7 +70,7 @@ suite.only("Completion", () => {
   test("Should complete class members - bindables", async () => {
     await testCompletion(
       docUri,
-      new vscode.Position(1, 23),
+      new vscode.Position(2, 23),
       bindablesTestItems
     );
   });

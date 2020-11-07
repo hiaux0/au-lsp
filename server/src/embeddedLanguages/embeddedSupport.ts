@@ -3,14 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as fs from "fs";
+import * as parse5 from "parse5";
+import * as SaxStream from "parse5-sax-parser";
 import {
-  TextDocument,
   Position,
   LanguageService,
   TokenType,
   Range,
+  Scanner,
 } from "./languageModes";
 import { AURELIA_ATTRIBUTES_KEYWORDS } from "../configuration/DocumentSettings";
+import { TextDocument } from "vscode-languageserver-textdocument";
+import { AureliaView } from "../common/constants";
+import { aureliaProgram } from "../viewModel/AureliaProgram";
 
 export interface LanguageRange extends Range {
   languageId: string | undefined;
@@ -36,9 +42,283 @@ export interface EmbeddedRegion {
   start: number;
   end: number;
   attributeValue?: boolean;
+  tagName?: string;
+}
+
+export enum ViewRegionType {
+  Attribute = "Attribute",
+  AttributeInterpolation = "AttributeInterpolation",
+  RepeatFor = "RepeatFor",
+  TextInterpolation = "TextInterpolation",
+  CustomElement = "CustomElement",
+}
+
+export interface ViewRegionInfo<RegionDataType = any> {
+  type: ViewRegionType;
+  languageId: string;
+  startOffset?: number;
+  startCol?: number;
+  startLine?: number;
+  endOffset?: number;
+  endCol?: number;
+  endLine?: number;
+  attributeName?: string;
+  tagName?: string;
+  data?: RegionDataType;
+}
+
+export interface RepeatForRegionData {
+  /** repeat.for="num of >numbers<" */
+  iterableName: string;
+  /** repeat.for=">num< of numbers" */
+  iterator: string;
+}
+
+export type CustomElementRegionData = ViewRegionInfo[];
+
+interface ViewRegions {
+  interpolatedRegions: ViewRegionInfo[];
+  customElementRegions: ViewRegionInfo[];
 }
 
 export const aureliaLanguageId = "aurelia";
+
+export function getDocumentRegionsV2<RegionDataType>(
+  document: TextDocument
+): Promise<ViewRegionInfo<RegionDataType>[]> {
+  return new Promise((resolve) => {
+    const saxStream = new SaxStream({ sourceCodeLocationInfo: true });
+    const viewRegions: ViewRegionInfo[] = [];
+    const interpolationRegex = /\$(?:\s*)\{(?!\s*`)(?<interpolationValue>.*?)\}/g;
+
+    const aureliaCustomElementNames = aureliaProgram.componentList.map(
+      (component) => component.viewModelName
+    );
+
+    // 1. Check if in <template>
+    let hasTemplateTag = false;
+
+    /**
+     * 1. Template Tag
+     * 2. Attributes
+     * 3. Attribute Interpolation
+     * 4. Custom element
+     * 5. repeat.for=""
+     */
+    saxStream.on("startTag", (startTag) => {
+      const customElementAttributeRegions: ViewRegionInfo[] = [];
+      const { tagName } = startTag;
+      const isTemplateTag = tagName === AureliaView.TEMPLATE_TAG_NAME;
+      // 1. Template tag
+      if (isTemplateTag) {
+        hasTemplateTag = true;
+      }
+
+      if (!hasTemplateTag) return;
+
+      // Attributes and Interpolation
+      startTag.attrs.forEach((attr) => {
+        const isAttributeKeyword = AURELIA_ATTRIBUTES_KEYWORDS.some(
+          (keyword) => {
+            return attr.name.includes(keyword);
+          }
+        );
+        const isRepeatFor = attr.name === AureliaView.REPEAT_FOR;
+
+        // 2. Attributes
+        if (isAttributeKeyword) {
+          const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
+
+          if (!attrLocation) return;
+          /** Eg. >click.delegate="<increaseCounter()" */
+          const startInterpolationLength =
+            attr.name.length + // click.delegate
+            2; // ="
+
+          /** Eg. click.delegate="increaseCounter()>"< */
+          const endInterpolationLength = attrLocation.endOffset - 1;
+
+          const updatedLocation: parse5.Location = {
+            ...attrLocation,
+            startOffset: attrLocation.startOffset + startInterpolationLength,
+            endOffset: endInterpolationLength,
+          };
+          const viewRegion = createRegionV2({
+            attributeName: attr.name,
+            sourceCodeLocation: updatedLocation,
+            type: ViewRegionType.Attribute,
+          });
+          viewRegions.push(viewRegion);
+          customElementAttributeRegions.push(viewRegion);
+        } else if (isRepeatFor) {
+          // 5. Repeat for
+          const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
+
+          if (!attrLocation) return;
+          /** Eg. >repeat.for="<rule of grammarRules" */
+          const startInterpolationLength =
+            attr.name.length + // click.delegate
+            2; // ="
+
+          /** Eg. click.delegate="increaseCounter()>"< */
+          const endInterpolationLength = attrLocation.endOffset - 1;
+
+          // __<label repeat.for="rule of grammarRules">
+          const startColAdjust =
+            attrLocation.startCol + // __<label_
+            attr.name.length + // repeat.for
+            2 - // ="
+            1; // index starts from 0
+
+          const updatedLocation: parse5.Location = {
+            ...attrLocation,
+            startOffset: attrLocation.startOffset + startInterpolationLength,
+            startCol: startColAdjust,
+            endOffset: endInterpolationLength,
+          };
+          function getRepeatForData() {
+            const splitUpRepeatFor = attr.value.split(" ");
+            const repeatForData: RepeatForRegionData = {
+              iterator: splitUpRepeatFor[0],
+              iterableName: splitUpRepeatFor[2],
+            };
+            return repeatForData;
+          }
+          const repeatForViewRegion = createRegionV2<RepeatForRegionData>({
+            attributeName: attr.name,
+            sourceCodeLocation: updatedLocation,
+            type: ViewRegionType.RepeatFor,
+            data: getRepeatForData(),
+          });
+          viewRegions.push(repeatForViewRegion);
+        } else {
+          // 3. Attribute Interpolation
+          const interpolationMatch = interpolationRegex.exec(attr.value);
+          if (interpolationMatch !== null) {
+            const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
+            if (!attrLocation) return;
+
+            /** Eg. >css="width: ${<message}px;" */
+            const startInterpolationLength =
+              attr.name.length + // css
+              2 + // ="
+              interpolationMatch.index + // width:_
+              2; // ${
+
+            /** Eg. >css="width: ${message}<px;" */
+            const endInterpolationLength =
+              attrLocation.startOffset +
+              startInterpolationLength +
+              Number(interpolationMatch.groups?.interpolationValue.length); // message
+
+            const updatedLocation: parse5.Location = {
+              ...attrLocation,
+              startOffset: attrLocation.startOffset + startInterpolationLength,
+              endOffset: endInterpolationLength,
+            };
+
+            const viewRegion = createRegionV2({
+              attributeName: attr.name,
+              sourceCodeLocation: updatedLocation,
+              type: ViewRegionType.AttributeInterpolation,
+            });
+            viewRegions.push(viewRegion);
+          }
+        }
+      });
+
+      // 4. Custom elements
+      const isCustomElement = aureliaCustomElementNames.includes(tagName);
+      if (isCustomElement) {
+        const customElementViewRegion = createRegionV2({
+          tagName,
+          sourceCodeLocation: startTag.sourceCodeLocation,
+          type: ViewRegionType.CustomElement,
+          data: customElementAttributeRegions,
+        });
+        viewRegions.push(customElementViewRegion);
+      }
+    });
+
+    saxStream.on("text", (text) => {
+      let interpolationMatch;
+      while ((interpolationMatch = interpolationRegex.exec(text.text))) {
+        if (interpolationMatch !== null) {
+          text;
+          const attrLocation = text.sourceCodeLocation;
+          if (!attrLocation) return;
+
+          /** Eg. \n\n  ${grammarRules.length} */
+          const startInterpolationLength =
+            attrLocation.startOffset +
+            interpolationMatch.index + // width:_
+            2; // ${
+
+          /** Eg. >css="width: ${message}<px;" */
+          const endInterpolationLength =
+            startInterpolationLength +
+            Number(interpolationMatch.groups?.interpolationValue.length); // message
+
+          const updatedLocation: parse5.Location = {
+            ...attrLocation,
+            startOffset: startInterpolationLength,
+            endOffset: endInterpolationLength,
+          };
+
+          const viewRegion = createRegionV2({
+            sourceCodeLocation: updatedLocation,
+            type: ViewRegionType.TextInterpolation,
+          });
+          viewRegions.push(viewRegion);
+        }
+      }
+    });
+
+    saxStream.on("endTag", (endTag) => {
+      const isTemplateTag = endTag.tagName === AureliaView.TEMPLATE_TAG_NAME;
+      if (isTemplateTag) {
+        resolve(viewRegions);
+      }
+    });
+
+    saxStream.write(document.getText());
+  });
+}
+
+function createRegionV2<RegionDataType = any>({
+  sourceCodeLocation,
+  type,
+  attributeName,
+  tagName,
+  data,
+  languageId = aureliaLanguageId,
+}: {
+  sourceCodeLocation:
+    | SaxStream.StartTagToken["sourceCodeLocation"]
+    | parse5.AttributesLocation[string];
+  type: ViewRegionType;
+  attributeName?: string;
+  tagName?: string;
+  data?: RegionDataType;
+  languageId?: string;
+}): ViewRegionInfo {
+  let calculatedStart = sourceCodeLocation?.startOffset;
+  let calculatedEnd = sourceCodeLocation?.endOffset;
+
+  return {
+    type,
+    languageId,
+    startOffset: calculatedStart,
+    startCol: sourceCodeLocation?.startCol,
+    startLine: sourceCodeLocation?.startLine,
+    endOffset: calculatedEnd,
+    endCol: sourceCodeLocation?.endCol,
+    endLine: sourceCodeLocation?.endLine,
+    attributeName,
+    tagName,
+    data,
+  };
+}
 
 export function getDocumentRegions(
   languageService: LanguageService,
@@ -55,13 +335,23 @@ export function getDocumentRegions(
   let token = scanner.scan();
   // [1.] token parsing
   while (token !== TokenType.EOS) {
-    // // console.log('START ------------------------------------------------------------------------------------------')
     switch (token) {
       case TokenType.StartTag:
         lastTagName = scanner.getTokenText();
         lastAttributeName = null;
         languageIdFromType = "javascript";
         break;
+      case TokenType.StartTagClose: {
+        if (lastTagName === "my-compo") {
+          const aureliaRegion = createRegion(
+            scanner,
+            document,
+            aureliaLanguageId,
+            lastTagName
+          );
+          regions.push(aureliaRegion);
+        }
+      }
       case TokenType.Styles:
         // regions.push({ languageId: 'typescript', start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
         // regions.push({ languageId: 'javascript', start: scanner.getTokenOffset(), end: scanner.getTokenEnd() });
@@ -274,6 +564,38 @@ function getLanguageAtPosition(
   return "html";
 }
 
+export function getRegionFromLineAndCharacter(
+  regions: ViewRegionInfo[],
+  position: Position
+) {
+  const { line, character } = position;
+
+  const targetRegion = regions.find(
+    (region) => region.startLine! <= line && line <= region.endLine!
+  );
+  return targetRegion;
+}
+
+export function getRegionAtPositionV2(
+  document: TextDocument,
+  regions: ViewRegionInfo[],
+  position: Position
+): ViewRegionInfo | undefined {
+  let offset = document.offsetAt(position);
+  for (let region of regions) {
+    if (region.startOffset! <= offset) {
+      if (offset <= region.endOffset!) {
+        return region;
+      }
+    } else {
+      break;
+    }
+  }
+
+  console.error("embeddedSupport -> getRegionAtPosition -> No Region found");
+  return undefined;
+}
+
 export function getRegionAtPosition(
   document: TextDocument,
   regions: EmbeddedRegion[],
@@ -281,6 +603,9 @@ export function getRegionAtPosition(
 ): EmbeddedRegion | undefined {
   let offset = document.offsetAt(position);
   for (let region of regions) {
+    if (region.tagName) {
+      // console.log("TCL: region.tagName", region.tagName);
+    }
     if (region.start <= offset) {
       if (offset <= region.end) {
         return region;
@@ -401,4 +726,26 @@ function getAttributeLanguage(attributeName: string): string | null {
     return null;
   }
   return match[1] ? "css" : "javascript";
+}
+
+function createRegion(
+  scanner: Scanner,
+  document: TextDocument,
+  languageId: string,
+  tagName: string
+) {
+  let start = scanner.getTokenOffset();
+  let end = scanner.getTokenEnd();
+  let firstChar = document.getText()[start];
+  if (firstChar === "'" || firstChar === '"') {
+    start++;
+    end--;
+  }
+  return {
+    languageId: aureliaLanguageId,
+    start,
+    end,
+    attributeValue: true,
+    tagName,
+  };
 }

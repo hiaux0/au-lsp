@@ -30,8 +30,7 @@ import {
 } from "vscode-languageserver";
 import { kebabCase } from "@aurelia/kernel";
 import { createDiagram } from "./createDiagram";
-
-const CUSTOM_ELEMENT_SUFFIX = "CustomElement";
+import { getElementNameFromClassDeclaration } from "../common/className";
 
 export function getAureliaComponentList(
   aureliaProgram: AureliaProgram,
@@ -191,20 +190,4 @@ function classDeclarationHasUseViewOrNoView(
       decorator.getText().includes("@noView")
     );
   });
-}
-
-/**
- * Fetches the equivalent component name based on the given class declaration
- *
- * @param sourceFile - The class declaration to map a component name from
- */
-function getElementNameFromClassDeclaration(
-  classDeclaration: ts.ClassDeclaration
-): string {
-  const className = classDeclaration.name?.getText() || "";
-  const withoutCustomElementSuffix = className.replace(
-    CUSTOM_ELEMENT_SUFFIX,
-    ""
-  );
-  return kebabCase(withoutCustomElementSuffix);
 }

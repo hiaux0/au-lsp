@@ -1,11 +1,6 @@
-export interface DefinitionResult {
-  lineAndCharacter: ts.LineAndCharacter;
-  viewModelFilePath?: string;
-  viewFilePath?: string;
-}
-
 import * as path from "path";
 import * as ts from "typescript";
+import { DefinitionResult } from "../../definition/getDefinition";
 import { AureliaProgram } from "../../viewModel/AureliaProgram";
 import {
   createVirtualCompletionSourceFile,

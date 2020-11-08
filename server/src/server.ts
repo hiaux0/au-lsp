@@ -53,11 +53,8 @@ import {
 import * as path from "path";
 import * as ts from "typescript";
 import { createDiagram } from "./viewModel/createDiagram";
-import {
-  getVirtualDefinition,
-  DefinitionResult,
-} from "./virtual/virtualDefinition/virtualDefinition";
-import { getDefinition } from "./definition/getDefinition";
+import { getVirtualDefinition } from "./virtual/virtualDefinition/virtualDefinition";
+import { DefinitionResult, getDefinition } from "./definition/getDefinition";
 import { camelCase, kebabCase } from "@aurelia/kernel";
 import { AsyncReturnType } from "./common/global";
 import { AureliaLSP } from "./common/constants";

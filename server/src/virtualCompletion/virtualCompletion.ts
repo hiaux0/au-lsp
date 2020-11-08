@@ -263,10 +263,10 @@ export async function getVirtualViewModelCompletion(
 ): Promise<AureliaCompletionItem[]> {
   // 1. From the region get the part, that should be made virtual.
   const documentUri = textDocumentPosition.textDocument.uri;
-  const adjustedPosition: TextDocumentPositionParams["position"] = {
-    character: textDocumentPosition.position.character + 1,
-    line: textDocumentPosition.position.line + 1,
-  };
+  // const adjustedPosition: TextDocumentPositionParams["position"] = {
+  //   character: textDocumentPosition.position.character + 1,
+  //   line: textDocumentPosition.position.line + 1,
+  // };
   // const region = await getDocumentRegionAtPosition(adjustedPosition).get(
   const region = await getDocumentRegionAtPosition(
     textDocumentPosition.position

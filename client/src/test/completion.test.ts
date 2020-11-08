@@ -99,8 +99,8 @@ suite("Completion", () => {
     });
 
     // <!-- Attribute Interpolated region {{ISSUE-gGoA8FSa}}-->
-    test.only("Should complete inside interpolated attribute region", async () => {
-      await testCompletion(docUri, new vscode.Position(41, 46), [
+    test("Should complete inside interpolated attribute region", async () => {
+      await testCompletion(docUri, new vscode.Position(40, 47), [
         ...bindablesTestItems,
         ...classMemberTestItems,
       ]);
@@ -108,18 +108,20 @@ suite("Completion", () => {
   });
 
   suite("Completion - Text interpolated region", () => {
+    // <!-- Text interpolated region {{ISSUE-sCxw9bfm}}-->
     test("Should complete class members", async () => {
       await testCompletion(
         docUri,
-        new vscode.Position(27, 3),
+        new vscode.Position(27, 4),
         classMemberTestItems
       );
     });
 
+    // <!-- Text interpolated region {{ISSUE-sCxw9bfm}}-->
     test("Should complete class bindables", async () => {
       await testCompletion(
         docUri,
-        new vscode.Position(27, 3),
+        new vscode.Position(27, 4),
         bindablesTestItems
       );
     });

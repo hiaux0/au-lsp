@@ -55,7 +55,7 @@ import * as ts from "typescript";
 import { createDiagram } from "./viewModel/createDiagram";
 import {
   getVirtualDefinition,
-  VirtualDefinitionResult,
+  DefinitionResult,
 } from "./virtual/virtualDefinition/virtualDefinition";
 import { getDefinition } from "./definition/getDefinition";
 import { camelCase, kebabCase } from "@aurelia/kernel";
@@ -329,7 +329,7 @@ connection.onRequest(
     position,
     goToSourceWord,
     filePath,
-  }): Promise<VirtualDefinitionResult | undefined> => {
+  }): Promise<DefinitionResult | undefined> => {
     const document = TextDocument.create(filePath, "html", 0, documentContent);
     try {
       const definitions = await getDefinition(

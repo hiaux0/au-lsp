@@ -1,4 +1,4 @@
-export interface VirtualDefinitionResult {
+export interface DefinitionResult {
   lineAndCharacter: ts.LineAndCharacter;
   viewModelFilePath?: string;
   viewFilePath?: string;
@@ -101,7 +101,7 @@ export function getVirtualDefinition(
   filePath: string,
   aureliaProgram: AureliaProgram,
   goToSourceWord: string
-): VirtualDefinitionResult | undefined {
+): DefinitionResult | undefined {
   const { targetVirtualSourcefile, completionIndex, viewModelFilePath } =
     createVirtualFileWithContent(aureliaProgram, filePath, goToSourceWord) ||
     ({} as VirtualCompletionSourceFileInfo);

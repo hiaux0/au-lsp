@@ -7,7 +7,7 @@ import { Position, TextDocument } from "vscode-languageserver-textdocument";
 import { AureliaProgram } from "./../viewModel/AureliaProgram";
 import * as path from "path";
 import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
-import { VirtualDefinitionResult } from "../virtual/virtualDefinition/virtualDefinition";
+import { DefinitionResult } from "../virtual/virtualDefinition/virtualDefinition";
 import { createSourceFile, getLineAndCharacterOfPosition } from "typescript";
 import {
   getDocumentRegions,
@@ -20,7 +20,7 @@ export async function getDefinition(
   position: Position,
   aureliaProgram: AureliaProgram,
   goToSourceWord: string
-): Promise<VirtualDefinitionResult | undefined> {
+): Promise<DefinitionResult | undefined> {
   const aureliaSourceFiles = aureliaProgram.getAureliaSourceFiles();
   const targetAureliaFile = aureliaSourceFiles?.find((sourceFile) => {
     return path.parse(sourceFile.fileName).name === goToSourceWord;

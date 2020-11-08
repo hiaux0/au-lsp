@@ -38,10 +38,6 @@ import { createAureliaWatchProgram } from "./viewModel/createAureliaWatchProgram
 import { getAureliaComponentMap } from "./viewModel/getAureliaComponentMap";
 import { getAureliaComponentList } from "./viewModel/getAureliaComponentList";
 import {
-  LanguageModes,
-  getLanguageModes,
-} from "./embeddedLanguages/languageModes";
-import {
   aureliaLanguageId,
   CustomElementRegionData,
   getDocumentRegionsV2,
@@ -49,11 +45,7 @@ import {
   getRegionFromLineAndCharacter,
   ViewRegionType,
 } from "./embeddedLanguages/embeddedSupport";
-import {
-  getVirtualCompletion,
-  createVirtualCompletionSourceFile,
-  getVirtualViewModelCompletion,
-} from "./virtual/virtualCompletion/virtualCompletion";
+import { getVirtualViewModelCompletion } from "./virtual/virtualCompletion/virtualCompletion";
 
 import * as path from "path";
 import * as ts from "typescript";
@@ -61,7 +53,7 @@ import { createDiagram } from "./viewModel/createDiagram";
 import {
   getVirtualDefinition,
   VirtualDefinitionResult,
-} from "./virtual/virtualDefinition";
+} from "./virtual/virtualDefinition/virtualDefinition";
 import { getDefinition } from "./definition/getDefinition";
 import { camelCase, kebabCase } from "@aurelia/kernel";
 import { AsyncReturnType } from "./common/global";
@@ -81,7 +73,6 @@ let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
-let languageModes: LanguageModes;
 
 connection.onInitialize(async (params: InitializeParams) => {
   console.log(
@@ -112,18 +103,6 @@ connection.onInitialize(async (params: InitializeParams) => {
     capabilities.textDocument.publishDiagnostics &&
     capabilities.textDocument.publishDiagnostics.relatedInformation
   );
-
-  /** ********************** */
-  /** Embedded Language Mode */
-  /** ********************** */
-  // languageModes = getLanguageModes();
-
-  // documents.onDidClose((e) => {
-  //   languageModes.onDocumentRemoved(e.document);
-  // });
-  // connection.onShutdown(() => {
-  //   languageModes.dispose();
-  // });
 
   const result: InitializeResult = {
     capabilities: {
@@ -319,22 +298,6 @@ connection.onCompletion(
     }
 
     return [];
-
-    // const mode = languageModes.getModeAtPosition(document!, _textDocumentPosition.position);
-    // // console.log("TCL: mode", mode)
-    // if (typeof mode === 'string') {
-    // 	console.log('heeeeeeeeeeeeeeee')
-    // 	return [CompletionItem.create('LETS DO IT')]
-    // }
-
-    // // The pass parameter contains the position of the text document in
-    // // which code complete got requested. For the example we ignore this
-    // // info and always provide the same completion items.
-    // return [
-    // 	...aureliaProgram.getComponentMap().classDeclarations!,
-    // 	...aureliaProgram.getComponentMap().classMembers!,
-    // 	...aureliaProgram.getComponentMap().bindables!,
-    // ]
   }
 );
 

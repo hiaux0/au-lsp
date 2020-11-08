@@ -7,7 +7,7 @@ import { Position, TextDocument } from "vscode-languageserver-textdocument";
 import { AureliaProgram } from "./../viewModel/AureliaProgram";
 import * as path from "path";
 import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
-import { VirtualDefinitionResult } from "../virtual/virtualDefinition";
+import { VirtualDefinitionResult } from "../virtual/virtualDefinition/virtualDefinition";
 import { createSourceFile, getLineAndCharacterOfPosition } from "typescript";
 import {
   getDocumentRegions,

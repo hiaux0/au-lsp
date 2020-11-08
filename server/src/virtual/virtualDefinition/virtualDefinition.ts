@@ -6,12 +6,12 @@ export interface VirtualDefinitionResult {
 
 import * as path from "path";
 import * as ts from "typescript";
-import { AureliaProgram } from "../viewModel/AureliaProgram";
+import { AureliaProgram } from "../../viewModel/AureliaProgram";
 import {
   createVirtualCompletionSourceFile,
   VirtualCompletionSourceFileInfo,
   VIRTUAL_SOURCE_FILENAME,
-} from "./virtualCompletion/virtualCompletion";
+} from "../virtualSourceFile";
 
 export function getVirtualLangagueService(
   sourceFile: ts.SourceFile

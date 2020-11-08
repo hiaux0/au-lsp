@@ -33,7 +33,6 @@ import {
   DocumentSettings,
   ExampleSettings,
 } from "./configuration/DocumentSettings";
-import { TextDocumentChange } from "./textDocumentChange/TextDocumentChange";
 import { aureliaProgram } from "./viewModel/AureliaProgram";
 import { createAureliaWatchProgram } from "./viewModel/createAureliaWatchProgram";
 import { getAureliaComponentMap } from "./viewModel/getAureliaComponentMap";
@@ -70,7 +69,6 @@ import { AureliaLSP } from "./common/constants";
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
-const TextDocumentChangeClass = globalContainer.get(TextDocumentChange);
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -198,9 +196,6 @@ connection.onDidChangeConfiguration((change) => {
         DocumentSettingsClass.defaultSettings)
     );
   }
-
-  // Revalidate all open text documents
-  documents.all().forEach(TextDocumentChangeClass.validateTextDocument);
 });
 
 // Only keep settings for open documents
@@ -223,12 +218,6 @@ documents.onDidChangeContent(async (change) => {
   if (componentList) {
     aureliaProgram.setComponentList(componentList);
   }
-
-  TextDocumentChangeClass.inject(
-    connection,
-    hasDiagnosticRelatedInformationCapability
-  );
-  TextDocumentChangeClass.validateTextDocument(change.document);
 });
 
 connection.onDidChangeWatchedFiles((_change) => {

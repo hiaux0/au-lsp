@@ -39,5 +39,15 @@
   <div
     id="some-long-id-for-line-break"
     class="${message ? 'message-class' : ''} ${}"
+    if.bind="message === ''"
   ></div>
+
+  <!-- Value converters -->
+  <template>
+    <tr
+      repeat.for="repo of repos | sort:column.value:direction.value | take:10"
+    >
+      ...
+    </tr>
+  </template>
 </template>

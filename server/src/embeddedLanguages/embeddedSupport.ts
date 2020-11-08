@@ -598,6 +598,27 @@ export function getRegionFromLineAndCharacter(
   return targetRegion;
 }
 
+/**
+ * const regions = [
+ *   { name: "1", startOffset: 100, endOffset: 130 },
+ *   { name: "2", startOffset: 120, endOffset: 130 }, <-- smallest
+ *   { name: "3", startOffset: 110, endOffset: 130 },
+ * ];
+ */
+function getSmallestRegion(regions: ViewRegionInfo[]): ViewRegionInfo {
+  const sortedRegions = regions.sort((regionA, regionB) => {
+    if (!regionA.startOffset || !regionA.endOffset) return 0;
+    if (!regionB.startOffset || !regionB.endOffset) return 0;
+
+    const regionAWidth = regionA.startOffset - regionA.endOffset;
+    const regionBWidth = regionB.startOffset - regionB.endOffset;
+
+    return regionBWidth - regionAWidth;
+  });
+
+  return sortedRegions[0];
+}
+
 export function getRegionAtPositionV2(
   document: TextDocument,
   regions: ViewRegionInfo[],

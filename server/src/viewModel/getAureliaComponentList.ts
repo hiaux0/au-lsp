@@ -128,6 +128,7 @@ function getAureliaComponentInfoFromClassDeclaration(
           className: targetClassDeclaration.name?.getText() || "",
           valueConverterName,
           baseFileName: Path.parse(sourceFile.fileName).name,
+          filePath: sourceFile.fileName,
           type: AureliaClassTypes.VALUE_CONVERTER,
         };
         return;
@@ -150,6 +151,7 @@ function getAureliaComponentInfoFromClassDeclaration(
         className: targetClassDeclaration.name?.getText() || "",
         viewModelName,
         baseFileName: Path.parse(sourceFile.fileName).name,
+        filePath: sourceFile.fileName,
         viewFileName: "TODO",
         type: AureliaClassTypes.CUSTOM_ELEMENT,
       };

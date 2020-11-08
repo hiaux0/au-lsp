@@ -11,6 +11,7 @@ export enum AureliaClassTypes {
 export enum AureliaView {
   TEMPLATE_TAG_NAME = "template",
   REPEAT_FOR = "repeat.for",
+  VALUE_CONVERTER_OPERATOR = "|",
 }
 
 export enum AureliaLSP {

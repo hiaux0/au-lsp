@@ -25,6 +25,8 @@ export interface IComponentList {
   className: string;
   /** component-name.ts */
   baseFileName: string;
+  /** path/to/component-name.ts */
+  filePath: string;
   /**
    * export class >Sort<ValueConverter {} --> sort
    * */

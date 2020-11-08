@@ -12,7 +12,6 @@ import {
   Range,
   TextDocument,
 } from "vscode-html-languageservice";
-import { getCSSMode } from "./modes/cssMode";
 import {
   getDocumentRegions,
   HTMLDocumentRegions,
@@ -24,7 +23,6 @@ import {
   getRegionAtPositionV2,
   getRegionFromLineAndCharacter,
 } from "./embeddedSupport";
-import { getHTMLMode } from "./modes/htmlMode";
 import {
   getLanguageModelCache,
   LanguageModelCache,
@@ -102,8 +100,6 @@ export async function getLanguageModes(): Promise<LanguageModes> {
   modelCaches.push(documentRegions);
 
   let modes = Object.create(null);
-  modes["html"] = getHTMLMode(htmlLanguageService);
-  // modes["css"] = getCSSMode(cssLanguageService, documentRegions);
   modes[aureliaLanguageId] = aureliaLanguageId;
 
   return {

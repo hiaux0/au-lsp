@@ -43,6 +43,8 @@ import {
   getDocumentRegionsV2,
   getRegionAtPositionV2,
   getRegionFromLineAndCharacter,
+  ValueConverterRegionData,
+  ViewRegionInfo,
   ViewRegionType,
 } from "./embeddedLanguages/embeddedSupport";
 import {
@@ -57,8 +59,11 @@ import { getVirtualDefinition } from "./virtual/virtualDefinition/virtualDefinit
 import { DefinitionResult, getDefinition } from "./definition/getDefinition";
 import { camelCase, kebabCase } from "@aurelia/kernel";
 import { AsyncReturnType } from "./common/global";
-import { AureliaLSP } from "./common/constants";
-import { getBindablesCompletion } from "./completions/completions";
+import { AureliaClassTypes, AureliaLSP } from "./common/constants";
+import {
+  createValueConverterCompletion,
+  getBindablesCompletion,
+} from "./completions/completions";
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -238,6 +243,21 @@ connection.onCompletion(
           _textDocumentPosition,
           document
         );
+
+        const regions = await getDocumentRegionsV2(document);
+        const targetRegion = await getRegionAtPositionV2(
+          document,
+          regions,
+          _textDocumentPosition.position
+        );
+
+        /** Infer type via isValueConverterRegion (see ts.isNodeDeclaration) */
+        if (targetRegion?.type === ViewRegionType.ValueConverter) {
+          const valueConverterCompletion = createValueConverterCompletion(
+            targetRegion
+          );
+          return valueConverterCompletion;
+        }
 
         if (aureliaVirtualCompletions.length > 0) {
           return aureliaVirtualCompletions;

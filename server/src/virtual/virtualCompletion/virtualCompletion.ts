@@ -39,9 +39,10 @@ import {
 } from "vscode-languageserver";
 import { EmbeddedRegion } from "../../embeddedLanguages/embeddedSupport";
 import { getDocumentRegionAtPosition } from "../../embeddedLanguages/languageModes";
-import { AureliaProgram } from "../../viewModel/AureliaProgram";
+import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
 import { AureliaLSP } from "../../common/constants";
 import { createVirtualCompletionSourceFile } from "../virtualSourceFile";
+import { AsyncReturnType } from "../../common/global";
 
 const PARAMETER_NAME = "parameterName";
 const PROPERTY_NAME = "propertyName";
@@ -343,4 +344,31 @@ function enhanceCompletionItemDocumentation(
     return completionItem;
   });
   return result;
+}
+
+export async function getAureliaVirtualCompletions(
+  _textDocumentPosition: TextDocumentPositionParams,
+  document: TextDocument
+) {
+  // Virtual file
+  let virtualCompletions: AsyncReturnType<typeof getVirtualViewModelCompletion> = [];
+  try {
+    virtualCompletions = await getVirtualViewModelCompletion(
+      _textDocumentPosition,
+      document,
+      aureliaProgram
+    );
+  } catch (err) {
+    console.log("onCompletion 261 TCL: err", err);
+  }
+
+  const aureliaVirtualCompletions = virtualCompletions.filter((completion) => {
+    const isAureliaRelated =
+      completion.data === AureliaLSP.AureliaCompletionItemDataType;
+    const isUnrelatedTypescriptCompletion = completion.kind === undefined;
+    const wantedResult = isAureliaRelated && !isUnrelatedTypescriptCompletion;
+    return wantedResult;
+  });
+
+  return aureliaVirtualCompletions;
 }

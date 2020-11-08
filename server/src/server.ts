@@ -45,7 +45,10 @@ import {
   getRegionFromLineAndCharacter,
   ViewRegionType,
 } from "./embeddedLanguages/embeddedSupport";
-import { getVirtualViewModelCompletion } from "./virtual/virtualCompletion/virtualCompletion";
+import {
+  getAureliaVirtualCompletions,
+  getVirtualViewModelCompletion,
+} from "./virtual/virtualCompletion/virtualCompletion";
 
 import * as path from "path";
 import * as ts from "typescript";
@@ -58,6 +61,7 @@ import { getDefinition } from "./definition/getDefinition";
 import { camelCase, kebabCase } from "@aurelia/kernel";
 import { AsyncReturnType } from "./common/global";
 import { AureliaLSP } from "./common/constants";
+import { getBindablesCompletion } from "./completions/completions";
 
 const globalContainer = new Container();
 const DocumentSettingsClass = globalContainer.get(DocumentSettings);
@@ -204,59 +208,6 @@ connection.onDidChangeWatchedFiles((_change) => {
   connection.console.log("We received an file change event");
 });
 
-async function getBindablesCompletion(
-  _textDocumentPosition: TextDocumentPositionParams,
-  document: TextDocument
-) {
-  const { position } = _textDocumentPosition;
-  const adjustedPosition: Position = {
-    character: position.character + 1,
-    line: position.line + 1,
-  };
-  const regions = await getDocumentRegionsV2<CustomElementRegionData>(document);
-  const customElementRegions = regions.filter(
-    (region) => region.type === ViewRegionType.CustomElement
-  );
-  const targetCustomElementRegion = getRegionFromLineAndCharacter(
-    customElementRegions,
-    adjustedPosition
-  );
-
-  if (!targetCustomElementRegion) return [];
-
-  return [...aureliaProgram.getComponentMap().bindables!].filter(
-    (bindable) =>
-      kebabCase(bindable.data.elementName) === targetCustomElementRegion.tagName
-  );
-}
-
-async function getAureliaVirtualCompletions(
-  _textDocumentPosition: TextDocumentPositionParams,
-  document: TextDocument
-) {
-  // Virtual file
-  let virtualCompletions: AsyncReturnType<typeof getVirtualViewModelCompletion> = [];
-  try {
-    virtualCompletions = await getVirtualViewModelCompletion(
-      _textDocumentPosition,
-      document,
-      aureliaProgram
-    );
-  } catch (err) {
-    console.log("onCompletion 261 TCL: err", err);
-  }
-
-  const aureliaVirtualCompletions = virtualCompletions.filter((completion) => {
-    const isAureliaRelated =
-      completion.data === AureliaLSP.AureliaCompletionItemDataType;
-    const isUnrelatedTypescriptCompletion = completion.kind === undefined;
-    const wantedResult = isAureliaRelated && !isUnrelatedTypescriptCompletion;
-    return wantedResult;
-  });
-
-  return aureliaVirtualCompletions;
-}
-
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
   async (
@@ -325,26 +276,6 @@ connection.onDefinition((_: TextDocumentPositionParams): Definition | null => {
    */
   return null;
 });
-
-/*
-connection.onDidOpenTextDocument((params) => {
-	// A text document got opened in VSCode.
-	// params.textDocument.uri uniquely identifies the document. For documents store on disk this is a file URI.
-	// params.textDocument.text the initial full content of the document.
-	connection.console.log(`${params.textDocument.uri} opened.`);
-});
-connection.onDidChangeTextDocument((params) => {
-	// The content of a text document did change in VSCode.
-	// params.textDocument.uri uniquely identifies the document.
-	// params.contentChanges describe the content changes to the document.
-	connection.console.log(`${params.textDocument.uri} changed: ${JSON.stringify(params.contentChanges)}`);
-});
-connection.onDidCloseTextDocument((params) => {
-	// A text document got closed in VSCode.
-	// params.textDocument.uri uniquely identifies the document.
-	connection.console.log(`${params.textDocument.uri} closed.`);
-});
-*/
 
 /** On requests */
 connection.onRequest("aurelia-class-diagram", async (filePath: string) => {

@@ -53,7 +53,7 @@ import {
   getVirtualCompletion,
   createVirtualCompletionSourceFile,
   getVirtualViewModelCompletion,
-} from "./virtualCompletion/virtualCompletion";
+} from "./virtual/virtualCompletion/virtualCompletion";
 
 import * as path from "path";
 import * as ts from "typescript";

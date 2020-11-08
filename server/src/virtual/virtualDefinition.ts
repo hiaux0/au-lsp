@@ -11,7 +11,7 @@ import {
   createVirtualCompletionSourceFile,
   VirtualCompletionSourceFileInfo,
   VIRTUAL_SOURCE_FILENAME,
-} from "../virtualCompletion/virtualCompletion";
+} from "./virtualCompletion/virtualCompletion";
 
 export function getVirtualLangagueService(
   sourceFile: ts.SourceFile

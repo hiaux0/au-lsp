@@ -43,10 +43,10 @@ import {
   MarkupKind,
   TextDocumentPositionParams,
 } from "vscode-languageserver";
-import { EmbeddedRegion } from "../embeddedLanguages/embeddedSupport";
-import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
-import { AureliaProgram } from "../viewModel/AureliaProgram";
-import { AureliaLSP } from "../common/constants";
+import { EmbeddedRegion } from "../../embeddedLanguages/embeddedSupport";
+import { getDocumentRegionAtPosition } from "../../embeddedLanguages/languageModes";
+import { AureliaProgram } from "../../viewModel/AureliaProgram";
+import { AureliaLSP } from "../../common/constants";
 
 export const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
 const VIRTUAL_METHOD_NAME = "__vir";

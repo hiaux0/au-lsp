@@ -8,6 +8,7 @@ import * as ts from "typescript";
 import * as Path from "path";
 import { CompletionItem } from "vscode-languageserver";
 import { DocumentSettings } from "../configuration/DocumentSettings";
+import { AureliaClassTypes } from "../common/constants";
 const globalContainer = new Container();
 
 interface IWebcomponent {}
@@ -25,11 +26,16 @@ export interface IComponentList {
   /** component-name.ts */
   baseFileName: string;
   /**
+   * export class >Sort<ValueConverter {} --> sort
+   * */
+  valueConverterName?: string;
+  /**
    * @customElement(">component-name<")
    * export class >ComponentName< {} --> component-name
    * */
-  viewModelName: string;
-  viewFileName: string;
+  viewModelName?: string;
+  viewFileName?: string;
+  type: AureliaClassTypes;
 }
 
 interface IClassDiagram {}

@@ -273,6 +273,12 @@ export async function getVirtualViewModelCompletion(
   return result as AureliaCompletionItem[];
 }
 
+interface CustomizeEnhanceDocumentation {
+  /** Array of the arguments of the method (without types) */
+  customEnhanceMethodArguments?: (methodArguments: string[]) => string;
+  omitMethodNameAndBrackets?: boolean;
+}
+
 /**
  * Pass in arbitrary content for the virtual file.
  *
@@ -286,7 +292,8 @@ export function getVirtualViewModelCompletionSupplyContent(
   /**
    * Identify the correct class in the view model file
    */
-  viewModelClassName: string
+  viewModelClassName: string,
+  customizeEnhanceDocumentation?: CustomizeEnhanceDocumentation
 ): AureliaCompletionItem[] {
   // 3. Create virtual completion
   const virtualViewModelSourceFile = ts.createSourceFile(
@@ -324,7 +331,8 @@ export function getVirtualViewModelCompletionSupplyContent(
   const result = enhanceCompletionItemDocumentation(
     virtualCompletionEntryDetails,
     entryDetailsMap,
-    virtualCompletions
+    virtualCompletions,
+    customizeEnhanceDocumentation
   );
 
   return (result as unknown) as AureliaCompletionItem[];
@@ -333,7 +341,8 @@ export function getVirtualViewModelCompletionSupplyContent(
 function enhanceCompletionItemDocumentation(
   virtualCompletionEntryDetails: (ts.CompletionEntryDetails | undefined)[],
   entryDetailsMap: EntryDetailsMap,
-  virtualCompletions: ts.CompletionEntry[]
+  virtualCompletions: ts.CompletionEntry[],
+  customizeEnhanceDocumentation?: CustomizeEnhanceDocumentation
 ) {
   const kindMap = {
     [ts.ScriptElementKind[
@@ -361,6 +370,13 @@ function enhanceCompletionItemDocumentation(
   /** ${1: argName1}, ${2: argName2} */
   function createArgCompletion(entryDetail: EntryDetailsMapData) {
     const numOfArguments = entryDetail;
+
+    if (customizeEnhanceDocumentation?.customEnhanceMethodArguments) {
+      return customizeEnhanceDocumentation.customEnhanceMethodArguments(
+        entryDetail.methodArguments
+      );
+    }
+
     return entryDetail.methodArguments
       .map((argName, index) => {
         return `\${${index + 1}:${argName}}`;
@@ -374,8 +390,12 @@ function enhanceCompletionItemDocumentation(
     /** Default value is just the method name */
     let insertMethodTextWithArguments = tsCompletion.name;
     if (isMethod) {
+      if (customizeEnhanceDocumentation?.omitMethodNameAndBrackets) {
+        insertMethodTextWithArguments = createArgCompletion(entryDetail);
+      } else {
       insertMethodTextWithArguments =
         tsCompletion.name + "(" + createArgCompletion(entryDetail) + ")";
+    }
     }
 
     const completionItem: AureliaCompletionItem = {

@@ -13,7 +13,11 @@ import {
   TextDocument,
 } from "vscode-html-languageservice";
 import { TextDocumentPositionParams } from "vscode-languageserver";
+import { getAttributeInterpolationMode } from "../modes/getAttributeInterpolationMode";
 import { getAttributeMode } from "../modes/getAttributeMode";
+import { getRepeatForMode } from "../modes/getRepeatForMode";
+import { getTextInterpolationMode } from "../modes/getTextInterpolationMode";
+import { getValueConverterMode } from "../modes/getValueConverterMode";
 import { AureliaCompletionItem } from "../virtual/virtualCompletion/virtualCompletion";
 import {
   HTMLDocumentRegions,
@@ -37,7 +41,8 @@ export interface LanguageMode {
   doValidation?: (document: TextDocument) => Diagnostic[];
   doComplete?: (
     document: TextDocument,
-    _textDocumentPosition: TextDocumentPositionParams
+    _textDocumentPosition: TextDocumentPositionParams,
+    triggerCharacter?: string
   ) => Promise<CompletionList | AureliaCompletionItem[]>;
   onDocumentRemoved(document: TextDocument): void;
   dispose(): void;
@@ -101,12 +106,17 @@ export async function getLanguageModes(): Promise<LanguageModes> {
   let modes = Object.create(null);
   modes[aureliaLanguageId] = aureliaLanguageId;
   modes[ViewRegionType.Attribute] = await getAttributeMode(documentRegions);
-  modes[ViewRegionType.AttributeInterpolation] =
-    ViewRegionType.AttributeInterpolation;
-  modes[ViewRegionType.CustomElement] = ViewRegionType.CustomElement;
-  modes[ViewRegionType.RepeatFor] = ViewRegionType.RepeatFor;
-  modes[ViewRegionType.TextInterpolation] = ViewRegionType.TextInterpolation;
-  modes[ViewRegionType.ValueConverter] = ViewRegionType.ValueConverter;
+  modes[
+    ViewRegionType.AttributeInterpolation
+  ] = await getAttributeInterpolationMode(documentRegions);
+  // modes[ViewRegionType.CustomElement] = await getCustomElementMode(documentRegions);
+  modes[ViewRegionType.RepeatFor] = await getRepeatForMode(documentRegions);
+  modes[ViewRegionType.TextInterpolation] = await getTextInterpolationMode(
+    documentRegions
+  );
+  modes[ViewRegionType.ValueConverter] = await getValueConverterMode(
+    documentRegions
+  );
 
   return {
     async getModeAtPosition(

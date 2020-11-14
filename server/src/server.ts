@@ -217,7 +217,7 @@ connection.onDidChangeWatchedFiles((_change) => {
   connection.console.log("We received an file change event");
 });
 
-async function onValueConverterCompletion(
+export async function onValueConverterCompletion(
   _textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument
 ) {
@@ -286,8 +286,16 @@ connection.onCompletion(
 
     if (mode) {
       const doComplete = mode.doComplete!;
+      const text = document.getText();
+      const offset = document.offsetAt(_textDocumentPosition.position);
+      const triggerCharacter = text.substring(offset - 1, offset);
+
       if (doComplete) {
-        return doComplete(document, _textDocumentPosition);
+        return await doComplete(
+          document,
+          _textDocumentPosition,
+          triggerCharacter
+        );
       }
     }
 

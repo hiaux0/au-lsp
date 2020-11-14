@@ -49,6 +49,14 @@ class CompletionItemProviderInView implements CompletionItemProvider {
       return this.client.sendRequest<any>(
         "aurelia-get-component-class-declarations"
       );
+    } else if (triggerCharacter === ":") {
+      // NOTE (!): this is actually only logic for the test.
+      // How can I if-clause it?
+      const result = await this.client.sendRequest<any>(
+        "get-value-converter-definition",
+        { _textDocumentPosition: { position }, document }
+      );
+      return result;
     }
 
     return [];

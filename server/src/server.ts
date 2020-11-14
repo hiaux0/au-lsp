@@ -211,6 +211,56 @@ connection.onDidChangeWatchedFiles((_change) => {
   connection.console.log("We received an file change event");
 });
 
+async function onValueConverterCompletion(
+  _textDocumentPosition: TextDocumentPositionParams,
+  document: TextDocument
+) {
+  const regions = await getDocumentRegionsV2(document);
+  const targetRegion = getRegionAtPositionV2(
+    document,
+    regions,
+    _textDocumentPosition.position
+  );
+
+  if (targetRegion?.type !== ViewRegionType.ValueConverter) return [];
+
+  /** TODO: Infer type via isValueConverterRegion (see ts.isNodeDeclaration) */
+  // Find value converter sourcefile
+  const valueConverterRegion = targetRegion as ViewRegionInfo<
+    ValueConverterRegionData
+  >;
+
+  const targetValueConverterComponent = aureliaProgram
+    .getComponentList()
+    .filter((component) => component.type === AureliaClassTypes.VALUE_CONVERTER)
+    .find(
+      (valueConverterComponent) =>
+        valueConverterComponent.valueConverterName ===
+        valueConverterRegion.data?.valueConverterName
+    );
+
+  if (!targetValueConverterComponent?.sourceFile) return [];
+
+  const valueConverterCompletion = getVirtualViewModelCompletionSupplyContent(
+    aureliaProgram,
+    /**
+     * Aurelia interface method name, that handles interaction with view
+     */
+    AureliaViewModel.TO_VIEW,
+    targetValueConverterComponent?.sourceFile,
+    "SortValueConverter",
+    {
+      customEnhanceMethodArguments: enhanceValueConverterViewArguments,
+      omitMethodNameAndBrackets: true,
+    }
+  ).filter(
+    /** ASSUMPTION: Only interested in `toView` */
+    (completion) => completion.label === AureliaViewModel.TO_VIEW
+  );
+
+  return valueConverterCompletion;
+}
+
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
   async (
@@ -240,53 +290,7 @@ connection.onCompletion(
         if (bindablesCompletion.length > 0) return bindablesCompletion;
       }
       case ":": {
-        const regions = await getDocumentRegionsV2(document);
-        const targetRegion = await getRegionAtPositionV2(
-          document,
-          regions,
-          _textDocumentPosition.position
-        );
-
-        /** TODO: Infer type via isValueConverterRegion (see ts.isNodeDeclaration) */
-        if (targetRegion?.type === ViewRegionType.ValueConverter) {
-          // Find value converter sourcefile
-          const valueConverterRegion = targetRegion as ViewRegionInfo<
-            ValueConverterRegionData
-          >;
-
-          const targetValueConverterComponent = aureliaProgram
-            .getComponentList()
-            .filter(
-              (component) =>
-                component.type === AureliaClassTypes.VALUE_CONVERTER
-            )
-            .find(
-              (valueConverterComponent) =>
-                valueConverterComponent.valueConverterName ===
-                valueConverterRegion.data?.valueConverterName
-            );
-
-          if (!targetValueConverterComponent?.sourceFile) return [];
-
-          const valueConverterCompletion = getVirtualViewModelCompletionSupplyContent(
-            aureliaProgram,
-            /**
-             * Aurelia interface method name, that handles interaction with view
-             */
-            AureliaViewModel.TO_VIEW,
-            targetValueConverterComponent?.sourceFile,
-            "SortValueConverter",
-            {
-              customEnhanceMethodArguments: enhanceValueConverterViewArguments,
-              omitMethodNameAndBrackets: true,
-            }
-          ).filter(
-            /** ASSUMPTION: Only interested in `toView` */
-            (completion) => completion.label === AureliaViewModel.TO_VIEW
-          );
-
-          return valueConverterCompletion;
-        }
+        return onValueConverterCompletion(_textDocumentPosition, document);
       }
       default: {
         const regions = await getDocumentRegionsV2(document);
@@ -380,6 +384,14 @@ connection.onRequest("aurelia-get-component-list", () => {
 connection.onRequest("aurelia-get-component-class-declarations", () => {
   return aureliaProgram.getComponentMap().classDeclarations;
 });
+
+connection.onRequest(
+  "get-value-converter-definition",
+  async ({ _textDocumentPosition, document }) => {
+    // }): Promise<DefinitionResult|undefined> => {
+    return onValueConverterCompletion(_textDocumentPosition, document);
+  }
+);
 
 connection.onRequest(
   "get-virtual-definition",

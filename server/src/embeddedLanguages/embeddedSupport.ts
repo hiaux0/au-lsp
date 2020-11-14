@@ -497,16 +497,26 @@ function getLanguageAtPosition(
   position: Position
 ): string | undefined {
   let offset = document.offsetAt(position);
-  for (let region of regions) {
+
+  const potentialRegions = regions.filter((region) => {
     if (region.startOffset! <= offset) {
       if (offset <= region.endOffset!) {
-        return region.languageId;
+        return region;
       }
-    } else {
-      break;
+      }
+  });
+
+  if (!potentialRegions) {
+    console.error("embeddedSupport -> getRegionAtPosition -> No Region found");
+    return undefined;
     }
+
+  if (potentialRegions.length === 1) {
+    return potentialRegions[0].languageId;
   }
-  return "html";
+
+  const targetRegion = getSmallestRegion(potentialRegions);
+  return targetRegion.languageId;
 }
 
 export function getRegionFromLineAndCharacter(

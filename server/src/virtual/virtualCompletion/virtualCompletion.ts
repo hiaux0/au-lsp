@@ -37,10 +37,13 @@ import {
   MarkupKind,
   TextDocumentPositionParams,
 } from "vscode-languageserver";
-import { EmbeddedRegion } from "../../embeddedLanguages/embeddedSupport";
+import {
+  EmbeddedRegion,
+  ViewRegionInfo,
+} from "../../embeddedLanguages/embeddedSupport";
 import { getDocumentRegionAtPosition } from "../../embeddedLanguages/languageModes";
 import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
-import { AureliaLSP } from "../../common/constants";
+import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from "../../common/constants";
 import { createVirtualCompletionSourceFile } from "../virtualSourceFile";
 import { AsyncReturnType } from "../../common/global";
 
@@ -268,6 +271,63 @@ export async function getVirtualViewModelCompletion(
   );
 
   return result as AureliaCompletionItem[];
+}
+
+/**
+ * Pass in arbitrary content for the virtual file.
+ *
+ * Cf. getVirtualViewModelCompletion
+ * Here, we go by document region
+ */
+export function getVirtualViewModelCompletionSupplyContent(
+  aureliaProgram: AureliaProgram,
+  virtualContent: string,
+  targetSourceFile: ts.SourceFile,
+  /**
+   * Identify the correct class in the view model file
+   */
+  viewModelClassName: string
+): AureliaCompletionItem[] {
+  // 3. Create virtual completion
+  const virtualViewModelSourceFile = ts.createSourceFile(
+    VIRTUAL_SOURCE_FILENAME,
+    targetSourceFile?.getText(),
+    99
+  );
+  const {
+    targetVirtualSourcefile,
+    completionIndex,
+  } = createVirtualCompletionSourceFile(
+    virtualViewModelSourceFile,
+    virtualContent,
+    viewModelClassName
+  );
+
+  const {
+    virtualCompletions,
+    virtualCompletionEntryDetails,
+  } = getVirtualCompletion(targetVirtualSourcefile, completionIndex);
+
+  if (!virtualCompletions) {
+    console.log(`
+      We were trying to find completions for: ${virtualContent},
+    `);
+    return [];
+  }
+
+  if (!virtualCompletionEntryDetails) {
+    return [];
+  }
+
+  const entryDetailsMap: EntryDetailsMap = {};
+
+  const result = enhanceCompletionItemDocumentation(
+    virtualCompletionEntryDetails,
+    entryDetailsMap,
+    virtualCompletions
+  );
+
+  return (result as unknown) as AureliaCompletionItem[];
 }
 
 function enhanceCompletionItemDocumentation(

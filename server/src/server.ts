@@ -49,7 +49,7 @@ import {
 } from "./embeddedLanguages/embeddedSupport";
 import {
   getAureliaVirtualCompletions,
-  getVirtualViewModelCompletion,
+  getVirtualViewModelCompletionSupplyContent,
 } from "./virtual/virtualCompletion/virtualCompletion";
 
 import * as path from "path";
@@ -59,7 +59,7 @@ import { getVirtualDefinition } from "./virtual/virtualDefinition/virtualDefinit
 import { DefinitionResult, getDefinition } from "./definition/getDefinition";
 import { camelCase, kebabCase } from "@aurelia/kernel";
 import { AsyncReturnType } from "./common/global";
-import { AureliaClassTypes, AureliaLSP } from "./common/constants";
+import { AureliaClassTypes, AureliaViewModel } from "./common/constants";
 import {
   createValueConverterCompletion,
   getBindablesCompletion,
@@ -116,7 +116,7 @@ connection.onInitialize(async (params: InitializeParams) => {
       // Tell the client that the server supports code completion
       completionProvider: {
         resolveProvider: false,
-        triggerCharacters: [" ", ".", "[", '"', "'", "{", "<"],
+        triggerCharacters: [" ", ".", "[", '"', "'", "{", "<", ":"],
       },
       definitionProvider: true,
     },
@@ -238,12 +238,49 @@ connection.onCompletion(
         );
         if (bindablesCompletion.length > 0) return bindablesCompletion;
       }
-      default: {
-        const aureliaVirtualCompletions = await getAureliaVirtualCompletions(
-          _textDocumentPosition,
-          document
+      case ":": {
+        const regions = await getDocumentRegionsV2(document);
+        const targetRegion = await getRegionAtPositionV2(
+          document,
+          regions,
+          _textDocumentPosition.position
         );
 
+        /** TODO: Infer type via isValueConverterRegion (see ts.isNodeDeclaration) */
+        if (targetRegion?.type === ViewRegionType.ValueConverter) {
+          // Find value converter sourcefile
+          const valueConverterRegion = targetRegion as ViewRegionInfo<
+            ValueConverterRegionData
+          >;
+
+          const targetValueConverterComponent = aureliaProgram
+            .getComponentList()
+            .filter(
+              (component) =>
+                component.type === AureliaClassTypes.VALUE_CONVERTER
+            )
+            .find(
+              (valueConverterComponent) =>
+                valueConverterComponent.valueConverterName ===
+                valueConverterRegion.data?.valueConverterName
+            );
+
+          if (!targetValueConverterComponent?.sourceFile) return [];
+
+          const valueConverterCompletion = getVirtualViewModelCompletionSupplyContent(
+            aureliaProgram,
+            /**
+             * Aurelia interface method name, that handles interaction with view
+             */
+            AureliaViewModel.TO_VIEW,
+            targetValueConverterComponent?.sourceFile,
+            "SortValueConverter"
+          );
+
+          return valueConverterCompletion;
+        }
+      }
+      default: {
         const regions = await getDocumentRegionsV2(document);
         const targetRegion = await getRegionAtPositionV2(
           document,
@@ -259,6 +296,10 @@ connection.onCompletion(
           return valueConverterCompletion;
         }
 
+        const aureliaVirtualCompletions = await getAureliaVirtualCompletions(
+          _textDocumentPosition,
+          document
+        );
         if (aureliaVirtualCompletions.length > 0) {
           return aureliaVirtualCompletions;
         }
@@ -273,13 +314,6 @@ connection.onCompletion(
 // the completion list.
 connection.onCompletionResolve(
   (item: CompletionItem): CompletionItem => {
-    if (item.data === 1) {
-      item.detail = "TypeScript details";
-      item.documentation = "TypeScript documentation";
-    } else if (item.data === 2) {
-      item.detail = "JavaScript details";
-      item.documentation = "JavaScript documentation";
-    }
     return item;
   }
 );

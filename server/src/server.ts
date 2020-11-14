@@ -48,6 +48,7 @@ import {
   ViewRegionType,
 } from "./embeddedLanguages/embeddedSupport";
 import {
+  enhanceValueConverterViewArguments,
   getAureliaVirtualCompletions,
   getVirtualViewModelCompletionSupplyContent,
 } from "./virtual/virtualCompletion/virtualCompletion";
@@ -274,7 +275,14 @@ connection.onCompletion(
              */
             AureliaViewModel.TO_VIEW,
             targetValueConverterComponent?.sourceFile,
-            "SortValueConverter"
+            "SortValueConverter",
+            {
+              customEnhanceMethodArguments: enhanceValueConverterViewArguments,
+              omitMethodNameAndBrackets: true,
+            }
+          ).filter(
+            /** ASSUMPTION: Only interested in `toView` */
+            (completion) => completion.label === AureliaViewModel.TO_VIEW
           );
 
           return valueConverterCompletion;

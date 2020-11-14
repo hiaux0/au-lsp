@@ -393,9 +393,9 @@ function enhanceCompletionItemDocumentation(
       if (customizeEnhanceDocumentation?.omitMethodNameAndBrackets) {
         insertMethodTextWithArguments = createArgCompletion(entryDetail);
       } else {
-      insertMethodTextWithArguments =
-        tsCompletion.name + "(" + createArgCompletion(entryDetail) + ")";
-    }
+        insertMethodTextWithArguments =
+          tsCompletion.name + "(" + createArgCompletion(entryDetail) + ")";
+      }
     }
 
     const completionItem: AureliaCompletionItem = {
@@ -423,6 +423,34 @@ function enhanceCompletionItemDocumentation(
      */
     return completionItem;
   });
+  return result;
+}
+
+/**
+ * Convert Value Converter's `toView` to view format.
+ *
+ * @example
+ * ```ts
+ * // TakeValueConverter
+ *   toView(array, count)
+ * ```
+ *   -->
+ * ```html
+ *   array | take:count
+ * ```
+ *
+ */
+export function enhanceValueConverterViewArguments(methodArguments: string[]) {
+  // 1. Omit the first argument, because that's piped to the method
+  const [_, ...viewArguments] = methodArguments;
+
+  // 2. prefix with :
+  const result = viewArguments
+    .map((argName, index) => {
+      return `\${${index + 1}:${argName}}`;
+    })
+    .join(":");
+
   return result;
 }
 

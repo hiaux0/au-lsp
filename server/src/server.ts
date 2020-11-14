@@ -52,6 +52,7 @@ import {
   ViewRegionType,
 } from "./embeddedLanguages/embeddedSupport";
 import {
+  AureliaCompletionItem,
   enhanceValueConverterViewArguments,
   getAureliaVirtualCompletions,
   getVirtualViewModelCompletionSupplyContent,
@@ -284,65 +285,25 @@ connection.onCompletion(
       _textDocumentPosition.position
     );
 
-    if (mode) {
-      const doComplete = mode.doComplete!;
-      const text = document.getText();
-      const offset = document.offsetAt(_textDocumentPosition.position);
-      const triggerCharacter = text.substring(offset - 1, offset);
+    if (!mode) return [];
 
-      if (doComplete) {
-        return await doComplete(
-          document,
-          _textDocumentPosition,
-          triggerCharacter
-        );
-      }
-    }
-
-    // Embedded Language
-
+    const doComplete = mode.doComplete!;
     const text = document.getText();
     const offset = document.offsetAt(_textDocumentPosition.position);
     const triggerCharacter = text.substring(offset - 1, offset);
 
-    switch (triggerCharacter) {
-      case "<": {
-        return [...aureliaProgram.getComponentMap().classDeclarations!];
-      }
-      case " ": {
-        const bindablesCompletion = await getBindablesCompletion(
-          _textDocumentPosition,
-          document
-        );
-        if (bindablesCompletion.length > 0) return bindablesCompletion;
-      }
-      case ":": {
-        return onValueConverterCompletion(_textDocumentPosition, document);
-      }
-      default: {
-        const regions = await parseDocumentRegions(document);
-        const targetRegion = await getRegionAtPosition(
+    if (doComplete) {
+      let completions: AureliaCompletionItem[] | CompletionList = [];
+      try {
+        completions = await doComplete(
           document,
-          regions,
-          _textDocumentPosition.position
-        );
-
-        /** Infer type via isValueConverterRegion (see ts.isNodeDeclaration) */
-        if (targetRegion?.type === ViewRegionType.ValueConverter) {
-          const valueConverterCompletion = createValueConverterCompletion(
-            targetRegion
-          );
-          return valueConverterCompletion;
-        }
-
-        const aureliaVirtualCompletions = await getAureliaVirtualCompletions(
           _textDocumentPosition,
-          document
+          triggerCharacter
         );
-        if (aureliaVirtualCompletions.length > 0) {
-          return aureliaVirtualCompletions;
-        }
+      } catch (error) {
+        console.log("TCL: error", error);
       }
+      return completions;
     }
 
     return [];

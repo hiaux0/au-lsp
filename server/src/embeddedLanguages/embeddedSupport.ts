@@ -531,7 +531,12 @@ function getLanguageAtPosition(
   }
 
   const targetRegion = getSmallestRegion(potentialRegions);
-  return targetRegion.languageId;
+
+  if (targetRegion) {
+    return targetRegion.languageId;
+  }
+
+  return "html";
 }
 
 export function getRegionFromLineAndCharacter(

@@ -15,6 +15,8 @@ import {
 import { TextDocumentPositionParams } from "vscode-languageserver";
 import { getAttributeInterpolationMode } from "../modes/getAttributeInterpolationMode";
 import { getAttributeMode } from "../modes/getAttributeMode";
+import { getAureliaHtmlMode } from "../modes/getAureliaHtmlMode";
+import { getCustomElementMode } from "../modes/getCustomElementMode";
 import { getRepeatForMode } from "../modes/getRepeatForMode";
 import { getTextInterpolationMode } from "../modes/getTextInterpolationMode";
 import { getValueConverterMode } from "../modes/getValueConverterMode";
@@ -105,11 +107,14 @@ export async function getLanguageModes(): Promise<LanguageModes> {
 
   let modes = Object.create(null);
   modes[aureliaLanguageId] = aureliaLanguageId;
+  modes["html"] = await getAureliaHtmlMode(documentRegions);
   modes[ViewRegionType.Attribute] = await getAttributeMode(documentRegions);
   modes[
     ViewRegionType.AttributeInterpolation
   ] = await getAttributeInterpolationMode(documentRegions);
-  // modes[ViewRegionType.CustomElement] = await getCustomElementMode(documentRegions);
+  modes[ViewRegionType.CustomElement] = await getCustomElementMode(
+    documentRegions
+  );
   modes[ViewRegionType.RepeatFor] = await getRepeatForMode(documentRegions);
   modes[ViewRegionType.TextInterpolation] = await getTextInterpolationMode(
     documentRegions

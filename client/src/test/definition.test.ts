@@ -67,6 +67,15 @@ suite("View Definition", () => {
       partOfFilePath: "testFixture/src/compo-user/compo-user.html",
     });
   });
+
+  test("Definition Value Converter", async () => {
+    // <!-- Value Converter Region {{ISSUE-M0pKnxbJ}} -->
+    await testCompletion(docUri, new vscode.Position(48, 25), {
+      position: new vscode.Position(1, 1),
+      partOfFilePath:
+        "testFixture/src/value-converters/sort-value-converter.ts",
+    });
+  });
 });
 
 async function testCompletion(

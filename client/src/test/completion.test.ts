@@ -68,6 +68,15 @@ suite("Completion", () => {
     }
   );
 
+  /** sort-value-converter */
+  const testPrefix_VC = "(Au VC) ";
+  const valueConvertersTestItemNames = ["SortValueConverter"];
+  const valueConvertersTestItems = valueConvertersTestItemNames.map(
+    (valueConverterName) => {
+      return `${testPrefix_VC}${valueConverterName}`;
+    }
+  );
+
   suite.skip("Completion - Custom Element", () => {
     test("Should complete custom element", async () => {
       await testCompletion(
@@ -134,6 +143,29 @@ suite("Completion", () => {
         new vscode.Position(20, 4),
         bindablesTestItems_MyCompo__asKebab
       );
+    });
+  });
+
+  suite("Completion - Value Converter region", () => {
+    test("Value Converter Models", async () => {
+      // <!-- Value Converter Region {{ISSUE-M0pKnxbJ}} -->
+      // [TODO.TEST]
+      // await testCompletion(
+      //   docUri,
+      //   new vscode.Position(48, 25), // a bug, where at start of the name, `toView` was
+      //   valueConvertersTestItems
+      // );
+      await testCompletion(
+        docUri,
+        new vscode.Position(48, 28),
+        valueConvertersTestItems
+      );
+    });
+
+    test.only("toView arguments", async () => {
+      // <!-- Value Converter Region {{ISSUE-M0pKnxbJ}} -->
+      // TODO: test for the insertionText
+      await testCompletion(docUri, new vscode.Position(48, 30), ["toView"]);
     });
   });
 });

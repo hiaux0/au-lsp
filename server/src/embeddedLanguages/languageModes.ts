@@ -15,7 +15,7 @@ import {
 import {
   HTMLDocumentRegions,
   aureliaLanguageId,
-  getDocumentRegionsV2,
+  getDocumentRegions,
   ViewRegionInfo,
   getRegionAtPosition,
   getRegionFromLineAndCharacter,
@@ -63,7 +63,7 @@ export function getDocumentRegionAtPosition(position: Position) {
     async (document) => {
       let regions: ViewRegionInfo[] = [];
       try {
-        regions = await getDocumentRegionsV2(document);
+        regions = await getDocumentRegions(document);
       } catch (err) {
         console.log("72 TCL: getDocumentRegionAtPosition -> err", err);
       }
@@ -84,7 +84,7 @@ export async function getLanguageModes(): Promise<LanguageModes> {
   let documentRegions = await getLanguageModelCache<ViewRegionInfo[]>(
     10,
     60,
-    (document) => getDocumentRegionsV2(document)
+    (document) => getDocumentRegions(document)
   );
 
   let modelCaches: LanguageModelCache<any>[] = [];

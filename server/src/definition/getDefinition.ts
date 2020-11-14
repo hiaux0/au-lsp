@@ -12,7 +12,7 @@ import * as ts from "typescript";
 import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
 import { createSourceFile, getLineAndCharacterOfPosition } from "typescript";
 import {
-  getDocumentRegionsV2,
+  getDocumentRegions,
   ViewRegionType,
 } from "../embeddedLanguages/embeddedSupport";
 
@@ -43,7 +43,7 @@ export async function getDefinition(
     };
   }
 
-  const regions = await getDocumentRegionsV2(document);
+  const regions = await getDocumentRegions(document);
 
   /** Check value converter region */
   const targetRegion = await getRegionAtPosition(document, regions, position);

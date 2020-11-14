@@ -130,6 +130,7 @@ function getAureliaComponentInfoFromClassDeclaration(
           baseFileName: Path.parse(sourceFile.fileName).name,
           filePath: sourceFile.fileName,
           type: AureliaClassTypes.VALUE_CONVERTER,
+          sourceFile,
         };
         return;
       }
@@ -154,6 +155,7 @@ function getAureliaComponentInfoFromClassDeclaration(
         filePath: sourceFile.fileName,
         viewFileName: "TODO",
         type: AureliaClassTypes.CUSTOM_ELEMENT,
+        sourceFile,
       };
     }
   });

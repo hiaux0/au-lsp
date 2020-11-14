@@ -3,9 +3,15 @@ export const VALUE_CONVERTER_SUFFIX = "ValueConverter";
 
 export const TEMPLATE_TAG_NAME = "template";
 
+export const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
+
 export enum AureliaClassTypes {
   CUSTOM_ELEMENT = "CustomElement",
   VALUE_CONVERTER = "ValueConverter",
+}
+
+export enum AureliaViewModel {
+  TO_VIEW = "toView",
 }
 
 export enum AureliaView {

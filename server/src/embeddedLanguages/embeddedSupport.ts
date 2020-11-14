@@ -325,6 +325,7 @@ export function getDocumentRegionsV2<RegionDataType>(
                 attributeName: attr.name,
                 sourceCodeLocation: updatedLocation,
                 type: ViewRegionType.ValueConverter,
+                regionValue: attr.value,
                 data: {
                   initiatorText,
                   valueConverterName: valueConverterName.trim(),

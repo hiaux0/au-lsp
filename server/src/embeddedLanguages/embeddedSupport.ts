@@ -164,7 +164,7 @@ export function getDocumentRegionsV2<RegionDataType>(
             startOffset: attrLocation.startOffset + startInterpolationLength,
             endOffset: endInterpolationLength,
           };
-          const viewRegion = createRegionV2({
+          const viewRegion = createRegion({
             attributeName: attr.name,
             sourceCodeLocation: updatedLocation,
             type: ViewRegionType.Attribute,
@@ -205,7 +205,7 @@ export function getDocumentRegionsV2<RegionDataType>(
             };
             return repeatForData;
           }
-          const repeatForViewRegion = createRegionV2<RepeatForRegionData>({
+          const repeatForViewRegion = createRegion<RepeatForRegionData>({
             attributeName: attr.name,
             sourceCodeLocation: updatedLocation,
             type: ViewRegionType.RepeatFor,
@@ -242,7 +242,7 @@ export function getDocumentRegionsV2<RegionDataType>(
                 endOffset: endInterpolationLength,
               };
 
-              const viewRegion = createRegionV2({
+              const viewRegion = createRegion({
                 attributeName: attr.name,
                 sourceCodeLocation: updatedLocation,
                 type: ViewRegionType.AttributeInterpolation,
@@ -311,7 +311,7 @@ export function getDocumentRegionsV2<RegionDataType>(
               };
 
               // 6.5. Create region with useful info
-              const valueConverterRegion = createRegionV2<
+              const valueConverterRegion = createRegion<
                 ValueConverterRegionData
               >({
                 attributeName: attr.name,
@@ -333,7 +333,7 @@ export function getDocumentRegionsV2<RegionDataType>(
       // 4. Custom elements
       const isCustomElement = aureliaCustomElementNames.includes(tagName);
       if (isCustomElement) {
-        const customElementViewRegion = createRegionV2({
+        const customElementViewRegion = createRegion({
           tagName,
           sourceCodeLocation: startTag.sourceCodeLocation,
           type: ViewRegionType.CustomElement,
@@ -368,7 +368,7 @@ export function getDocumentRegionsV2<RegionDataType>(
             endOffset: endInterpolationLength,
           };
 
-          const viewRegion = createRegionV2({
+          const viewRegion = createRegion({
             sourceCodeLocation: updatedLocation,
             type: ViewRegionType.TextInterpolation,
           });
@@ -388,7 +388,7 @@ export function getDocumentRegionsV2<RegionDataType>(
   });
 }
 
-function createRegionV2<RegionDataType = any>({
+function createRegion<RegionDataType = any>({
   sourceCodeLocation,
   type,
   attributeName,
@@ -694,26 +694,4 @@ function getAttributeLanguage(attributeName: string): string | null {
     return null;
   }
   return match[1] ? "css" : "javascript";
-}
-
-function createRegion(
-  scanner: Scanner,
-  document: TextDocument,
-  languageId: string,
-  tagName: string
-) {
-  let start = scanner.getTokenOffset();
-  let end = scanner.getTokenEnd();
-  let firstChar = document.getText()[start];
-  if (firstChar === "'" || firstChar === '"') {
-    start++;
-    end--;
-  }
-  return {
-    languageId: aureliaLanguageId,
-    start,
-    end,
-    attributeValue: true,
-    tagName,
-  };
 }

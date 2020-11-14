@@ -99,7 +99,7 @@ interface ViewRegions {
 
 export const aureliaLanguageId = "aurelia";
 
-export function getDocumentRegions<RegionDataType>(
+export function parseDocumentRegions<RegionDataType>(
   document: TextDocument
 ): Promise<ViewRegionInfo<RegionDataType>[]> {
   return new Promise((resolve) => {

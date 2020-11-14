@@ -40,7 +40,7 @@ import { getAureliaComponentList } from "./viewModel/getAureliaComponentList";
 import {
   aureliaLanguageId,
   CustomElementRegionData,
-  getDocumentRegions,
+  parseDocumentRegions,
   getRegionAtPosition,
   getRegionFromLineAndCharacter,
   ValueConverterRegionData,
@@ -215,7 +215,7 @@ async function onValueConverterCompletion(
   _textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument
 ) {
-  const regions = await getDocumentRegions(document);
+  const regions = await parseDocumentRegions(document);
   const targetRegion = getRegionAtPosition(
     document,
     regions,
@@ -293,7 +293,7 @@ connection.onCompletion(
         return onValueConverterCompletion(_textDocumentPosition, document);
       }
       default: {
-        const regions = await getDocumentRegions(document);
+        const regions = await parseDocumentRegions(document);
         const targetRegion = await getRegionAtPosition(
           document,
           regions,
@@ -435,7 +435,7 @@ connection.onRequest(
         character: position.character + 1,
         line: position.line + 1,
       };
-      const regions = await getDocumentRegions<CustomElementRegionData>(
+      const regions = await parseDocumentRegions<CustomElementRegionData>(
         document
       );
       const targetCustomElementRegion = regions

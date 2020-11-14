@@ -15,7 +15,7 @@ import {
 import {
   HTMLDocumentRegions,
   aureliaLanguageId,
-  getDocumentRegions,
+  parseDocumentRegions,
   ViewRegionInfo,
   getRegionAtPosition,
   getRegionFromLineAndCharacter,
@@ -36,10 +36,10 @@ export interface LanguageMode {
 }
 
 export interface LanguageModes {
-  // getModeAtPosition(
-  //   document: TextDocument,
-  //   position: Position
-  // ): LanguageMode | undefined;
+  getModeAtPosition(
+    document: TextDocument,
+    position: Position
+  ): LanguageMode | undefined;
   // getModesInRange(document: TextDocument, range: Range): LanguageModeRange[];
   getAllModes(): LanguageMode[];
   // getAllModesInDocument(document: TextDocument): LanguageMode[];
@@ -63,7 +63,7 @@ export function getDocumentRegionAtPosition(position: Position) {
     async (document) => {
       let regions: ViewRegionInfo[] = [];
       try {
-        regions = await getDocumentRegions(document);
+        regions = await parseDocumentRegions(document);
       } catch (err) {
         console.log("72 TCL: getDocumentRegionAtPosition -> err", err);
       }
@@ -84,7 +84,7 @@ export async function getLanguageModes(): Promise<LanguageModes> {
   let documentRegions = await getLanguageModelCache<ViewRegionInfo[]>(
     10,
     60,
-    (document) => getDocumentRegions(document)
+    (document) => parseDocumentRegions(document)
   );
 
   let modelCaches: LanguageModelCache<any>[] = [];
@@ -94,18 +94,18 @@ export async function getLanguageModes(): Promise<LanguageModes> {
   modes[aureliaLanguageId] = aureliaLanguageId;
 
   return {
-    // async getModeAtPosition(
-    //   document: TextDocument,
-    //   position: Position
-    // ): Promise<LanguageMode | undefined> {
-    //   let languageId = documentRegions
-    //     .get(document)
-    //     .getLanguageAtPosition(position);
-    //   if (languageId) {
-    //     return modes[languageId];
-    //   }
-    //   return undefined;
-    // },
+    async getModeAtPosition(
+      document: TextDocument,
+      position: Position
+    ): Promise<LanguageMode | undefined> {
+      let languageId = documentRegions
+        .get(document)
+        .getLanguageAtPosition(position);
+      if (languageId) {
+        return modes[languageId];
+      }
+      return undefined;
+    },
     // getModesInRange(document: TextDocument, range: Range): LanguageModeRange[] {
     //   return documentRegions
     //     .get(document)

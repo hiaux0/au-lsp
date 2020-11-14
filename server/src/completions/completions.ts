@@ -10,7 +10,7 @@ import {
 import { AureliaClassTypes } from "../common/constants";
 import {
   CustomElementRegionData,
-  getDocumentRegions,
+  parseDocumentRegions,
   getRegionFromLineAndCharacter,
   ValueConverterRegionData,
   ViewRegionInfo,
@@ -30,7 +30,7 @@ export async function getBindablesCompletion(
     character: position.character + 1,
     line: position.line + 1,
   };
-  const regions = await getDocumentRegions<CustomElementRegionData>(document);
+  const regions = await parseDocumentRegions<CustomElementRegionData>(document);
   const customElementRegions = regions.filter(
     (region) => region.type === ViewRegionType.CustomElement
   );

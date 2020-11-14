@@ -162,7 +162,7 @@ suite("Completion", () => {
       );
     });
 
-    test.only("toView arguments", async () => {
+    test("toView arguments", async () => {
       // <!-- Value Converter Region {{ISSUE-M0pKnxbJ}} -->
       // TODO: test for the insertionText
       await testCompletion(docUri, new vscode.Position(48, 30), ["toView"]);

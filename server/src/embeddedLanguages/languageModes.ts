@@ -12,6 +12,9 @@ import {
   Range,
   TextDocument,
 } from "vscode-html-languageservice";
+import { TextDocumentPositionParams } from "vscode-languageserver";
+import { getAttributeMode } from "../modes/getAttributeMode";
+import { AureliaCompletionItem } from "../virtual/virtualCompletion/virtualCompletion";
 import {
   HTMLDocumentRegions,
   aureliaLanguageId,
@@ -19,6 +22,8 @@ import {
   ViewRegionInfo,
   getRegionAtPosition,
   getRegionFromLineAndCharacter,
+  getDocumentRegions,
+  ViewRegionType,
 } from "./embeddedSupport";
 import {
   getLanguageModelCache,
@@ -30,7 +35,10 @@ export * from "vscode-html-languageservice";
 export interface LanguageMode {
   getId(): string;
   doValidation?: (document: TextDocument) => Diagnostic[];
-  doComplete?: (document: TextDocument, position: Position) => CompletionList;
+  doComplete?: (
+    document: TextDocument,
+    _textDocumentPosition: TextDocumentPositionParams
+  ) => Promise<CompletionList | AureliaCompletionItem[]>;
   onDocumentRemoved(document: TextDocument): void;
   dispose(): void;
 }
@@ -39,7 +47,7 @@ export interface LanguageModes {
   getModeAtPosition(
     document: TextDocument,
     position: Position
-  ): LanguageMode | undefined;
+  ): Promise<LanguageMode | undefined>;
   // getModesInRange(document: TextDocument, range: Range): LanguageModeRange[];
   getAllModes(): LanguageMode[];
   // getAllModesInDocument(document: TextDocument): LanguageMode[];
@@ -81,10 +89,10 @@ export async function getLanguageModes(): Promise<LanguageModes> {
   const htmlLanguageService = getHTMLLanguageService();
   const cssLanguageService = getCSSLanguageService();
 
-  let documentRegions = await getLanguageModelCache<ViewRegionInfo[]>(
+  let documentRegions = await getLanguageModelCache<HTMLDocumentRegions>(
     10,
     60,
-    (document) => parseDocumentRegions(document)
+    (document) => getDocumentRegions(document)
   );
 
   let modelCaches: LanguageModelCache<any>[] = [];
@@ -92,15 +100,22 @@ export async function getLanguageModes(): Promise<LanguageModes> {
 
   let modes = Object.create(null);
   modes[aureliaLanguageId] = aureliaLanguageId;
+  modes[ViewRegionType.Attribute] = await getAttributeMode(documentRegions);
+  modes[ViewRegionType.AttributeInterpolation] =
+    ViewRegionType.AttributeInterpolation;
+  modes[ViewRegionType.CustomElement] = ViewRegionType.CustomElement;
+  modes[ViewRegionType.RepeatFor] = ViewRegionType.RepeatFor;
+  modes[ViewRegionType.TextInterpolation] = ViewRegionType.TextInterpolation;
+  modes[ViewRegionType.ValueConverter] = ViewRegionType.ValueConverter;
 
   return {
     async getModeAtPosition(
       document: TextDocument,
       position: Position
     ): Promise<LanguageMode | undefined> {
-      let languageId = documentRegions
-        .get(document)
-        .getLanguageAtPosition(position);
+      const documentRegion = await documentRegions.get(document);
+      let languageId = documentRegion.getLanguageAtPosition(position);
+
       if (languageId) {
         return modes[languageId];
       }

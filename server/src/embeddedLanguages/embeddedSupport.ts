@@ -32,7 +32,7 @@ export interface HTMLDocumentRegions {
   getLanguageAtPosition(position: Position): string | undefined;
   getLanguagesInDocument(): string[];
   getImportedScripts(): string[];
-  getRegionAtPosition(position: Position): ViewRegionInfo | undefined;
+  getRegionAtPosition?(position: Position): ViewRegionInfo | undefined;
 }
 
 export const CSS_STYLE_RULE = "__";
@@ -388,6 +388,23 @@ export function parseDocumentRegions<RegionDataType>(
   });
 }
 
+export async function getDocumentRegions(
+  document: TextDocument
+): Promise<HTMLDocumentRegions> {
+  const regions = await parseDocumentRegions(document);
+
+  return {
+    getLanguageRanges: (range: Range) =>
+      getLanguageRanges(document, regions, range),
+    getEmbeddedDocument: (languageId: string, ignoreAttributeValues: boolean) =>
+      getEmbeddedDocument(document, regions, languageId, ignoreAttributeValues),
+    getLanguageAtPosition: (position: Position) =>
+      getLanguageAtPosition(document, regions, position),
+    getLanguagesInDocument: () => getLanguagesInDocument(document, regions),
+    getImportedScripts: () => [""], // TODO: figure out if actually wanted/needed
+  };
+}
+
 function createRegion<RegionDataType = any>({
   sourceCodeLocation,
   type,
@@ -395,7 +412,6 @@ function createRegion<RegionDataType = any>({
   tagName,
   data,
   regionValue,
-  languageId = aureliaLanguageId,
 }: {
   sourceCodeLocation:
     | SaxStream.StartTagToken["sourceCodeLocation"]
@@ -405,14 +421,13 @@ function createRegion<RegionDataType = any>({
   attributeName?: string;
   tagName?: string;
   data?: RegionDataType;
-  languageId?: string;
 }): ViewRegionInfo {
   let calculatedStart = sourceCodeLocation?.startOffset;
   let calculatedEnd = sourceCodeLocation?.endOffset;
 
   return {
     type,
-    languageId,
+    languageId: type, // [ASSUMPTION]: In offi demo, languageId (css, html), but our regions are aurelai specific (not really languages, thus use the `type` field)
     startOffset: calculatedStart,
     startCol: sourceCodeLocation?.startCol,
     startLine: sourceCodeLocation?.startLine,
@@ -503,13 +518,13 @@ function getLanguageAtPosition(
       if (offset <= region.endOffset!) {
         return region;
       }
-      }
+    }
   });
 
   if (!potentialRegions) {
     console.error("embeddedSupport -> getRegionAtPosition -> No Region found");
     return undefined;
-    }
+  }
 
   if (potentialRegions.length === 1) {
     return potentialRegions[0].languageId;

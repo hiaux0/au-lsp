@@ -175,7 +175,7 @@ function getKindName(kind: ts.SyntaxKind) {
 
 function getSourceFileForVirtualViewModel() {}
 
-interface AureliaCompletionItem extends CompletionItem {
+export interface AureliaCompletionItem extends CompletionItem {
   data?: AureliaLSP.AureliaCompletionItemDataType;
 }
 

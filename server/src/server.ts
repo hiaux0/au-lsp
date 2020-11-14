@@ -22,7 +22,11 @@ import {
 } from "vscode-languageserver";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Position } from "./embeddedLanguages/languageModes";
+import {
+  getLanguageModes,
+  LanguageModes,
+  Position,
+} from "./embeddedLanguages/languageModes";
 
 // We need to import this to include reflect functionality
 import "reflect-metadata";
@@ -76,6 +80,7 @@ let connection = createConnection(ProposedFeatures.all);
 // Create a simple text document manager. The text document manager
 // supports full document sync only
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+let languageModes: LanguageModes;
 
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
@@ -96,6 +101,7 @@ connection.onInitialize(async (params: InitializeParams) => {
     "------------------------------------------------------------------------------------------"
   );
   let capabilities = params.capabilities;
+  languageModes = await getLanguageModes();
 
   // Does the client support the `workspace/configuration` request?
   // If not, we will fall back using global settings
@@ -265,13 +271,26 @@ async function onValueConverterCompletion(
 connection.onCompletion(
   async (
     _textDocumentPosition: TextDocumentPositionParams
-  ): Promise<CompletionItem[]> => {
+  ): Promise<CompletionItem[] | CompletionList> => {
     const documentUri = _textDocumentPosition.textDocument.uri;
     const document = documents.get(documentUri);
     if (!document) {
       throw new Error("No document found");
       return [];
     }
+
+    const mode = await languageModes.getModeAtPosition(
+      document,
+      _textDocumentPosition.position
+    );
+
+    if (mode) {
+      const doComplete = mode.doComplete!;
+      if (doComplete) {
+        return doComplete(document, _textDocumentPosition);
+      }
+    }
+
     // Embedded Language
 
     const text = document.getText();

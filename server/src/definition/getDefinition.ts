@@ -1,5 +1,5 @@
 import {
-  getRegionAtPositionV2,
+  getRegionAtPosition,
   RepeatForRegionData,
   ValueConverterRegionData,
   ViewRegionInfo,
@@ -12,7 +12,6 @@ import * as ts from "typescript";
 import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
 import { createSourceFile, getLineAndCharacterOfPosition } from "typescript";
 import {
-  getDocumentRegions,
   getDocumentRegionsV2,
   ViewRegionType,
 } from "../embeddedLanguages/embeddedSupport";
@@ -47,7 +46,7 @@ export async function getDefinition(
   const regions = await getDocumentRegionsV2(document);
 
   /** Check value converter region */
-  const targetRegion = await getRegionAtPositionV2(document, regions, position);
+  const targetRegion = await getRegionAtPosition(document, regions, position);
 
   if (targetRegion?.type === ViewRegionType.ValueConverter) {
     const valueConverterRegion = targetRegion as ViewRegionInfo<

@@ -13,14 +13,11 @@ import {
   TextDocument,
 } from "vscode-html-languageservice";
 import {
-  getDocumentRegions,
   HTMLDocumentRegions,
-  EmbeddedRegion,
   aureliaLanguageId,
   getDocumentRegionsV2,
   ViewRegionInfo,
   getRegionAtPosition,
-  getRegionAtPositionV2,
   getRegionFromLineAndCharacter,
 } from "./embeddedSupport";
 import {
@@ -71,15 +68,10 @@ export function getDocumentRegionAtPosition(position: Position) {
         console.log("72 TCL: getDocumentRegionAtPosition -> err", err);
       }
 
-      const reg = getRegionAtPositionV2(document, regions, position);
+      const reg = getRegionAtPosition(document, regions, position);
       // const reg = getRegionFromLineAndCharacter(regions, position);
 
       return reg;
-      // const region = getDocumentRegions(
-      // htmlLanguageService,
-      // document
-      // ).getRegionAtPosition(position);
-      // return region;
     }
   );
 

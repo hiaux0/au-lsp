@@ -6,6 +6,7 @@
 import * as vscode from "vscode";
 import * as assert from "assert";
 import { intersection, map } from "lodash";
+import { kebabCase } from "@aurelia/kernel";
 import { AureliaProgram } from "./../../../server/src/viewModel/AureliaProgram";
 import { IComponentMap } from "./../../../server/src/viewModel/AureliaProgram";
 
@@ -38,46 +39,142 @@ function getTestItems(
   return testItems;
 }
 
-suite.only("Completion", () => {
+suite("Completion", () => {
   const applicationFile = getTestApplicationFiles();
-  const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
   const aureliaProgram = getAureliaProgramForTesting();
+  const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);
 
-  const classDeclarationTestItems = getTestItems(
-    aureliaProgram,
-    "classDeclarations"
+  const classDeclarationTestItems = map(
+    getTestItems(aureliaProgram, "classDeclarations"),
+    "label"
   );
-  // const classMemberTestItems = getTestItems(aureliaProgram, "classMembers");
-  const classMemberTestItems = ["counter", "message", "thisIsMe"];
-  const bindablesTestItems = ["increaseCounter"];
 
-  // test("Complete class declaration", async () => {
-  //   await testCompletion(docUri, new vscode.Position(1, 23), {
-  //     items: classDeclarationTestItems,
-  //   });
-  // });
+  /** compo-user */
+  const classMemberTestItems = [
+    "counter",
+    "message",
+    "increaseCounter",
+    "rule",
+    "grammarRules",
+  ];
+  const bindablesTestItems = ["thisIsMe"];
 
-  test("Should complete class members", async () => {
-    await testCompletion(
-      docUri,
-      new vscode.Position(1, 23),
-      classMemberTestItems
-    );
+  /** my-compo */
+  const testPrefix = "(Au Bindable) ";
+  const bindablesTestItems_MyCompo = ["stringBindable", "interBindable"];
+  const bindablesTestItems_MyCompo__asKebab = bindablesTestItems_MyCompo.map(
+    (bindableName) => {
+      return `${testPrefix}${kebabCase(bindableName)}`;
+    }
+  );
+
+  /** sort-value-converter */
+  const testPrefix_VC = "(Au VC) ";
+  const valueConvertersTestItemNames = ["SortValueConverter"];
+  const valueConvertersTestItems = valueConvertersTestItemNames.map(
+    (valueConverterName) => {
+      return `${testPrefix_VC}${valueConverterName}`;
+    }
+  );
+
+  suite.skip("Completion - Custom Element", () => {
+    test("Should complete custom element", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(0, 0),
+        classDeclarationTestItems,
+        "<"
+      );
+    });
   });
 
-  test("Should complete class members - bindables", async () => {
-    await testCompletion(
-      docUri,
-      new vscode.Position(1, 23),
-      bindablesTestItems
-    );
+  suite("Completion - Attribute region", () => {
+    // <!-- Test: Completion {{ISSUE-9WZg54qT}}-->
+    test("Should complete class members", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(3, 23),
+        classMemberTestItems
+      );
+    });
+
+    // <!-- Test: Completion {{ISSUE-9WZg54qT}}-->
+    test("Should complete class bindables", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(3, 23),
+        bindablesTestItems
+      );
+    });
+
+    // <!-- Attribute Interpolated region {{ISSUE-gGoA8FSa}}-->
+    test("Should complete inside interpolated attribute region", async () => {
+      await testCompletion(docUri, new vscode.Position(40, 47), [
+        ...bindablesTestItems,
+        ...classMemberTestItems,
+      ]);
+    });
+  });
+
+  suite("Completion - Text interpolated region", () => {
+    // <!-- Text interpolated region {{ISSUE-sCxw9bfm}}-->
+    test("Should complete class members", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(27, 4),
+        classMemberTestItems
+      );
+    });
+
+    // <!-- Text interpolated region {{ISSUE-sCxw9bfm}}-->
+    test("Should complete class bindables", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(27, 4),
+        bindablesTestItems
+      );
+    });
+  });
+
+  suite("Completion - Custom element region", () => {
+    test("Bindables", async () => {
+      await testCompletion(
+        docUri,
+        new vscode.Position(20, 4),
+        bindablesTestItems_MyCompo__asKebab
+      );
+    });
+  });
+
+  suite("Completion - Value Converter region", () => {
+    test("Value Converter Models", async () => {
+      // <!-- Value Converter Region {{ISSUE-M0pKnxbJ}} -->
+      // [TODO.TEST]
+      // await testCompletion(
+      //   docUri,
+      //   new vscode.Position(48, 25), // a bug, where at start of the name, `toView` was
+      //   valueConvertersTestItems
+      // );
+      await testCompletion(
+        docUri,
+        new vscode.Position(48, 28),
+        valueConvertersTestItems
+      );
+    });
+
+    test.only("toView arguments", async () => {
+      // <!-- Value Converter Region {{ISSUE-M0pKnxbJ}} -->
+      // TODO: test for the insertionText
+      await testCompletion(docUri, new vscode.Position(48, 30), ["toView"]);
+    });
   });
 });
 
 async function testCompletion(
   docUri: vscode.Uri,
   position: vscode.Position,
-  expectedCompletionList: string[]
+  expectedCompletionList: string[],
+  triggerCharacter?: string
 ) {
   await activate(docUri);
 
@@ -85,7 +182,8 @@ async function testCompletion(
   const actualCompletionList = (await vscode.commands.executeCommand(
     "vscode.executeCompletionItemProvider",
     docUri,
-    position
+    position,
+    triggerCharacter
   )) as vscode.CompletionList;
 
   // assert.ok(actualCompletionList.items.length >= 2);

@@ -12,14 +12,17 @@ import {
   Range,
   TextDocument,
 } from "vscode-html-languageservice";
-import { getCSSMode } from "./modes/cssMode";
 import {
   getDocumentRegions,
   HTMLDocumentRegions,
   EmbeddedRegion,
   aureliaLanguageId,
+  getDocumentRegionsV2,
+  ViewRegionInfo,
+  getRegionAtPosition,
+  getRegionAtPositionV2,
+  getRegionFromLineAndCharacter,
 } from "./embeddedSupport";
-import { getHTMLMode } from "./modes/htmlMode";
 import {
   getLanguageModelCache,
   LanguageModelCache,
@@ -36,13 +39,13 @@ export interface LanguageMode {
 }
 
 export interface LanguageModes {
-  getModeAtPosition(
-    document: TextDocument,
-    position: Position
-  ): LanguageMode | undefined;
-  getModesInRange(document: TextDocument, range: Range): LanguageModeRange[];
+  // getModeAtPosition(
+  //   document: TextDocument,
+  //   position: Position
+  // ): LanguageMode | undefined;
+  // getModesInRange(document: TextDocument, range: Range): LanguageModeRange[];
   getAllModes(): LanguageMode[];
-  getAllModesInDocument(document: TextDocument): LanguageMode[];
+  // getAllModesInDocument(document: TextDocument): LanguageMode[];
   getMode(languageId: string): LanguageMode | undefined;
   onDocumentRemoved(document: TextDocument): void;
   dispose(): void;
@@ -57,77 +60,86 @@ export function getDocumentRegionAtPosition(position: Position) {
   const htmlLanguageService = getHTMLLanguageService();
   const cssLanguageService = getCSSLanguageService();
 
-  const documentRegion = getLanguageModelCache<EmbeddedRegion | undefined>(
+  const documentRegion = getLanguageModelCache<ViewRegionInfo | undefined>(
     10,
     60,
-    (document) => {
-      const region = getDocumentRegions(
-        htmlLanguageService,
-        document
-      ).getRegionAtPosition(position);
-      return region;
+    async (document) => {
+      let regions: ViewRegionInfo[] = [];
+      try {
+        regions = await getDocumentRegionsV2(document);
+      } catch (err) {
+        console.log("72 TCL: getDocumentRegionAtPosition -> err", err);
+      }
+
+      const reg = getRegionAtPositionV2(document, regions, position);
+      // const reg = getRegionFromLineAndCharacter(regions, position);
+
+      return reg;
+      // const region = getDocumentRegions(
+      // htmlLanguageService,
+      // document
+      // ).getRegionAtPosition(position);
+      // return region;
     }
   );
 
   return documentRegion;
 }
 
-export function getLanguageModes(): LanguageModes {
+export async function getLanguageModes(): Promise<LanguageModes> {
   const htmlLanguageService = getHTMLLanguageService();
   const cssLanguageService = getCSSLanguageService();
 
-  let documentRegions = getLanguageModelCache<HTMLDocumentRegions>(
+  let documentRegions = await getLanguageModelCache<ViewRegionInfo[]>(
     10,
     60,
-    (document) => getDocumentRegions(htmlLanguageService, document)
+    (document) => getDocumentRegionsV2(document)
   );
 
   let modelCaches: LanguageModelCache<any>[] = [];
   modelCaches.push(documentRegions);
 
   let modes = Object.create(null);
-  modes["html"] = getHTMLMode(htmlLanguageService);
-  modes["css"] = getCSSMode(cssLanguageService, documentRegions);
   modes[aureliaLanguageId] = aureliaLanguageId;
 
   return {
-    getModeAtPosition(
-      document: TextDocument,
-      position: Position
-    ): LanguageMode | undefined {
-      let languageId = documentRegions
-        .get(document)
-        .getLanguageAtPosition(position);
-      if (languageId) {
-        return modes[languageId];
-      }
-      return undefined;
-    },
-    getModesInRange(document: TextDocument, range: Range): LanguageModeRange[] {
-      return documentRegions
-        .get(document)
-        .getLanguageRanges(range)
-        .map((r) => {
-          return <LanguageModeRange>{
-            start: r.start,
-            end: r.end,
-            mode: r.languageId && modes[r.languageId],
-            attributeValue: r.attributeValue,
-          };
-        });
-    },
-    getAllModesInDocument(document: TextDocument): LanguageMode[] {
-      let result = [];
-      for (let languageId of documentRegions
-        .get(document)
-        .getLanguagesInDocument()) {
-        let mode = modes[languageId];
-        if (mode) {
-          result.push(mode);
-        }
-      }
-      return result;
-    },
+    // async getModeAtPosition(
+    //   document: TextDocument,
+    //   position: Position
+    // ): Promise<LanguageMode | undefined> {
+    //   let languageId = documentRegions
+    //     .get(document)
+    //     .getLanguageAtPosition(position);
+    //   if (languageId) {
+    //     return modes[languageId];
+    //   }
+    //   return undefined;
+    // },
+    // getModesInRange(document: TextDocument, range: Range): LanguageModeRange[] {
+    //   return documentRegions
+    //     .get(document)
+    //     .getLanguageRanges(range)
+    //     .map((r) => {
+    //       return <LanguageModeRange>{
+    //         start: r.start,
+    //         end: r.end,
+    //         mode: r.languageId && modes[r.languageId],
+    //         attributeValue: r.attributeValue,
+    //       };
+    //     });
+    // },
+    // getAllModesInDocument(document: TextDocument): LanguageMode[] {
+    //   let result = [];
+    //   for (let languageId of documentRegions
+    //     .get(document)
+    //     .getLanguagesInDocument()) {
+    //     let mode = modes[languageId];
+    //     if (mode) {
+    //       result.push(mode);
+    //     }
+    //   }
+    //   return result;
+    // },
     getAllModes(): LanguageMode[] {
       let result = [];
       for (let languageId in modes) {

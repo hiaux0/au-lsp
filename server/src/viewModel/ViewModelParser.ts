@@ -9,6 +9,7 @@ import {
 import * as ts from "typescript";
 import { AureliaProgram } from "./AureliaProgram";
 import { kebabCase } from "@aurelia/kernel";
+import { getElementNameFromClassDeclaration } from "../common/className";
 
 const connection: IConnection = createConnection();
 const logger = connection.console;
@@ -34,7 +35,7 @@ export class ViewModelParser {
               this.isNodeExported(node) &&
               (hasTemplate || this.classDeclarationHasUseViewOrNoView(node))
             ) {
-              const elementName = this.getElementNameFromClassDeclaration(node);
+              const elementName = getElementNameFromClassDeclaration(node);
               const symbol = checker.getSymbolAtLocation(node);
               // const symbol = checker.getSymbolAtLocation(node.name); // TODO look into why .name not needed. Was copy paste
               const documentation = ts.displayPartsToString(

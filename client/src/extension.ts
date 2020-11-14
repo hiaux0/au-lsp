@@ -3,10 +3,22 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import "reflect-metadata";
 import * as path from "path";
 import * as vscode from "vscode";
-import { workspace, commands, ExtensionContext, OutputChannel } from "vscode";
+import {
+  workspace,
+  commands,
+  ExtensionContext,
+  OutputChannel,
+  CompletionItemProvider,
+  CancellationToken,
+  CompletionList,
+  CompletionContext,
+  CompletionItem,
+} from "vscode";
 import * as WebSocket from "ws";
+import * as ts from "typescript";
 
 import {
   LanguageClient,
@@ -16,8 +28,84 @@ import {
 } from "vscode-languageclient";
 import { registerDiagramPreview } from "./webview/diagramPreview";
 import { RelatedFiles } from "./feature/relatedFiles";
+import { aureliaProgram } from "../../server/src/viewModel/AureliaProgram";
 
 let client: LanguageClient;
+
+class CompletionItemProviderInView implements CompletionItemProvider {
+  public constructor(private readonly client: LanguageClient) {}
+
+  public async provideCompletionItems(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token: CancellationToken,
+    context: CompletionContext
+  ): Promise<CompletionItem[] | CompletionList> {
+    const text = document.getText();
+    const offset = document.offsetAt(position);
+    const triggerCharacter = text.substring(offset - 1, offset);
+
+    if (triggerCharacter === "<") {
+      return this.client.sendRequest<any>(
+        "aurelia-get-component-class-declarations"
+      );
+    } else if (triggerCharacter === ":") {
+      // NOTE (!): this is actually only logic for the test.
+      // How can I if-clause it?
+      const result = await this.client.sendRequest<any>(
+        "get-value-converter-definition",
+        { _textDocumentPosition: { position }, document }
+      );
+      return result;
+    }
+
+    return [];
+  }
+}
+
+class SearchDefinitionInView implements vscode.DefinitionProvider {
+  public client: LanguageClient;
+
+  public constructor(client: LanguageClient) {
+    this.client = client;
+  }
+
+  public async provideDefinition(
+    document: vscode.TextDocument,
+    position: vscode.Position
+  ): Promise<vscode.DefinitionLink[]> {
+    const goToSourceWordRange = document.getWordRangeAtPosition(position);
+    const goToSourceWord = document.getText(goToSourceWordRange);
+
+    try {
+      const result = await this.client.sendRequest<{
+        lineAndCharacter: ts.LineAndCharacter;
+        viewModelFilePath: string;
+        viewFilePath: string;
+      }>("get-virtual-definition", {
+        documentContent: document.getText(),
+        position,
+        goToSourceWord,
+        filePath: document.uri.path,
+      });
+
+      const { line, character } = result.lineAndCharacter;
+      const targetPath = result.viewFilePath || result.viewModelFilePath;
+
+      return [
+        {
+          targetUri: vscode.Uri.file(targetPath),
+          targetRange: new vscode.Range(
+            new vscode.Position(line - 1, character),
+            new vscode.Position(line, character)
+          ),
+        },
+      ];
+    } catch (err) {
+      console.log("TCL: SearchDefinitionInView -> err", err);
+    }
+  }
+}
 
 export function activate(context: ExtensionContext) {
   const socketPort = workspace
@@ -108,6 +196,21 @@ export function activate(context: ExtensionContext) {
   );
 
   context.subscriptions.push(new RelatedFiles());
+
+  /** TODO: This is only needed for test files, in tests, the server.ts completion listener does not trigger as to my current knowledge */
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      { scheme: "file", language: "html" },
+      new CompletionItemProviderInView(client)
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerDefinitionProvider(
+      { scheme: "file", language: "html" },
+      new SearchDefinitionInView(client)
+    )
+  );
 
   registerDiagramPreview(context, client);
 

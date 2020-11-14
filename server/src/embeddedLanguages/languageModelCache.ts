@@ -14,8 +14,8 @@ export interface LanguageModelCache<T> {
 export function getLanguageModelCache<T>(
   maxEntries: number,
   cleanupIntervalTimeInSec: number,
-  parse: (document: TextDocument) => T
-): LanguageModelCache<T> {
+  parse: (document: TextDocument) => Promise<T>
+): LanguageModelCache<Promise<T>> {
   let languageModels: {
     [uri: string]: {
       version: number;
@@ -42,7 +42,7 @@ export function getLanguageModelCache<T>(
   }
 
   return {
-    get(document: TextDocument): T {
+    async get(document: TextDocument): Promise<T> {
       const version = document.version;
       const languageId = document.languageId;
       const languageModelInfo = languageModels[document.uri];
@@ -54,7 +54,7 @@ export function getLanguageModelCache<T>(
         languageModelInfo.cTime = Date.now();
         return languageModelInfo.languageModel;
       }
-      const languageModel = parse(document);
+      const languageModel = await parse(document);
       languageModels[document.uri] = {
         languageModel,
         version,

@@ -37,85 +37,19 @@ import {
   MarkupKind,
   TextDocumentPositionParams,
 } from "vscode-languageserver";
-import { EmbeddedRegion } from "../embeddedLanguages/embeddedSupport";
-import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
-import { AureliaProgram } from "../viewModel/AureliaProgram";
-
-const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
-const VIRTUAL_METHOD_NAME = "__vir";
+import {
+  EmbeddedRegion,
+  ViewRegionInfo,
+} from "../../embeddedLanguages/embeddedSupport";
+import { getDocumentRegionAtPosition } from "../../embeddedLanguages/languageModes";
+import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
+import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from "../../common/constants";
+import { createVirtualCompletionSourceFile } from "../virtualSourceFile";
+import { AsyncReturnType } from "../../common/global";
 
 const PARAMETER_NAME = "parameterName";
 const PROPERTY_NAME = "propertyName";
 const METHOD_NAME = "methodName";
-
-/**
- * With a virtual file, create a completions from a virtual progrm.
- *
- * 1. In the virtual view model source file
- * 2. Split up
- *   2.1 Need to visit each node
- *   2.2 (or are we regexing it?)
- *
- * @param virtualViewModelSourceFile
- * @param virtualContent
- * @param customElementClassName Name of the class associated to your view
- */
-export function createVirtualCompletionSourceFile(
-  virtualViewModelSourceFile: ts.SourceFile,
-  virtualContent: string,
-  customElementClassName: string
-) {
-  /** Match [...] export class MyCustomElement { [...] */
-  const virtualViewModelContent = virtualViewModelSourceFile.getText();
-  const classDeclaration = "class ";
-  const classNameToOpeningBracketRegex = new RegExp(
-    `${classDeclaration}${customElementClassName}(.*?{)`
-  );
-  const classNameAndOpeningBracketMatch = classNameToOpeningBracketRegex.exec(
-    virtualViewModelContent
-  );
-  if (!classNameAndOpeningBracketMatch) {
-    throw new Error(
-      `No match found in File: ${virtualViewModelSourceFile.fileName} with target class name: ${customElementClassName}`
-    );
-  }
-
-  /** class Foo >{<-- index */
-  const classNameStartIndex = classNameAndOpeningBracketMatch?.index;
-  const toOpeningBracketLength = classNameAndOpeningBracketMatch[1]?.length;
-  const classOpeningBracketIndex =
-    classDeclaration.length +
-    customElementClassName.length +
-    classNameStartIndex +
-    toOpeningBracketLength;
-
-  /** Split on class MyClass >{< ..otherContent */
-  const starter = virtualViewModelContent.slice(0, classOpeningBracketIndex);
-  const ender = virtualViewModelContent.slice(classOpeningBracketIndex);
-
-  /**  Create temp content */
-  const tempMethodTextStart = `${VIRTUAL_METHOD_NAME}() {this.`;
-  const tempMethodTextEnd = "};\n  ";
-  const tempMethodText =
-    tempMethodTextStart + virtualContent + tempMethodTextEnd;
-  const tempWithCompletion = starter + tempMethodText + ender;
-
-  const targetVirtualSourcefile = ts.createSourceFile(
-    VIRTUAL_SOURCE_FILENAME,
-    tempWithCompletion,
-    99
-  );
-
-  const completionIndex =
-    classOpeningBracketIndex +
-    tempMethodTextStart.length +
-    virtualContent.length;
-
-  return {
-    targetVirtualSourcefile,
-    completionIndex,
-  };
-}
 
 /**
  * Returns the virtual competion. (to be used as real completions)
@@ -243,26 +177,38 @@ function getKindName(kind: ts.SyntaxKind) {
   return (ts as any).SyntaxKind[kind];
 }
 
-export function getVirtualViewModelCompletion(
+function getSourceFileForVirtualViewModel() {}
+
+interface AureliaCompletionItem extends CompletionItem {
+  data?: AureliaLSP.AureliaCompletionItemDataType;
+}
+
+export async function getVirtualViewModelCompletion(
   textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument,
   aureliaProgram: AureliaProgram
-) {
+): Promise<AureliaCompletionItem[]> {
   // 1. From the region get the part, that should be made virtual.
   const documentUri = textDocumentPosition.textDocument.uri;
-  const region = getDocumentRegionAtPosition(textDocumentPosition.position).get(
-    document
-  );
+  // const adjustedPosition: TextDocumentPositionParams["position"] = {
+  //   character: textDocumentPosition.position.character + 1,
+  //   line: textDocumentPosition.position.line + 1,
+  // };
+  // const region = await getDocumentRegionAtPosition(adjustedPosition).get(
+  const region = await getDocumentRegionAtPosition(
+    textDocumentPosition.position
+  ).get(document);
 
   if (!region) return [];
 
-  const virtualContent = document.getText().slice(region.start, region.end);
+  const virtualContent = document
+    .getText()
+    .slice(region.startOffset, region.endOffset);
 
   // 2. Get original viewmodel file from view
   const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
   const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
   const viewBaseName = path.parse(documentUri).name;
-  console.log("TCL: MyCustomElement -> viewBaseName", viewBaseName);
 
   const targetSourceFile = aureliaFiles?.find((aureliaFile) => {
     return scriptExtensions.find((extension) => {
@@ -324,13 +270,79 @@ export function getVirtualViewModelCompletion(
     virtualCompletions
   );
 
-  return result;
+  return result as AureliaCompletionItem[];
+}
+
+interface CustomizeEnhanceDocumentation {
+  /** Array of the arguments of the method (without types) */
+  customEnhanceMethodArguments?: (methodArguments: string[]) => string;
+  omitMethodNameAndBrackets?: boolean;
+}
+
+/**
+ * Pass in arbitrary content for the virtual file.
+ *
+ * Cf. getVirtualViewModelCompletion
+ * Here, we go by document region
+ */
+export function getVirtualViewModelCompletionSupplyContent(
+  aureliaProgram: AureliaProgram,
+  virtualContent: string,
+  targetSourceFile: ts.SourceFile,
+  /**
+   * Identify the correct class in the view model file
+   */
+  viewModelClassName: string,
+  customizeEnhanceDocumentation?: CustomizeEnhanceDocumentation
+): AureliaCompletionItem[] {
+  // 3. Create virtual completion
+  const virtualViewModelSourceFile = ts.createSourceFile(
+    VIRTUAL_SOURCE_FILENAME,
+    targetSourceFile?.getText(),
+    99
+  );
+  const {
+    targetVirtualSourcefile,
+    completionIndex,
+  } = createVirtualCompletionSourceFile(
+    virtualViewModelSourceFile,
+    virtualContent,
+    viewModelClassName
+  );
+
+  const {
+    virtualCompletions,
+    virtualCompletionEntryDetails,
+  } = getVirtualCompletion(targetVirtualSourcefile, completionIndex);
+
+  if (!virtualCompletions) {
+    console.log(`
+      We were trying to find completions for: ${virtualContent},
+    `);
+    return [];
+  }
+
+  if (!virtualCompletionEntryDetails) {
+    return [];
+  }
+
+  const entryDetailsMap: EntryDetailsMap = {};
+
+  const result = enhanceCompletionItemDocumentation(
+    virtualCompletionEntryDetails,
+    entryDetailsMap,
+    virtualCompletions,
+    customizeEnhanceDocumentation
+  );
+
+  return (result as unknown) as AureliaCompletionItem[];
 }
 
 function enhanceCompletionItemDocumentation(
   virtualCompletionEntryDetails: (ts.CompletionEntryDetails | undefined)[],
   entryDetailsMap: EntryDetailsMap,
-  virtualCompletions: ts.CompletionEntry[]
+  virtualCompletions: ts.CompletionEntry[],
+  customizeEnhanceDocumentation?: CustomizeEnhanceDocumentation
 ) {
   const kindMap = {
     [ts.ScriptElementKind[
@@ -344,7 +356,6 @@ function enhanceCompletionItemDocumentation(
   virtualCompletionEntryDetails.reduce((acc, entryDetail) => {
     if (!entryDetail) return acc;
 
-    // if (entryDetail?.name === VIRTUAL_METHOD_NAME) return acc;
     acc[entryDetail.name!] = {
       displayParts: entryDetail.displayParts?.map((part) => part.text).join(""),
       documentation: entryDetail.documentation?.map((doc) => doc.text).join(""),
@@ -359,6 +370,13 @@ function enhanceCompletionItemDocumentation(
   /** ${1: argName1}, ${2: argName2} */
   function createArgCompletion(entryDetail: EntryDetailsMapData) {
     const numOfArguments = entryDetail;
+
+    if (customizeEnhanceDocumentation?.customEnhanceMethodArguments) {
+      return customizeEnhanceDocumentation.customEnhanceMethodArguments(
+        entryDetail.methodArguments
+      );
+    }
+
     return entryDetail.methodArguments
       .map((argName, index) => {
         return `\${${index + 1}:${argName}}`;
@@ -372,11 +390,15 @@ function enhanceCompletionItemDocumentation(
     /** Default value is just the method name */
     let insertMethodTextWithArguments = tsCompletion.name;
     if (isMethod) {
-      insertMethodTextWithArguments =
-        tsCompletion.name + "(" + createArgCompletion(entryDetail) + ")";
+      if (customizeEnhanceDocumentation?.omitMethodNameAndBrackets) {
+        insertMethodTextWithArguments = createArgCompletion(entryDetail);
+      } else {
+        insertMethodTextWithArguments =
+          tsCompletion.name + "(" + createArgCompletion(entryDetail) + ")";
+      }
     }
 
-    const completionItem: CompletionItem = {
+    const completionItem: AureliaCompletionItem = {
       documentation: {
         kind: MarkupKind.Markdown,
         value: entryDetail.documentation || "",
@@ -386,6 +408,7 @@ function enhanceCompletionItemDocumentation(
       insertTextFormat: InsertTextFormat.Snippet,
       kind: entryDetail.kind,
       label: tsCompletion.name,
+      data: AureliaLSP.AureliaCompletionItemDataType,
     };
     /**
       documentation: {
@@ -401,4 +424,59 @@ function enhanceCompletionItemDocumentation(
     return completionItem;
   });
   return result;
+}
+
+/**
+ * Convert Value Converter's `toView` to view format.
+ *
+ * @example
+ * ```ts
+ * // TakeValueConverter
+ *   toView(array, count)
+ * ```
+ *   -->
+ * ```html
+ *   array | take:count
+ * ```
+ *
+ */
+export function enhanceValueConverterViewArguments(methodArguments: string[]) {
+  // 1. Omit the first argument, because that's piped to the method
+  const [_, ...viewArguments] = methodArguments;
+
+  // 2. prefix with :
+  const result = viewArguments
+    .map((argName, index) => {
+      return `\${${index + 1}:${argName}}`;
+    })
+    .join(":");
+
+  return result;
+}
+
+export async function getAureliaVirtualCompletions(
+  _textDocumentPosition: TextDocumentPositionParams,
+  document: TextDocument
+) {
+  // Virtual file
+  let virtualCompletions: AsyncReturnType<typeof getVirtualViewModelCompletion> = [];
+  try {
+    virtualCompletions = await getVirtualViewModelCompletion(
+      _textDocumentPosition,
+      document,
+      aureliaProgram
+    );
+  } catch (err) {
+    console.log("onCompletion 261 TCL: err", err);
+  }
+
+  const aureliaVirtualCompletions = virtualCompletions.filter((completion) => {
+    const isAureliaRelated =
+      completion.data === AureliaLSP.AureliaCompletionItemDataType;
+    const isUnrelatedTypescriptCompletion = completion.kind === undefined;
+    const wantedResult = isAureliaRelated && !isUnrelatedTypescriptCompletion;
+    return wantedResult;
+  });
+
+  return aureliaVirtualCompletions;
 }

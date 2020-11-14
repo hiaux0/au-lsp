@@ -5,10 +5,11 @@
 		"outDir": "out",
 		"rootDir": "src",
 		"sourceMap": true,
-		"strictPropertyInitialization": false
+		"strictPropertyInitialization": false,
+		"declaration": true,
 	},
 	"include": [
-		"src"
+		"src",
 	],
 	"exclude": [
 		"node_modules",

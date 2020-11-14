@@ -30,8 +30,8 @@ import {
 } from "vscode-languageserver";
 import { kebabCase } from "@aurelia/kernel";
 import { createDiagram } from "./createDiagram";
-
-const CUSTOM_ELEMENT_SUFFIX = "CustomElement";
+import { getElementNameFromClassDeclaration } from "../common/className";
+import { AureliaClassTypes, VALUE_CONVERTER_SUFFIX } from "../common/constants";
 
 export function getAureliaComponentList(
   aureliaProgram: AureliaProgram,
@@ -118,6 +118,23 @@ function getAureliaComponentInfoFromClassDeclaration(
         targetClassDeclaration
       );
 
+      const isValueConverterModel = checkValueConverter(targetClassDeclaration);
+      if (isValueConverterModel) {
+        const valueConverterName = targetClassDeclaration.name
+          ?.getText()
+          .replace(VALUE_CONVERTER_SUFFIX, "")
+          .toLocaleLowerCase();
+        result = {
+          className: targetClassDeclaration.name?.getText() || "",
+          valueConverterName,
+          baseFileName: Path.parse(sourceFile.fileName).name,
+          filePath: sourceFile.fileName,
+          type: AureliaClassTypes.VALUE_CONVERTER,
+          sourceFile,
+        };
+        return;
+      }
+
       const viewModelName =
         classDecoratorInfos.find(
           (info) => info.decoratorName === "customElement"
@@ -135,12 +152,25 @@ function getAureliaComponentInfoFromClassDeclaration(
         className: targetClassDeclaration.name?.getText() || "",
         viewModelName,
         baseFileName: Path.parse(sourceFile.fileName).name,
+        filePath: sourceFile.fileName,
         viewFileName: "TODO",
+        type: AureliaClassTypes.CUSTOM_ELEMENT,
+        sourceFile,
       };
     }
   });
 
   return result;
+}
+
+function checkValueConverter(targetClassDeclaration: ts.ClassDeclaration) {
+  const isValueConverterName = targetClassDeclaration.name
+    ?.getText()
+    .includes(VALUE_CONVERTER_SUFFIX);
+  if (isValueConverterName) {
+    return true;
+  }
+  return false;
 }
 
 function isNodeExported(node: ts.ClassDeclaration): boolean {
@@ -191,20 +221,4 @@ function classDeclarationHasUseViewOrNoView(
       decorator.getText().includes("@noView")
     );
   });
-}
-
-/**
- * Fetches the equivalent component name based on the given class declaration
- *
- * @param sourceFile - The class declaration to map a component name from
- */
-function getElementNameFromClassDeclaration(
-  classDeclaration: ts.ClassDeclaration
-): string {
-  const className = classDeclaration.name?.getText() || "";
-  const withoutCustomElementSuffix = className.replace(
-    CUSTOM_ELEMENT_SUFFIX,
-    ""
-  );
-  return kebabCase(withoutCustomElementSuffix);
 }

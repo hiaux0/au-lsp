@@ -22,7 +22,7 @@ export class CompoUser {
 
   rule: Grammar;
 
-  increaseCounter(): number {
+  increaseCounter(inpu: string[]): number {
     return 1;
   }
 }

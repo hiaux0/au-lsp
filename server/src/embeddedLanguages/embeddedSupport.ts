@@ -51,6 +51,7 @@ export enum ViewRegionType {
   RepeatFor = "RepeatFor",
   TextInterpolation = "TextInterpolation",
   CustomElement = "CustomElement",
+  ValueConverter = "ValueConverter",
 }
 
 export interface ViewRegionInfo<RegionDataType = any> {
@@ -73,6 +74,28 @@ export interface RepeatForRegionData {
   iterableName: string;
   /** repeat.for=">num< of numbers" */
   iterator: string;
+}
+
+/**
+ * TODO: how to deal with the second valCon?           ___v___
+ *
+ * repo of repos | sort:column.value:direction.value | take:10
+ * _____________   _________________________________
+ *     ^initiatorText     ^valueConverterText
+ */
+export interface ValueConverterRegionData {
+  /**
+   * ```
+   * >repo of repos< | sort:column.value:direction.value | take:10
+   * ```
+   *
+   * TODO: Should initiatro text be only first part or all for `| take:10`?
+   */
+  initiatorText: string;
+  /** ```repo of repos | >sort<:column.value:direction.value | take:10``` */
+  valueConverterName: string;
+  /** ``` repo of repos | sort:>column.value:direction.value< | take:10 ``` */
+  valueConverterText: string;
 }
 
 export type CustomElementRegionData = ViewRegionInfo[];
@@ -105,6 +128,7 @@ export function getDocumentRegionsV2<RegionDataType>(
      * 3. Attribute Interpolation
      * 4. Custom element
      * 5. repeat.for=""
+     * 6. Value converter region (value | take:10)
      */
     saxStream.on("startTag", (startTag) => {
       const customElementAttributeRegions: ViewRegionInfo[] = [];
@@ -126,6 +150,10 @@ export function getDocumentRegionsV2<RegionDataType>(
         );
         const isRepeatFor = attr.name === AureliaView.REPEAT_FOR;
 
+        /**
+         * TODO OPTIMIZATION split if/else-if/else into if with early return
+         * Reason: Currently, we check for all possible cases beforehand via the const `is...`
+         */
         // 2. Attributes
         if (isAttributeKeyword) {
           const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
@@ -190,6 +218,7 @@ export function getDocumentRegionsV2<RegionDataType>(
             sourceCodeLocation: updatedLocation,
             type: ViewRegionType.RepeatFor,
             data: getRepeatForData(),
+            regionValue: attr.value,
           });
           viewRegions.push(repeatForViewRegion);
         } else {
@@ -230,6 +259,82 @@ export function getDocumentRegionsV2<RegionDataType>(
               viewRegions.push(viewRegion);
             }
           }
+        }
+
+        const isValueConverterRegion = attr.value.includes(
+          AureliaView.VALUE_CONVERTER_OPERATOR
+        );
+        // 6. Value converter region
+        if (isValueConverterRegion) {
+          const attrLocation = startTag.sourceCodeLocation?.attrs[attr.name];
+          if (!attrLocation) return;
+
+          // 6.1. Split up repeat.for='repo of repos | sort:column.value:direction.value | take:10'
+          const [
+            initiatorText,
+            ...valueConverterRegionsSplit
+          ] = attr.value.split("|");
+
+          // 6.2. For each value converter
+          valueConverterRegionsSplit.forEach(
+            (valueConverterViewText, index) => {
+              // 6.3. Split into name and arguments
+              const [
+                valueConverterName,
+                ...valueConverterArguments
+              ] = valueConverterViewText.split(":");
+
+              if (valueConverterRegionsSplit.length >= 2 && index >= 1) {
+                console.error(
+                  "[WARNING] Chained value converters not supported yet"
+                );
+                console.error(`No infos for: ${valueConverterViewText}`);
+                return;
+              }
+
+              const startValueConverterLength =
+                attr.name.length /** repeat.for */ +
+                2 /** =' */ +
+                initiatorText.length /** repo of repos_ */ +
+                1; /** | */
+
+              const startColAdjust =
+                attrLocation.startCol /** indentation and to length attribute*/ +
+                startValueConverterLength;
+
+              const endValueConverterLength =
+                startValueConverterLength + valueConverterViewText.length;
+
+              const endColAdjust =
+                startColAdjust + valueConverterViewText.length;
+
+              // 6.4. Save the location
+              const updatedLocation: parse5.Location = {
+                ...attrLocation,
+                startOffset:
+                  attrLocation.startOffset + startValueConverterLength,
+                startCol: startColAdjust,
+                endOffset: attrLocation.startOffset + endValueConverterLength,
+                endCol: endColAdjust,
+              };
+
+              // 6.5. Create region with useful info
+              const valueConverterRegion = createRegionV2<
+                ValueConverterRegionData
+              >({
+                attributeName: attr.name,
+                sourceCodeLocation: updatedLocation,
+                type: ViewRegionType.ValueConverter,
+                regionValue: attr.value,
+                data: {
+                  initiatorText,
+                  valueConverterName: valueConverterName.trim(),
+                  valueConverterText: valueConverterArguments.join(":"),
+                },
+              });
+              viewRegions.push(valueConverterRegion);
+            }
+          );
         }
       });
 
@@ -598,24 +703,53 @@ export function getRegionFromLineAndCharacter(
   return targetRegion;
 }
 
+/**
+ * const regions = [
+ *   { name: "1", startOffset: 100, endOffset: 130 },
+ *   { name: "2", startOffset: 120, endOffset: 130 }, <-- smallest
+ *   { name: "3", startOffset: 110, endOffset: 130 },
+ * ];
+ */
+function getSmallestRegion(regions: ViewRegionInfo[]): ViewRegionInfo {
+  const sortedRegions = regions.sort((regionA, regionB) => {
+    if (!regionA.startOffset || !regionA.endOffset) return 0;
+    if (!regionB.startOffset || !regionB.endOffset) return 0;
+
+    const regionAWidth = regionA.startOffset - regionA.endOffset;
+    const regionBWidth = regionB.startOffset - regionB.endOffset;
+
+    return regionBWidth - regionAWidth;
+  });
+
+  return sortedRegions[0];
+}
+
 export function getRegionAtPositionV2(
   document: TextDocument,
   regions: ViewRegionInfo[],
   position: Position
 ): ViewRegionInfo | undefined {
   let offset = document.offsetAt(position);
-  for (let region of regions) {
+
+  const potentialRegions = regions.filter((region) => {
     if (region.startOffset! <= offset) {
       if (offset <= region.endOffset!) {
         return region;
       }
-    } else {
-      break;
     }
+  });
+
+  if (!potentialRegions) {
+    console.error("embeddedSupport -> getRegionAtPosition -> No Region found");
+    return undefined;
   }
 
-  console.error("embeddedSupport -> getRegionAtPosition -> No Region found");
-  return undefined;
+  if (potentialRegions.length === 1) {
+    return potentialRegions[0];
+  }
+
+  const targetRegion = getSmallestRegion(potentialRegions);
+  return targetRegion;
 }
 
 export function getRegionAtPosition(

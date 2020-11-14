@@ -37,10 +37,13 @@ import {
   MarkupKind,
   TextDocumentPositionParams,
 } from "vscode-languageserver";
-import { EmbeddedRegion } from "../../embeddedLanguages/embeddedSupport";
+import {
+  EmbeddedRegion,
+  ViewRegionInfo,
+} from "../../embeddedLanguages/embeddedSupport";
 import { getDocumentRegionAtPosition } from "../../embeddedLanguages/languageModes";
 import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
-import { AureliaLSP } from "../../common/constants";
+import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from "../../common/constants";
 import { createVirtualCompletionSourceFile } from "../virtualSourceFile";
 import { AsyncReturnType } from "../../common/global";
 
@@ -270,10 +273,76 @@ export async function getVirtualViewModelCompletion(
   return result as AureliaCompletionItem[];
 }
 
+interface CustomizeEnhanceDocumentation {
+  /** Array of the arguments of the method (without types) */
+  customEnhanceMethodArguments?: (methodArguments: string[]) => string;
+  omitMethodNameAndBrackets?: boolean;
+}
+
+/**
+ * Pass in arbitrary content for the virtual file.
+ *
+ * Cf. getVirtualViewModelCompletion
+ * Here, we go by document region
+ */
+export function getVirtualViewModelCompletionSupplyContent(
+  aureliaProgram: AureliaProgram,
+  virtualContent: string,
+  targetSourceFile: ts.SourceFile,
+  /**
+   * Identify the correct class in the view model file
+   */
+  viewModelClassName: string,
+  customizeEnhanceDocumentation?: CustomizeEnhanceDocumentation
+): AureliaCompletionItem[] {
+  // 3. Create virtual completion
+  const virtualViewModelSourceFile = ts.createSourceFile(
+    VIRTUAL_SOURCE_FILENAME,
+    targetSourceFile?.getText(),
+    99
+  );
+  const {
+    targetVirtualSourcefile,
+    completionIndex,
+  } = createVirtualCompletionSourceFile(
+    virtualViewModelSourceFile,
+    virtualContent,
+    viewModelClassName
+  );
+
+  const {
+    virtualCompletions,
+    virtualCompletionEntryDetails,
+  } = getVirtualCompletion(targetVirtualSourcefile, completionIndex);
+
+  if (!virtualCompletions) {
+    console.log(`
+      We were trying to find completions for: ${virtualContent},
+    `);
+    return [];
+  }
+
+  if (!virtualCompletionEntryDetails) {
+    return [];
+  }
+
+  const entryDetailsMap: EntryDetailsMap = {};
+
+  const result = enhanceCompletionItemDocumentation(
+    virtualCompletionEntryDetails,
+    entryDetailsMap,
+    virtualCompletions,
+    customizeEnhanceDocumentation
+  );
+
+  return (result as unknown) as AureliaCompletionItem[];
+}
+
 function enhanceCompletionItemDocumentation(
   virtualCompletionEntryDetails: (ts.CompletionEntryDetails | undefined)[],
   entryDetailsMap: EntryDetailsMap,
-  virtualCompletions: ts.CompletionEntry[]
+  virtualCompletions: ts.CompletionEntry[],
+  customizeEnhanceDocumentation?: CustomizeEnhanceDocumentation
 ) {
   const kindMap = {
     [ts.ScriptElementKind[
@@ -301,6 +370,13 @@ function enhanceCompletionItemDocumentation(
   /** ${1: argName1}, ${2: argName2} */
   function createArgCompletion(entryDetail: EntryDetailsMapData) {
     const numOfArguments = entryDetail;
+
+    if (customizeEnhanceDocumentation?.customEnhanceMethodArguments) {
+      return customizeEnhanceDocumentation.customEnhanceMethodArguments(
+        entryDetail.methodArguments
+      );
+    }
+
     return entryDetail.methodArguments
       .map((argName, index) => {
         return `\${${index + 1}:${argName}}`;
@@ -314,8 +390,12 @@ function enhanceCompletionItemDocumentation(
     /** Default value is just the method name */
     let insertMethodTextWithArguments = tsCompletion.name;
     if (isMethod) {
-      insertMethodTextWithArguments =
-        tsCompletion.name + "(" + createArgCompletion(entryDetail) + ")";
+      if (customizeEnhanceDocumentation?.omitMethodNameAndBrackets) {
+        insertMethodTextWithArguments = createArgCompletion(entryDetail);
+      } else {
+        insertMethodTextWithArguments =
+          tsCompletion.name + "(" + createArgCompletion(entryDetail) + ")";
+      }
     }
 
     const completionItem: AureliaCompletionItem = {
@@ -343,6 +423,34 @@ function enhanceCompletionItemDocumentation(
      */
     return completionItem;
   });
+  return result;
+}
+
+/**
+ * Convert Value Converter's `toView` to view format.
+ *
+ * @example
+ * ```ts
+ * // TakeValueConverter
+ *   toView(array, count)
+ * ```
+ *   -->
+ * ```html
+ *   array | take:count
+ * ```
+ *
+ */
+export function enhanceValueConverterViewArguments(methodArguments: string[]) {
+  // 1. Omit the first argument, because that's piped to the method
+  const [_, ...viewArguments] = methodArguments;
+
+  // 2. prefix with :
+  const result = viewArguments
+    .map((argName, index) => {
+      return `\${${index + 1}:${argName}}`;
+    })
+    .join(":");
+
   return result;
 }
 

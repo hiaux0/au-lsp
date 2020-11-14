@@ -1,8 +1,10 @@
 import {
+  getRegionAtPositionV2,
   RepeatForRegionData,
+  ValueConverterRegionData,
   ViewRegionInfo,
 } from "./../embeddedLanguages/embeddedSupport";
-import { AureliaView } from "./../common/constants";
+import { AureliaClassTypes, AureliaView } from "./../common/constants";
 import { Position, TextDocument } from "vscode-languageserver-textdocument";
 import { AureliaProgram } from "./../viewModel/AureliaProgram";
 import * as path from "path";
@@ -43,6 +45,35 @@ export async function getDefinition(
   }
 
   const regions = await getDocumentRegionsV2(document);
+
+  /** Check value converter region */
+  const targetRegion = await getRegionAtPositionV2(document, regions, position);
+
+  if (targetRegion?.type === ViewRegionType.ValueConverter) {
+    const valueConverterRegion = targetRegion as ViewRegionInfo<
+      ValueConverterRegionData
+    >;
+    const targetValueConverterComponent = aureliaProgram
+      .getComponentList()
+      .filter(
+        (component) => component.type === AureliaClassTypes.VALUE_CONVERTER
+      )
+      .find(
+        (valueConverterComponent) =>
+          valueConverterComponent.valueConverterName ===
+          valueConverterRegion.data?.valueConverterName
+      );
+
+    return {
+      lineAndCharacter: {
+        line: 1,
+        character: 1,
+      } /** TODO: Find toView() method */,
+      viewModelFilePath: targetValueConverterComponent?.filePath,
+    };
+  }
+
+  /** Check repeat.for region */
   const repeatForRegions = regions.filter(
     (region) => region.type === ViewRegionType.RepeatFor
   ) as ViewRegionInfo<RepeatForRegionData>[];

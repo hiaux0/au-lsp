@@ -100,7 +100,6 @@ function getAureliaComponentInfoFromClassDeclaration(
   sourceFile: ts.SourceFile,
   checker: ts.TypeChecker
 ): IComponentList | undefined {
-  // if (sourceFile?.fileName !== '/Users/hdn/Desktop/aurelia-lsp/client/testFixture/src/my-compo/my-compo.ts') return;
   let result: IComponentList | undefined;
   let componentList: IComponentList;
   let targetClassDeclaration: ts.ClassDeclaration | undefined;

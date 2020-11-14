@@ -69,7 +69,6 @@ export function getDocumentRegionAtPosition(position: Position) {
       }
 
       const reg = getRegionAtPosition(document, regions, position);
-      // const reg = getRegionFromLineAndCharacter(regions, position);
 
       return reg;
     }

@@ -388,7 +388,6 @@ connection.onRequest("aurelia-get-component-class-declarations", () => {
 connection.onRequest(
   "get-value-converter-definition",
   async ({ _textDocumentPosition, document }) => {
-    // }): Promise<DefinitionResult|undefined> => {
     return onValueConverterCompletion(_textDocumentPosition, document);
   }
 );

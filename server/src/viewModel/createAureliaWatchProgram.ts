@@ -52,9 +52,11 @@ export async function createAureliaWatchProgram(
       console.log("-------------- Custom Action ---------------------");
       aureliaProgram;
       // Call update on AureliaComponents to ensure that the custom components are in sync
-      // updateAureliaComponents().catch((err) => {
-      // 	console.error(`Failed to update aurelia components ${JSON.stringify(err)}`);
-      // });
+      updateAureliaComponents().catch((err) => {
+        console.error(
+          `Failed to update aurelia components ${JSON.stringify(err)}`
+        );
+      });
       return origCreateProgram(rootNames, options, programHost, oldProgram);
     };
     // 2.2 We also overwrite afterProgramCreate to avoid actually running a compile towards the file system

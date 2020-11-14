@@ -88,7 +88,6 @@ export class AureliaProgram {
   public getProjectFiles(sourceDirectory?: string) {
     this.documentSettings;
     sourceDirectory = sourceDirectory || ts.sys.getCurrentDirectory();
-    // const paths = ts.sys.readDirectory(sourceDirectory, ['ts', 'js', 'html'], ['node_modules', 'aurelia_project'], ['src']);
     const paths = ts.sys.readDirectory(
       sourceDirectory,
       ["ts", "js", "html"],

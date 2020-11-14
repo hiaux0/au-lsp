@@ -76,10 +76,5 @@ export function createValueConverterCompletion(
       };
       return result;
     });
-  // .find(
-  //   (valueConverterComponent) =>
-  //     valueConverterComponent.valueConverterName ===
-  //     valueConverterRegion.data?.valueConverterName
-  // );
   return valueConverterCompletionList;
 }

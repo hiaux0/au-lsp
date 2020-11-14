@@ -477,7 +477,6 @@ function getLanguagesInDocument(
   _document: TextDocument,
   regions: ViewRegionInfo[]
 ): string[] {
-  // // // console.log("TCL: regions", regions)
   let result = [];
   for (let region of regions) {
     if (region.languageId && result.indexOf(region.languageId) === -1) {
@@ -498,12 +497,9 @@ function getLanguageAtPosition(
   position: Position
 ): string | undefined {
   let offset = document.offsetAt(position);
-  // // console.log("TCL: offset", offset)
   for (let region of regions) {
-    // // console.log("TCL: region", region)
     if (region.startOffset! <= offset) {
       if (offset <= region.endOffset!) {
-        // // console.log("TCL: region.languageId", region.languageId)
         return region.languageId;
       }
     } else {

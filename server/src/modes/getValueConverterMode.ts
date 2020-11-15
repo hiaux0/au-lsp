@@ -1,6 +1,8 @@
 import {
   getRegionAtPosition,
   parseDocumentRegions,
+  ValueConverterRegionData,
+  ViewRegionInfo,
   ViewRegionType,
 } from "./../embeddedLanguages/embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
@@ -11,9 +13,64 @@ import {
   Position,
   TextDocument,
 } from "../embeddedLanguages/languageModes";
-import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtualCompletion";
-import { onValueConverterCompletion } from "../server";
+import {
+  enhanceValueConverterViewArguments,
+  getAureliaVirtualCompletions,
+  getVirtualViewModelCompletionSupplyContent,
+} from "../virtual/virtualCompletion/virtualCompletion";
 import { createValueConverterCompletion } from "../completions/completions";
+import { aureliaProgram } from "../viewModel/AureliaProgram";
+import { AureliaClassTypes, AureliaViewModel } from "../common/constants";
+
+async function onValueConverterCompletion(
+  _textDocumentPosition: TextDocumentPositionParams,
+  document: TextDocument
+) {
+  const regions = await parseDocumentRegions(document);
+  const targetRegion = getRegionAtPosition(
+    document,
+    regions,
+    _textDocumentPosition.position
+  );
+
+  if (targetRegion?.type !== ViewRegionType.ValueConverter) return [];
+
+  /** TODO: Infer type via isValueConverterRegion (see ts.isNodeDeclaration) */
+  // Find value converter sourcefile
+  const valueConverterRegion = targetRegion as ViewRegionInfo<
+    ValueConverterRegionData
+  >;
+
+  const targetValueConverterComponent = aureliaProgram
+    .getComponentList()
+    .filter((component) => component.type === AureliaClassTypes.VALUE_CONVERTER)
+    .find(
+      (valueConverterComponent) =>
+        valueConverterComponent.valueConverterName ===
+        valueConverterRegion.data?.valueConverterName
+    );
+
+  if (!targetValueConverterComponent?.sourceFile) return [];
+
+  const valueConverterCompletion = getVirtualViewModelCompletionSupplyContent(
+    aureliaProgram,
+    /**
+     * Aurelia interface method name, that handles interaction with view
+     */
+    AureliaViewModel.TO_VIEW,
+    targetValueConverterComponent?.sourceFile,
+    "SortValueConverter",
+    {
+      customEnhanceMethodArguments: enhanceValueConverterViewArguments,
+      omitMethodNameAndBrackets: true,
+    }
+  ).filter(
+    /** ASSUMPTION: Only interested in `toView` */
+    (completion) => completion.label === AureliaViewModel.TO_VIEW
+  );
+
+  return valueConverterCompletion;
+}
 
 export function getValueConverterMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>

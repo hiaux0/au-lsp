@@ -56,6 +56,7 @@ export interface ViewRegionInfo<RegionDataType = any> {
   endCol?: number;
   endLine?: number;
   attributeName?: string;
+  attributeValue?: string;
   tagName?: string;
   regionValue?: string;
   data?: RegionDataType;
@@ -165,6 +166,7 @@ export function parseDocumentRegions<RegionDataType>(
             endOffset: endInterpolationLength,
           };
           const viewRegion = createRegion({
+            attribute: attr,
             attributeName: attr.name,
             sourceCodeLocation: updatedLocation,
             type: ViewRegionType.Attribute,
@@ -410,6 +412,7 @@ export async function getDocumentRegions(
 function createRegion<RegionDataType = any>({
   sourceCodeLocation,
   type,
+  attribute,
   attributeName,
   tagName,
   data,
@@ -420,7 +423,8 @@ function createRegion<RegionDataType = any>({
     | parse5.AttributesLocation[string];
   type: ViewRegionType;
   regionValue?: string;
-  attributeName?: string;
+  attribute?: parse5.Attribute;
+  attributeName?: string; // TODO: Remove in favor of `attribute` (one line above)
   tagName?: string;
   data?: RegionDataType;
 }): ViewRegionInfo {
@@ -437,6 +441,7 @@ function createRegion<RegionDataType = any>({
     endCol: sourceCodeLocation?.endCol,
     endLine: sourceCodeLocation?.endLine,
     attributeName,
+    attributeValue: attribute?.value,
     tagName,
     regionValue,
     data,

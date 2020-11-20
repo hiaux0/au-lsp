@@ -32,7 +32,7 @@ export interface HTMLDocumentRegions {
   getLanguageAtPosition(position: Position): string | undefined;
   getLanguagesInDocument(): string[];
   getImportedScripts(): string[];
-  getRegionAtPosition?(position: Position): ViewRegionInfo | undefined;
+  getRegionAtPosition(position: Position): ViewRegionInfo | undefined;
 }
 
 export const CSS_STYLE_RULE = "__";
@@ -400,6 +400,8 @@ export async function getDocumentRegions(
       getEmbeddedDocument(document, regions, languageId, ignoreAttributeValues),
     getLanguageAtPosition: (position: Position) =>
       getLanguageAtPosition(document, regions, position),
+    getRegionAtPosition: (position: Position) =>
+      getRegionAtPosition(document, regions, position),
     getLanguagesInDocument: () => getLanguagesInDocument(document, regions),
     getImportedScripts: () => [""], // TODO: figure out if actually wanted/needed
   };

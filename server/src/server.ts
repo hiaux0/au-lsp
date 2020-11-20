@@ -1,3 +1,4 @@
+import { AsyncReturnType } from "./common/global.d";
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
@@ -60,7 +61,7 @@ const DocumentSettingsClass = globalContainer.get(DocumentSettings);
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
-let connection = createConnection(ProposedFeatures.all);
+export let connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
@@ -318,23 +319,35 @@ connection.onRequest(
   }): Promise<DefinitionResult | undefined> => {
     const documentUri = filePath;
     const document = TextDocument.create(filePath, "html", 0, documentContent);
+    const isRefactor = true;
 
     if (!document) {
       throw new Error("No document found");
       return;
     }
 
-    const mode = await languageModes.getModeAtPosition(document, position);
+    const modeAndRegion = await languageModes.getModeAndRegionAtPosition(
+      document,
+      position
+    );
+
+    if (!modeAndRegion) return;
+    const { mode, region } = modeAndRegion;
 
     if (!mode) return;
 
     const doDefinition = mode.doDefinition!;
 
-    if (doDefinition) {
-      let definitions: ReturnType<typeof doDefinition>;
+    if (doDefinition && isRefactor) {
+      let definitions: AsyncReturnType<typeof doDefinition>;
 
       try {
-        definitions = await doDefinition(document, position, goToSourceWord);
+        definitions = await doDefinition(
+          document,
+          position,
+          goToSourceWord,
+          region
+        );
       } catch (error) {
         console.log("TCL: error", error);
         return;

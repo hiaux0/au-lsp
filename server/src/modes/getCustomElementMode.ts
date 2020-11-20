@@ -1,5 +1,10 @@
+import { ViewRegionInfo } from "./../embeddedLanguages/embeddedSupport";
 import * as path from "path";
-import { ViewRegionType } from "../embeddedLanguages/embeddedSupport";
+import {
+  CustomElementRegionData,
+  parseDocumentRegions,
+  ViewRegionType,
+} from "../embeddedLanguages/embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
 import { HTMLDocumentRegions } from "../embeddedLanguages/embeddedSupport";
 import { LanguageModelCache } from "../embeddedLanguages/languageModelCache";
@@ -12,6 +17,9 @@ import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtu
 import { getBindablesCompletion } from "../completions/completions";
 import { aureliaProgram } from "../viewModel/AureliaProgram";
 import { DefinitionResult } from "../definition/getDefinition";
+import { connection } from "../server";
+import { camelCase } from "@aurelia/kernel";
+import { getVirtualDefinition } from "../virtual/virtualDefinition/virtualDefinition";
 
 export function getCustomElementMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
@@ -35,17 +43,20 @@ export function getCustomElementMode(
       }
       return [];
     },
-    doDefinition(
+    async doDefinition(
       document: TextDocument,
       position: Position,
-      goToSourceWord: string
-    ): DefinitionResult | undefined {
+      goToSourceWord: string,
+      customElementRegion: ViewRegionInfo
+    ): Promise<DefinitionResult | undefined> {
       const aureliaSourceFiles = aureliaProgram.getAureliaSourceFiles();
       const targetAureliaFile = aureliaSourceFiles?.find((sourceFile) => {
         return path.parse(sourceFile.fileName).name === goToSourceWord;
       });
 
-      /** Triggered on <|my-component> */
+      /**
+       * 1. Triggered on <|my-component>
+       * */
       if (targetAureliaFile?.fileName) {
         return {
           lineAndCharacter: {
@@ -55,6 +66,28 @@ export function getCustomElementMode(
           viewModelFilePath: targetAureliaFile?.fileName,
         };
       }
+
+      /**
+       * 2. >inter-bindable<.bind="increaseCounter()"
+       */
+      /** Source file different from view */
+      const targetAureliaFileDifferentViewModel = aureliaSourceFiles?.find(
+        (sourceFile) => {
+          return (
+            path.parse(sourceFile.fileName).name === customElementRegion.tagName
+          );
+        }
+      );
+
+      if (!targetAureliaFileDifferentViewModel) return;
+
+      const sourceWordCamelCase = camelCase(goToSourceWord);
+
+      return getVirtualDefinition(
+        targetAureliaFileDifferentViewModel.fileName,
+        aureliaProgram,
+        sourceWordCamelCase
+      );
 
       return;
     },

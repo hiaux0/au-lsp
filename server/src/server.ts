@@ -195,6 +195,7 @@ documents.onDidChangeContent(async (change) => {
   if (componentList) {
     aureliaProgram.setComponentList(componentList);
   }
+  languageModes = await getLanguageModes();
 });
 
 connection.onDidChangeWatchedFiles((_change) => {
@@ -315,7 +316,32 @@ connection.onRequest(
     goToSourceWord,
     filePath,
   }): Promise<DefinitionResult | undefined> => {
+    const documentUri = filePath;
     const document = TextDocument.create(filePath, "html", 0, documentContent);
+
+    if (!document) {
+      throw new Error("No document found");
+      return;
+    }
+
+    const mode = await languageModes.getModeAtPosition(document, position);
+
+    if (!mode) return;
+
+    const doDefinition = mode.doDefinition!;
+
+    if (doDefinition) {
+      let definitions: ReturnType<typeof doDefinition>;
+
+      try {
+        definitions = await doDefinition(document, position, goToSourceWord);
+      } catch (error) {
+        console.log("TCL: error", error);
+        return;
+      }
+      return definitions;
+    }
+
     try {
       const definitions = await getDefinition(
         document,

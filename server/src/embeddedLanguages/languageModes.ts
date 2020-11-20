@@ -13,6 +13,7 @@ import {
   TextDocument,
 } from "vscode-html-languageservice";
 import { TextDocumentPositionParams } from "vscode-languageserver";
+import { DefinitionResult } from "../definition/getDefinition";
 import { getAttributeInterpolationMode } from "../modes/getAttributeInterpolationMode";
 import { getAttributeMode } from "../modes/getAttributeMode";
 import { getAureliaHtmlMode } from "../modes/getAureliaHtmlMode";
@@ -20,6 +21,7 @@ import { getCustomElementMode } from "../modes/getCustomElementMode";
 import { getRepeatForMode } from "../modes/getRepeatForMode";
 import { getTextInterpolationMode } from "../modes/getTextInterpolationMode";
 import { getValueConverterMode } from "../modes/getValueConverterMode";
+import { aureliaProgram } from "../viewModel/AureliaProgram";
 import { AureliaCompletionItem } from "../virtual/virtualCompletion/virtualCompletion";
 import {
   HTMLDocumentRegions,
@@ -46,6 +48,11 @@ export interface LanguageMode {
     _textDocumentPosition: TextDocumentPositionParams,
     triggerCharacter?: string
   ) => Promise<CompletionList | AureliaCompletionItem[]>;
+  doDefinition?: (
+    document: TextDocument,
+    position: Position,
+    goToSourceWord: string
+  ) => DefinitionResult | undefined;
   onDocumentRemoved(document: TextDocument): void;
   dispose(): void;
 }

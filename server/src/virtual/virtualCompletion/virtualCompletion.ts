@@ -41,7 +41,10 @@ import { ViewRegionInfo } from "../../feature/embeddedLanguages/embeddedSupport"
 import { getDocumentRegionAtPosition } from "../../feature/embeddedLanguages/languageModes";
 import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
 import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from "../../common/constants";
-import { createVirtualViewModelSourceFile } from "../virtualSourceFile";
+import {
+  createVirtualViewModelSourceFile,
+  getVirtualLangagueService,
+} from "../virtualSourceFile";
 import { AsyncReturnType } from "../../common/global";
 
 const PARAMETER_NAME = "parameterName";
@@ -55,32 +58,7 @@ export function getVirtualCompletion(
   sourceFile: ts.SourceFile,
   positionOfAutocomplete: number
 ) {
-  let compilerSettings = {} as ts.CompilerOptions;
-  compilerSettings = {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ESNext,
-    outDir: "dist",
-    emitDecoratorMetadata: true,
-    experimentalDecorators: true,
-    lib: ["es2017.object", "es7", "dom"],
-    sourceMap: true,
-    rootDir: ".",
-  };
-
-  const host: ts.LanguageServiceHost = {
-    getCompilationSettings: () => compilerSettings,
-    getScriptFileNames: () => [sourceFile.fileName],
-    getScriptVersion: () => "0",
-    getScriptSnapshot: () => ts.ScriptSnapshot.fromString(sourceFile.getText()),
-    getCurrentDirectory: () => process.cwd(),
-    getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
-    fileExists: ts.sys.fileExists,
-    readFile: ts.sys.readFile,
-    readDirectory: ts.sys.readDirectory,
-  };
-  const cls = ts.createLanguageService(host, ts.createDocumentRegistry());
-
-  if (!cls) throw new Error("No cls");
+  const cls = getVirtualLangagueService(sourceFile);
 
   const virtualCompletions = cls.getCompletionsAtPosition(
     sourceFile.fileName,
@@ -162,7 +140,7 @@ export interface AureliaCompletionItem extends CompletionItem {
   data?: AureliaLSP.AureliaCompletionItemDataType;
 }
 
-export async function getVirtualViewModelCompletion(
+async function getVirtualViewModelCompletion(
   textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument,
   aureliaProgram: AureliaProgram

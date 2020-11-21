@@ -9,6 +9,41 @@ export interface VirtualSourceFileInfo {
 export const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
 const VIRTUAL_METHOD_NAME = "__vir";
 
+export function getVirtualLangagueService(
+  sourceFile: ts.SourceFile
+): ts.LanguageService {
+  let compilerSettings = {} as ts.CompilerOptions;
+  compilerSettings = {
+    module: ts.ModuleKind.CommonJS,
+    target: ts.ScriptTarget.ESNext,
+    outDir: "dist",
+    emitDecoratorMetadata: true,
+    experimentalDecorators: true,
+    lib: ["es2017.object", "es7", "dom"],
+    sourceMap: true,
+    rootDir: ".",
+  };
+
+  const host: ts.LanguageServiceHost = {
+    getCompilationSettings: () => compilerSettings,
+    getScriptFileNames: () => [sourceFile.fileName],
+    getScriptVersion: () => "0",
+    getScriptSnapshot: () => ts.ScriptSnapshot.fromString(sourceFile.getText()),
+    getCurrentDirectory: () => process.cwd(),
+    getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
+    fileExists: ts.sys.fileExists,
+    readFile: ts.sys.readFile,
+    readDirectory: ts.sys.readDirectory,
+  };
+  const cls = ts.createLanguageService(host, ts.createDocumentRegistry());
+
+  if (!cls) {
+    throw new Error("No cls");
+  }
+
+  return cls;
+}
+
 /**
  * With a virtual file, get access to file scope juicyness via a virtual progrm.
  *

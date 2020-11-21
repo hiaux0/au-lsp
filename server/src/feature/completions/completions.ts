@@ -7,7 +7,7 @@ import {
   TextDocument,
   TextDocumentPositionParams,
 } from "vscode-languageserver";
-import { AureliaClassTypes } from "../common/constants";
+import { AureliaClassTypes } from "../../common/constants";
 import {
   CustomElementRegionData,
   parseDocumentRegions,
@@ -15,11 +15,11 @@ import {
   ValueConverterRegionData,
   ViewRegionInfo,
   ViewRegionType,
-} from "../embeddedLanguages/embeddedSupport";
-import { Position } from "../embeddedLanguages/languageModes";
+} from "../../embeddedLanguages/embeddedSupport";
+import { Position } from "../../embeddedLanguages/languageModes";
 
-import { aureliaProgram } from "../viewModel/AureliaProgram";
-import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtualCompletion";
+import { aureliaProgram } from "../../viewModel/AureliaProgram";
+import { getAureliaVirtualCompletions } from "../../virtual/virtualCompletion/virtualCompletion";
 
 export async function getBindablesCompletion(
   _textDocumentPosition: TextDocumentPositionParams,

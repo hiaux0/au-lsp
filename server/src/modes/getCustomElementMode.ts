@@ -14,7 +14,7 @@ import {
   TextDocument,
 } from "../embeddedLanguages/languageModes";
 import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtualCompletion";
-import { getBindablesCompletion } from "../completions/completions";
+import { getBindablesCompletion } from "../feature/completions/completions";
 import { aureliaProgram } from "../viewModel/AureliaProgram";
 import { DefinitionResult } from "../feature/definition/getDefinition";
 import { connection } from "../server";

@@ -18,7 +18,7 @@ import {
   getAureliaVirtualCompletions,
   getVirtualViewModelCompletionSupplyContent,
 } from "../virtual/virtualCompletion/virtualCompletion";
-import { createValueConverterCompletion } from "../completions/completions";
+import { createValueConverterCompletion } from "../feature/completions/completions";
 import { aureliaProgram } from "../viewModel/AureliaProgram";
 import { AureliaClassTypes, AureliaViewModel } from "../common/constants";
 import { getAccessScopeDefinition } from "../feature/definition/accessScopeDefinition";

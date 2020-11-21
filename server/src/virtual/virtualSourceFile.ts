@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 
-export interface VirtualCompletionSourceFileInfo {
+export interface VirtualSourceFileInfo {
   targetVirtualSourcefile: ts.SourceFile;
   virtualCursorIndex: number;
   viewModelFilePath?: string;
@@ -25,7 +25,7 @@ export function createVirtualSourceFile(
   virtualViewModelSourceFile: ts.SourceFile,
   virtualContent: string,
   customElementClassName: string
-): VirtualCompletionSourceFileInfo {
+): VirtualSourceFileInfo {
   /** Match [...] export class MyCustomElement { [...] */
   const virtualViewModelContent = virtualViewModelSourceFile.getText();
   const classDeclaration = "class ";

@@ -4,7 +4,7 @@ import { DefinitionResult } from "../../feature/definition/getDefinition";
 import { AureliaProgram } from "../../viewModel/AureliaProgram";
 import {
   createVirtualSourceFile,
-  VirtualCompletionSourceFileInfo,
+  VirtualSourceFileInfo,
   VIRTUAL_SOURCE_FILENAME,
 } from "../virtualSourceFile";
 
@@ -48,7 +48,7 @@ export function createVirtualFileWithContent(
   aureliaProgram: AureliaProgram,
   documentUri: string,
   content: string
-): VirtualCompletionSourceFileInfo | undefined {
+): VirtualSourceFileInfo | undefined {
   // 1. Get original viewmodel file associated with view
   const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
   const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
@@ -99,7 +99,7 @@ export function getVirtualDefinition(
 ): DefinitionResult | undefined {
   const { targetVirtualSourcefile, virtualCursorIndex, viewModelFilePath } =
     createVirtualFileWithContent(aureliaProgram, filePath, goToSourceWord) ||
-    ({} as VirtualCompletionSourceFileInfo);
+    ({} as VirtualSourceFileInfo);
 
   const virtualCls = getVirtualLangagueService(targetVirtualSourcefile);
 

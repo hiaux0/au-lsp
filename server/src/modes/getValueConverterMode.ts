@@ -21,8 +21,8 @@ import {
 import { createValueConverterCompletion } from "../completions/completions";
 import { aureliaProgram } from "../viewModel/AureliaProgram";
 import { AureliaClassTypes, AureliaViewModel } from "../common/constants";
-import { getAccessScopeDefinition } from "../definition/accessScopeDefinition";
-import { DefinitionResult } from "../definition/getDefinition";
+import { getAccessScopeDefinition } from "../feature/definition/accessScopeDefinition";
+import { DefinitionResult } from "../feature/definition/getDefinition";
 
 async function onValueConverterCompletion(
   _textDocumentPosition: TextDocumentPositionParams,

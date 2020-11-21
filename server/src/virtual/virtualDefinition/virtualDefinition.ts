@@ -1,6 +1,6 @@
 import * as path from "path";
 import * as ts from "typescript";
-import { DefinitionResult } from "../../definition/getDefinition";
+import { DefinitionResult } from "../../feature/definition/getDefinition";
 import { AureliaProgram } from "../../viewModel/AureliaProgram";
 import {
   createVirtualCompletionSourceFile,

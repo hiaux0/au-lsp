@@ -11,10 +11,10 @@ import {
   TextDocument,
 } from "../embeddedLanguages/languageModes";
 import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtualCompletion";
-import { DefinitionResult } from "../definition/getDefinition";
+import { DefinitionResult } from "../feature/definition/getDefinition";
 import { aureliaProgram } from "../viewModel/AureliaProgram";
 import { getVirtualDefinition } from "../virtual/virtualDefinition/virtualDefinition";
-import { getAccessScopeDefinition } from "../definition/accessScopeDefinition";
+import { getAccessScopeDefinition } from "../feature/definition/accessScopeDefinition";
 
 export function getAttributeInterpolationMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>

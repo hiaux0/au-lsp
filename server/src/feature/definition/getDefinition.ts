@@ -3,18 +3,18 @@ import {
   RepeatForRegionData,
   ValueConverterRegionData,
   ViewRegionInfo,
-} from "./../embeddedLanguages/embeddedSupport";
-import { AureliaClassTypes, AureliaView } from "./../common/constants";
+} from "../../embeddedLanguages/embeddedSupport";
+import { AureliaClassTypes, AureliaView } from "../../common/constants";
 import { Position, TextDocument } from "vscode-languageserver-textdocument";
-import { AureliaProgram } from "./../viewModel/AureliaProgram";
+import { AureliaProgram } from "../../viewModel/AureliaProgram";
 import * as path from "path";
 import * as ts from "typescript";
-import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
+import { getDocumentRegionAtPosition } from "../../embeddedLanguages/languageModes";
 import { createSourceFile, getLineAndCharacterOfPosition } from "typescript";
 import {
   parseDocumentRegions,
   ViewRegionType,
-} from "../embeddedLanguages/embeddedSupport";
+} from "../../embeddedLanguages/embeddedSupport";
 
 export interface DefinitionResult {
   lineAndCharacter: ts.LineAndCharacter;

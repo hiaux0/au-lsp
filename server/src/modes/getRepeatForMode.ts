@@ -14,8 +14,8 @@ import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtu
 import {
   getAccessScopeDefinition,
   getAccessScopeViewModelDefinition,
-} from "../definition/accessScopeDefinition";
-import { DefinitionResult } from "../definition/getDefinition";
+} from "../feature/definition/accessScopeDefinition";
+import { DefinitionResult } from "../feature/definition/getDefinition";
 
 export function getRepeatForMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>

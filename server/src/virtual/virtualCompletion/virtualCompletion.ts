@@ -37,10 +37,7 @@ import {
   MarkupKind,
   TextDocumentPositionParams,
 } from "vscode-languageserver";
-import {
-  EmbeddedRegion,
-  ViewRegionInfo,
-} from "../../embeddedLanguages/embeddedSupport";
+import { ViewRegionInfo } from "../../embeddedLanguages/embeddedSupport";
 import { getDocumentRegionAtPosition } from "../../embeddedLanguages/languageModes";
 import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
 import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from "../../common/constants";
@@ -107,7 +104,6 @@ export function getVirtualCompletion(
   });
 
   return { virtualCompletions, virtualCompletionEntryDetails };
-  // return map(virtualCompletions, "name");
 }
 
 export function createProgram(
@@ -179,7 +175,7 @@ function getKindName(kind: ts.SyntaxKind) {
 
 function getSourceFileForVirtualViewModel() {}
 
-interface AureliaCompletionItem extends CompletionItem {
+export interface AureliaCompletionItem extends CompletionItem {
   data?: AureliaLSP.AureliaCompletionItemDataType;
 }
 
@@ -190,11 +186,6 @@ export async function getVirtualViewModelCompletion(
 ): Promise<AureliaCompletionItem[]> {
   // 1. From the region get the part, that should be made virtual.
   const documentUri = textDocumentPosition.textDocument.uri;
-  // const adjustedPosition: TextDocumentPositionParams["position"] = {
-  //   character: textDocumentPosition.position.character + 1,
-  //   line: textDocumentPosition.position.line + 1,
-  // };
-  // const region = await getDocumentRegionAtPosition(adjustedPosition).get(
   const region = await getDocumentRegionAtPosition(
     textDocumentPosition.position
   ).get(document);

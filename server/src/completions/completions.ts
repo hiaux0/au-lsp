@@ -10,7 +10,7 @@ import {
 import { AureliaClassTypes } from "../common/constants";
 import {
   CustomElementRegionData,
-  getDocumentRegionsV2,
+  parseDocumentRegions,
   getRegionFromLineAndCharacter,
   ValueConverterRegionData,
   ViewRegionInfo,
@@ -30,7 +30,7 @@ export async function getBindablesCompletion(
     character: position.character + 1,
     line: position.line + 1,
   };
-  const regions = await getDocumentRegionsV2<CustomElementRegionData>(document);
+  const regions = await parseDocumentRegions<CustomElementRegionData>(document);
   const customElementRegions = regions.filter(
     (region) => region.type === ViewRegionType.CustomElement
   );
@@ -76,10 +76,5 @@ export function createValueConverterCompletion(
       };
       return result;
     });
-  // .find(
-  //   (valueConverterComponent) =>
-  //     valueConverterComponent.valueConverterName ===
-  //     valueConverterRegion.data?.valueConverterName
-  // );
   return valueConverterCompletionList;
 }

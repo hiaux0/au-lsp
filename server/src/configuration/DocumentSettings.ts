@@ -66,7 +66,6 @@ export class DocumentSettings {
     let result = this.settingsMap.get(resource);
     if (!result) {
       result = this.connection.workspace.getConfiguration({
-        // scopeUri: resource,
         section: "languageServerExample",
       });
       this.settingsMap.set(resource, result);

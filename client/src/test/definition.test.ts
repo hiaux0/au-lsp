@@ -46,7 +46,9 @@ suite("View Definition", () => {
       position: new vscode.Position(1, 1),
       partOfFilePath: "testFixture/src/my-compo/my-compo.ts",
     });
+  });
 
+  test("Definition in (different) View Model - Bindable", async () => {
     // <!-- Test: Go to definition [CUSTOM_ELEMENT_BINDABLE] {{ISSUE-8Q6EL3Ui}}-->
     await testCompletion(docUri, new vscode.Position(20, 5), {
       position: new vscode.Position(27, 2),

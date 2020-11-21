@@ -32,37 +32,6 @@ import { aureliaProgram } from "../../server/src/viewModel/AureliaProgram";
 
 let client: LanguageClient;
 
-class CompletionItemProviderInView implements CompletionItemProvider {
-  public constructor(private readonly client: LanguageClient) {}
-
-  public async provideCompletionItems(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    token: CancellationToken,
-    context: CompletionContext
-  ): Promise<CompletionItem[] | CompletionList> {
-    const text = document.getText();
-    const offset = document.offsetAt(position);
-    const triggerCharacter = text.substring(offset - 1, offset);
-
-    if (triggerCharacter === "<") {
-      return this.client.sendRequest<any>(
-        "aurelia-get-component-class-declarations"
-      );
-    } else if (triggerCharacter === ":") {
-      // NOTE (!): this is actually only logic for the test.
-      // How can I if-clause it?
-      const result = await this.client.sendRequest<any>(
-        "get-value-converter-definition",
-        { _textDocumentPosition: { position }, document }
-      );
-      return result;
-    }
-
-    return [];
-  }
-}
-
 class SearchDefinitionInView implements vscode.DefinitionProvider {
   public client: LanguageClient;
 
@@ -196,14 +165,6 @@ export function activate(context: ExtensionContext) {
   );
 
   context.subscriptions.push(new RelatedFiles());
-
-  /** TODO: This is only needed for test files, in tests, the server.ts completion listener does not trigger as to my current knowledge */
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      { scheme: "file", language: "html" },
-      new CompletionItemProviderInView(client)
-    )
-  );
 
   context.subscriptions.push(
     vscode.languages.registerDefinitionProvider(

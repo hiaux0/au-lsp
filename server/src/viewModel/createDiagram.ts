@@ -109,11 +109,9 @@ function assembleUmlString({
 }) {
   const classMethodsData = Object.values(classMethods);
   const classVariablesData = Object.values(classVariables);
-  // const mermaidMdStringStart = '\`\`\`mermaid\n  classDiagram';
   const mermaidMdStringStart = "    classDiagram";
   const classNameStringStart = `class ${className} {`;
   const classNameStringEnd = "}\n";
-  // const mermaidMdStringEnd = '\`\`\`';
   const mermaidMdStringEnd = "";
 
   // 1. Class variables
@@ -145,7 +143,6 @@ function assembleUmlString({
                 `(this.${classMember.name})(?:\\W)`
               );
               const isClassMember = childText.match(classMemberRegex);
-              // const isClassMember = childText.includes(`this.${classMember.name}`)
               if (!isClassMember) return;
               classMemberStatements[classMember.name] = classMember;
             }

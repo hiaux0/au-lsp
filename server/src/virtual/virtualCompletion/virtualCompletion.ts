@@ -42,6 +42,7 @@ import { getDocumentRegionAtPosition } from "../../feature/embeddedLanguages/lan
 import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
 import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from "../../common/constants";
 import {
+  createVirtualFileWithContent,
   createVirtualViewModelSourceFile,
   getVirtualLangagueService,
 } from "../virtualSourceFile";
@@ -157,45 +158,14 @@ async function getVirtualViewModelCompletion(
     .getText()
     .slice(region.startOffset, region.endOffset);
 
-  // 2. Get original viewmodel file from view
-  const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
-  const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
-  const viewBaseName = path.parse(documentUri).name;
-
-  const targetSourceFile = aureliaFiles?.find((aureliaFile) => {
-    return scriptExtensions.find((extension) => {
-      const toViewModelName = `${viewBaseName}${extension}`;
-      const aureliaFileName = path.basename(aureliaFile.fileName);
-      return aureliaFileName === toViewModelName;
-    });
-  });
-
-  if (!targetSourceFile) {
-    throw new Error(`No source file found for current view: ${documentUri}`);
-  }
-
-  const componentList = aureliaProgram.getComponentList();
-  const customElementClassName = componentList.find(
-    (component) =>
-      component.baseFileName === path.parse(targetSourceFile.fileName).name
-  )?.className;
-
-  if (!customElementClassName) return [];
-
-  // 3. Create virtual completion
-  const virtualViewModelSourceFile = ts.createSourceFile(
-    "virtual.ts",
-    targetSourceFile?.getText(),
-    99
-  );
   const {
     virtualSourcefile,
     virtualCursorIndex,
-  } = createVirtualViewModelSourceFile(
-    virtualViewModelSourceFile,
-    virtualContent,
-    customElementClassName
-  );
+  } = createVirtualFileWithContent(
+    aureliaProgram,
+    documentUri,
+    virtualContent
+  )!;
 
   // 4. Use TLS
   const {

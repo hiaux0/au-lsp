@@ -1,4 +1,6 @@
 import * as ts from "typescript";
+import * as path from "path";
+import { AureliaProgram } from "../viewModel/AureliaProgram";
 
 export interface VirtualSourceFileInfo {
   virtualSourcefile: ts.SourceFile;
@@ -110,5 +112,53 @@ export function createVirtualViewModelSourceFile(
   return {
     virtualSourcefile,
     virtualCursorIndex,
+  };
+}
+
+export function createVirtualFileWithContent(
+  aureliaProgram: AureliaProgram,
+  documentUri: string,
+  content: string
+): VirtualSourceFileInfo | undefined {
+  // 1. Get original viewmodel file associated with view
+  const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
+  const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
+  const viewBaseName = path.parse(documentUri).name;
+
+  const targetSourceFile = aureliaFiles?.find((aureliaFile) => {
+    return scriptExtensions.find((extension) => {
+      const toViewModelName = `${viewBaseName}${extension}`;
+      const aureliaFileName = path.basename(aureliaFile.fileName);
+      return aureliaFileName === toViewModelName;
+    });
+  });
+
+  if (!targetSourceFile) {
+    console.log(`No source file found for current view: ${documentUri}`);
+    return;
+  }
+
+  const componentList = aureliaProgram.getComponentList();
+  const customElementClassName = componentList.find(
+    (component) =>
+      component.baseFileName === path.parse(targetSourceFile.fileName).name
+  )?.className;
+
+  if (!customElementClassName) return;
+
+  // 2. Create virtual source file
+  const virtualViewModelSourceFile = ts.createSourceFile(
+    VIRTUAL_SOURCE_FILENAME,
+    targetSourceFile?.getText(),
+    99
+  );
+
+  return {
+    ...createVirtualViewModelSourceFile(
+      virtualViewModelSourceFile,
+      content,
+      customElementClassName
+    ),
+    viewModelFilePath: targetSourceFile.fileName,
   };
 }

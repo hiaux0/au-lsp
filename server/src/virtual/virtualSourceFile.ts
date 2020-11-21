@@ -10,7 +10,7 @@ export const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
 const VIRTUAL_METHOD_NAME = "__vir";
 
 /**
- * With a virtual file, create a completions from a virtual progrm.
+ * With a virtual file, get access to file scope juicyness via a virtual progrm.
  *
  * 1. In the virtual view model source file
  * 2. Split up
@@ -59,11 +59,11 @@ export function createVirtualSourceFile(
   const tempMethodTextEnd = "};\n  ";
   const tempMethodText =
     tempMethodTextStart + virtualContent + tempMethodTextEnd;
-  const tempWithCompletion = starter + tempMethodText + ender;
+  const tempWithContent = starter + tempMethodText + ender;
 
   const targetVirtualSourcefile = ts.createSourceFile(
     VIRTUAL_SOURCE_FILENAME,
-    tempWithCompletion,
+    tempWithContent,
     99
   );
 

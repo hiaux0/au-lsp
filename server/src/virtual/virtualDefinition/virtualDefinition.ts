@@ -3,7 +3,7 @@ import * as ts from "typescript";
 import { DefinitionResult } from "../../feature/definition/getDefinition";
 import { AureliaProgram } from "../../viewModel/AureliaProgram";
 import {
-  createVirtualSourceFile,
+  createVirtualViewModelSourceFile,
   VirtualSourceFileInfo,
   VIRTUAL_SOURCE_FILENAME,
 } from "../virtualSourceFile";
@@ -83,7 +83,7 @@ export function createVirtualFileWithContent(
   );
 
   return {
-    ...createVirtualSourceFile(
+    ...createVirtualViewModelSourceFile(
       virtualViewModelSourceFile,
       content,
       customElementClassName

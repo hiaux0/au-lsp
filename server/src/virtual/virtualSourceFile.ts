@@ -17,27 +17,27 @@ const VIRTUAL_METHOD_NAME = "__vir";
  *   2.1 Need to visit each node
  *   2.2 (or are we regexing it?)
  *
- * @param virtualViewModelSourceFile
+ * @param originalSourceFile
  * @param virtualContent
- * @param customElementClassName Name of the class associated to your view
+ * @param targetClassName Name of the class associated to your view
  */
-export function createVirtualSourceFile(
-  virtualViewModelSourceFile: ts.SourceFile,
+export function createVirtualViewModelSourceFile(
+  originalSourceFile: ts.SourceFile,
   virtualContent: string,
-  customElementClassName: string
+  targetClassName: string
 ): VirtualSourceFileInfo {
   /** Match [...] export class MyCustomElement { [...] */
-  const virtualViewModelContent = virtualViewModelSourceFile.getText();
+  const virtualViewModelContent = originalSourceFile.getText();
   const classDeclaration = "class ";
   const classNameToOpeningBracketRegex = new RegExp(
-    `${classDeclaration}${customElementClassName}(.*?{)`
+    `${classDeclaration}${targetClassName}(.*?{)`
   );
   const classNameAndOpeningBracketMatch = classNameToOpeningBracketRegex.exec(
     virtualViewModelContent
   );
   if (!classNameAndOpeningBracketMatch) {
     throw new Error(
-      `No match found in File: ${virtualViewModelSourceFile.fileName} with target class name: ${customElementClassName}`
+      `No match found in File: ${originalSourceFile.fileName} with target class name: ${targetClassName}`
     );
   }
 
@@ -46,7 +46,7 @@ export function createVirtualSourceFile(
   const toOpeningBracketLength = classNameAndOpeningBracketMatch[1]?.length;
   const classOpeningBracketIndex =
     classDeclaration.length +
-    customElementClassName.length +
+    targetClassName.length +
     classNameStartIndex +
     toOpeningBracketLength;
 

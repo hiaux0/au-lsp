@@ -41,7 +41,7 @@ import { ViewRegionInfo } from "../../feature/embeddedLanguages/embeddedSupport"
 import { getDocumentRegionAtPosition } from "../../feature/embeddedLanguages/languageModes";
 import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
 import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from "../../common/constants";
-import { createVirtualSourceFile } from "../virtualSourceFile";
+import { createVirtualViewModelSourceFile } from "../virtualSourceFile";
 import { AsyncReturnType } from "../../common/global";
 
 const PARAMETER_NAME = "parameterName";
@@ -230,7 +230,7 @@ export async function getVirtualViewModelCompletion(
   const {
     targetVirtualSourcefile,
     virtualCursorIndex,
-  } = createVirtualSourceFile(
+  } = createVirtualViewModelSourceFile(
     virtualViewModelSourceFile,
     virtualContent,
     customElementClassName
@@ -295,7 +295,7 @@ export function getVirtualViewModelCompletionSupplyContent(
   const {
     targetVirtualSourcefile,
     virtualCursorIndex,
-  } = createVirtualSourceFile(
+  } = createVirtualViewModelSourceFile(
     virtualViewModelSourceFile,
     virtualContent,
     viewModelClassName

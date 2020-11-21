@@ -21,7 +21,7 @@ const VIRTUAL_METHOD_NAME = "__vir";
  * @param virtualContent
  * @param customElementClassName Name of the class associated to your view
  */
-export function createVirtualCompletionSourceFile(
+export function createVirtualSourceFile(
   virtualViewModelSourceFile: ts.SourceFile,
   virtualContent: string,
   customElementClassName: string

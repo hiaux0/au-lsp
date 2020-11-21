@@ -1,27 +1,20 @@
-import {
-  ViewRegionInfo,
-  ViewRegionType,
-} from "../feature/embeddedLanguages/embeddedSupport";
+import { ViewRegionInfo, ViewRegionType } from "../embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
-import { HTMLDocumentRegions } from "../feature/embeddedLanguages/embeddedSupport";
-import { LanguageModelCache } from "../feature/embeddedLanguages/languageModelCache";
-import {
-  LanguageMode,
-  Position,
-  TextDocument,
-} from "../feature/embeddedLanguages/languageModes";
-import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtualCompletion";
-import { DefinitionResult } from "../feature/definition/getDefinition";
-import { getVirtualDefinition } from "../virtual/virtualDefinition/virtualDefinition";
-import { aureliaProgram } from "../viewModel/AureliaProgram";
-import { getAccessScopeDefinition } from "../feature/definition/accessScopeDefinition";
+import { HTMLDocumentRegions } from "../embeddedSupport";
+import { LanguageModelCache } from "../languageModelCache";
+import { LanguageMode, Position, TextDocument } from "../languageModes";
+import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
+import { DefinitionResult } from "../../definition/getDefinition";
+import { aureliaProgram } from "../../../viewModel/AureliaProgram";
+import { getVirtualDefinition } from "../../../virtual/virtualDefinition/virtualDefinition";
+import { getAccessScopeDefinition } from "../../definition/accessScopeDefinition";
 
-export function getTextInterpolationMode(
+export function getAttributeInterpolationMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
 ): LanguageMode {
   return {
     getId() {
-      return ViewRegionType.TextInterpolation;
+      return ViewRegionType.AttributeInterpolation;
     },
     async doComplete(
       document: TextDocument,

@@ -4,25 +4,21 @@ import {
   ValueConverterRegionData,
   ViewRegionInfo,
   ViewRegionType,
-} from "../feature/embeddedLanguages/embeddedSupport";
+} from "../embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
-import { HTMLDocumentRegions } from "../feature/embeddedLanguages/embeddedSupport";
-import { LanguageModelCache } from "../feature/embeddedLanguages/languageModelCache";
-import {
-  LanguageMode,
-  Position,
-  TextDocument,
-} from "../feature/embeddedLanguages/languageModes";
+import { HTMLDocumentRegions } from "../embeddedSupport";
+import { LanguageModelCache } from "../languageModelCache";
+import { LanguageMode, Position, TextDocument } from "../languageModes";
 import {
   enhanceValueConverterViewArguments,
   getAureliaVirtualCompletions,
   getVirtualViewModelCompletionSupplyContent,
-} from "../virtual/virtualCompletion/virtualCompletion";
-import { createValueConverterCompletion } from "../feature/completions/completions";
-import { aureliaProgram } from "../viewModel/AureliaProgram";
-import { AureliaClassTypes, AureliaViewModel } from "../common/constants";
-import { getAccessScopeDefinition } from "../feature/definition/accessScopeDefinition";
-import { DefinitionResult } from "../feature/definition/getDefinition";
+} from "../../../virtual/virtualCompletion/virtualCompletion";
+import { createValueConverterCompletion } from "../../completions/completions";
+import { aureliaProgram } from "../../../viewModel/AureliaProgram";
+import { AureliaClassTypes, AureliaViewModel } from "../../../common/constants";
+import { getAccessScopeDefinition } from "../../definition/accessScopeDefinition";
+import { DefinitionResult } from "../../definition/getDefinition";
 
 async function onValueConverterCompletion(
   _textDocumentPosition: TextDocumentPositionParams,

@@ -1,25 +1,21 @@
-import { ViewRegionInfo } from "../feature/embeddedLanguages/embeddedSupport";
+import { ViewRegionInfo } from "../embeddedSupport";
 import * as path from "path";
 import {
   CustomElementRegionData,
   parseDocumentRegions,
   ViewRegionType,
-} from "../feature/embeddedLanguages/embeddedSupport";
+} from "../embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
-import { HTMLDocumentRegions } from "../feature/embeddedLanguages/embeddedSupport";
-import { LanguageModelCache } from "../feature/embeddedLanguages/languageModelCache";
-import {
-  LanguageMode,
-  Position,
-  TextDocument,
-} from "../feature/embeddedLanguages/languageModes";
-import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtualCompletion";
-import { getBindablesCompletion } from "../feature/completions/completions";
-import { aureliaProgram } from "../viewModel/AureliaProgram";
-import { DefinitionResult } from "../feature/definition/getDefinition";
-import { connection } from "../server";
+import { HTMLDocumentRegions } from "../embeddedSupport";
+import { LanguageModelCache } from "../languageModelCache";
+import { LanguageMode, Position, TextDocument } from "../languageModes";
+import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
+import { getBindablesCompletion } from "../../completions/completions";
+import { aureliaProgram } from "../../../viewModel/AureliaProgram";
+import { DefinitionResult } from "../../definition/getDefinition";
+import { connection } from "../../../server";
 import { camelCase } from "@aurelia/kernel";
-import { getVirtualDefinition } from "../virtual/virtualDefinition/virtualDefinition";
+import { getVirtualDefinition } from "../../../virtual/virtualDefinition/virtualDefinition";
 
 export function getCustomElementMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>

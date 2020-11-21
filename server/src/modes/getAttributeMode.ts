@@ -1,4 +1,7 @@
-import { ViewRegionType } from "./../embeddedLanguages/embeddedSupport";
+import {
+  ViewRegionInfo,
+  ViewRegionType,
+} from "./../embeddedLanguages/embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
 import { HTMLDocumentRegions } from "../embeddedLanguages/embeddedSupport";
 import { LanguageModelCache } from "../embeddedLanguages/languageModelCache";
@@ -8,6 +11,10 @@ import {
   TextDocument,
 } from "../embeddedLanguages/languageModes";
 import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtualCompletion";
+import { DefinitionResult } from "../definition/getDefinition";
+import { getVirtualDefinition } from "../virtual/virtualDefinition/virtualDefinition";
+import { aureliaProgram } from "../viewModel/AureliaProgram";
+import { getAccessScopeDefinition } from "../definition/accessScopeDefinition";
 
 export function getAttributeMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
@@ -29,6 +36,19 @@ export function getAttributeMode(
       }
 
       return [];
+    },
+    async doDefinition(
+      document: TextDocument,
+      position: Position,
+      goToSourceWord: string
+    ): Promise<DefinitionResult | undefined> {
+      const regions = (await documentRegions.get(document)).getRegions();
+      return getAccessScopeDefinition(
+        document,
+        position,
+        goToSourceWord,
+        regions
+      );
     },
     onDocumentRemoved(_document: TextDocument) {},
     dispose() {},

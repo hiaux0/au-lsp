@@ -21,6 +21,8 @@ import {
 import { createValueConverterCompletion } from "../completions/completions";
 import { aureliaProgram } from "../viewModel/AureliaProgram";
 import { AureliaClassTypes, AureliaViewModel } from "../common/constants";
+import { getAccessScopeDefinition } from "../definition/accessScopeDefinition";
+import { DefinitionResult } from "../definition/getDefinition";
 
 async function onValueConverterCompletion(
   _textDocumentPosition: TextDocumentPositionParams,
@@ -105,6 +107,34 @@ export function getValueConverterMode(
         targetRegion
       );
       return valueConverterCompletion;
+    },
+    async doDefinition(
+      document: TextDocument,
+      position: Position,
+      goToSourceWord: string,
+      valueConverterRegion: ViewRegionInfo
+    ): Promise<DefinitionResult | undefined> {
+      const targetRegion = valueConverterRegion as ViewRegionInfo<
+        ValueConverterRegionData
+      >;
+      const targetValueConverterComponent = aureliaProgram
+        .getComponentList()
+        .filter(
+          (component) => component.type === AureliaClassTypes.VALUE_CONVERTER
+        )
+        .find(
+          (valueConverterComponent) =>
+            valueConverterComponent.valueConverterName ===
+            targetRegion.data?.valueConverterName
+        );
+
+      return {
+        lineAndCharacter: {
+          line: 1,
+          character: 1,
+        } /** TODO: Find toView() method */,
+        viewModelFilePath: targetValueConverterComponent?.filePath,
+      };
     },
     onDocumentRemoved(_document: TextDocument) {},
     dispose() {},

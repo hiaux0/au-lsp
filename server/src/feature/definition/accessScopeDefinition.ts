@@ -2,7 +2,7 @@ import {
   RepeatForRegionData,
   ViewRegionInfo,
   ViewRegionType,
-} from "../../embeddedLanguages/embeddedSupport";
+} from "../embeddedLanguages/embeddedSupport";
 /**
  * Defintion[Access Scope]: http://aurelia.io/docs/binding/how-it-works#abstract-syntax-tree
  */
@@ -11,7 +11,7 @@ import { TextDocument } from "vscode-languageserver";
 import { aureliaProgram } from "../../viewModel/AureliaProgram";
 import { getVirtualDefinition } from "../../virtual/virtualDefinition/virtualDefinition";
 import { DefinitionResult } from "./getDefinition";
-import { Position } from "../../embeddedLanguages/languageModes";
+import { Position } from "../embeddedLanguages/languageModes";
 
 /**
  * Priority

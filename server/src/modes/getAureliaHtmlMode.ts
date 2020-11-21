@@ -1,12 +1,12 @@
-import { ViewRegionType } from "../embeddedLanguages/embeddedSupport";
+import { ViewRegionType } from "../feature/embeddedLanguages/embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
-import { HTMLDocumentRegions } from "../embeddedLanguages/embeddedSupport";
-import { LanguageModelCache } from "../embeddedLanguages/languageModelCache";
+import { HTMLDocumentRegions } from "../feature/embeddedLanguages/embeddedSupport";
+import { LanguageModelCache } from "../feature/embeddedLanguages/languageModelCache";
 import {
   LanguageMode,
   Position,
   TextDocument,
-} from "../embeddedLanguages/languageModes";
+} from "../feature/embeddedLanguages/languageModes";
 import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtualCompletion";
 import { aureliaProgram } from "../viewModel/AureliaProgram";
 

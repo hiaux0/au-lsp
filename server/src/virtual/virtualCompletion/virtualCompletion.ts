@@ -37,8 +37,8 @@ import {
   MarkupKind,
   TextDocumentPositionParams,
 } from "vscode-languageserver";
-import { ViewRegionInfo } from "../../embeddedLanguages/embeddedSupport";
-import { getDocumentRegionAtPosition } from "../../embeddedLanguages/languageModes";
+import { ViewRegionInfo } from "../../feature/embeddedLanguages/embeddedSupport";
+import { getDocumentRegionAtPosition } from "../../feature/embeddedLanguages/languageModes";
 import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
 import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from "../../common/constants";
 import { createVirtualCompletionSourceFile } from "../virtualSourceFile";

@@ -13,10 +13,10 @@ import {
   Range,
   Scanner,
 } from "./languageModes";
-import { AURELIA_ATTRIBUTES_KEYWORDS } from "../configuration/DocumentSettings";
+import { AURELIA_ATTRIBUTES_KEYWORDS } from "../../configuration/DocumentSettings";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { AureliaView } from "../common/constants";
-import { aureliaProgram } from "../viewModel/AureliaProgram";
+import { AureliaView } from "../../common/constants";
+import { aureliaProgram } from "../../viewModel/AureliaProgram";
 
 export interface LanguageRange extends Range {
   languageId: string | undefined;

@@ -15,8 +15,8 @@ import {
   ValueConverterRegionData,
   ViewRegionInfo,
   ViewRegionType,
-} from "../../embeddedLanguages/embeddedSupport";
-import { Position } from "../../embeddedLanguages/languageModes";
+} from "../embeddedLanguages/embeddedSupport";
+import { Position } from "../embeddedLanguages/languageModes";
 
 import { aureliaProgram } from "../../viewModel/AureliaProgram";
 import { getAureliaVirtualCompletions } from "../../virtual/virtualCompletion/virtualCompletion";

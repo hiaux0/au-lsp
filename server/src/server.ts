@@ -27,7 +27,7 @@ import {
   getLanguageModes,
   LanguageModes,
   Position,
-} from "./embeddedLanguages/languageModes";
+} from "./feature/embeddedLanguages/languageModes";
 
 // We need to import this to include reflect functionality
 import "reflect-metadata";
@@ -46,7 +46,7 @@ import {
   CustomElementRegionData,
   parseDocumentRegions,
   ViewRegionType,
-} from "./embeddedLanguages/embeddedSupport";
+} from "./feature/embeddedLanguages/embeddedSupport";
 import { AureliaCompletionItem } from "./virtual/virtualCompletion/virtualCompletion";
 
 import * as path from "path";

@@ -106,6 +106,7 @@ export function getVirtualCompletion(
   return { virtualCompletions, virtualCompletionEntryDetails };
 }
 
+/** [Ignore] Seems useful, so keeping it for now */
 export function createProgram(
   files: {
     fileName: string;
@@ -156,24 +157,6 @@ export function createProgram(
     compilerHost
   );
 }
-
-function visit(
-  node: ts.Node,
-  visitor: (node: ts.Node, level: number) => void,
-  level: number = 0
-) {
-  if (!node) {
-    return;
-  }
-  visitor(node, level);
-  node.forEachChild((child) => visit(child, visitor, level + 1));
-}
-
-function getKindName(kind: ts.SyntaxKind) {
-  return (ts as any).SyntaxKind[kind];
-}
-
-function getSourceFileForVirtualViewModel() {}
 
 export interface AureliaCompletionItem extends CompletionItem {
   data?: AureliaLSP.AureliaCompletionItemDataType;
@@ -236,6 +219,7 @@ export async function getVirtualViewModelCompletion(
     customElementClassName
   );
 
+  // 4. Use TLS
   const {
     virtualCompletions,
     virtualCompletionEntryDetails,

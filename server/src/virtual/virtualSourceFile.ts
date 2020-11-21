@@ -2,7 +2,7 @@ import * as ts from "typescript";
 
 export interface VirtualCompletionSourceFileInfo {
   targetVirtualSourcefile: ts.SourceFile;
-  completionIndex: number;
+  virtualCursorIndex: number;
   viewModelFilePath?: string;
 }
 
@@ -67,13 +67,13 @@ export function createVirtualCompletionSourceFile(
     99
   );
 
-  const completionIndex =
+  const virtualCursorIndex =
     classOpeningBracketIndex +
     tempMethodTextStart.length +
     virtualContent.length;
 
   return {
     targetVirtualSourcefile,
-    completionIndex,
+    virtualCursorIndex,
   };
 }

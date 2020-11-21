@@ -97,7 +97,7 @@ export function getVirtualDefinition(
   aureliaProgram: AureliaProgram,
   goToSourceWord: string
 ): DefinitionResult | undefined {
-  const { targetVirtualSourcefile, completionIndex, viewModelFilePath } =
+  const { targetVirtualSourcefile, virtualCursorIndex, viewModelFilePath } =
     createVirtualFileWithContent(aureliaProgram, filePath, goToSourceWord) ||
     ({} as VirtualCompletionSourceFileInfo);
 
@@ -105,7 +105,7 @@ export function getVirtualDefinition(
 
   const result = virtualCls.getDefinitionAtPosition(
     targetVirtualSourcefile.fileName,
-    completionIndex
+    virtualCursorIndex
   );
 
   if (result?.length === 0) return;

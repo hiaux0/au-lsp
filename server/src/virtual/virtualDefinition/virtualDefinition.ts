@@ -97,21 +97,21 @@ export function getVirtualDefinition(
   aureliaProgram: AureliaProgram,
   goToSourceWord: string
 ): DefinitionResult | undefined {
-  const { targetVirtualSourcefile, virtualCursorIndex, viewModelFilePath } =
+  const { virtualSourcefile, virtualCursorIndex, viewModelFilePath } =
     createVirtualFileWithContent(aureliaProgram, filePath, goToSourceWord) ||
     ({} as VirtualSourceFileInfo);
 
-  const virtualCls = getVirtualLangagueService(targetVirtualSourcefile);
+  const virtualCls = getVirtualLangagueService(virtualSourcefile);
 
   const result = virtualCls.getDefinitionAtPosition(
-    targetVirtualSourcefile.fileName,
+    virtualSourcefile.fileName,
     virtualCursorIndex
   );
 
   if (result?.length === 0) return;
 
   return {
-    lineAndCharacter: targetVirtualSourcefile.getLineAndCharacterOfPosition(
+    lineAndCharacter: virtualSourcefile.getLineAndCharacterOfPosition(
       result![0].contextSpan?.start || 0
     ),
     viewModelFilePath,

@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 
 export interface VirtualSourceFileInfo {
-  targetVirtualSourcefile: ts.SourceFile;
+  virtualSourcefile: ts.SourceFile;
   virtualCursorIndex: number;
   viewModelFilePath?: string;
 }
@@ -61,7 +61,7 @@ export function createVirtualViewModelSourceFile(
     tempMethodTextStart + virtualContent + tempMethodTextEnd;
   const tempWithContent = starter + tempMethodText + ender;
 
-  const targetVirtualSourcefile = ts.createSourceFile(
+  const virtualSourcefile = ts.createSourceFile(
     VIRTUAL_SOURCE_FILENAME,
     tempWithContent,
     99
@@ -73,7 +73,7 @@ export function createVirtualViewModelSourceFile(
     virtualContent.length;
 
   return {
-    targetVirtualSourcefile,
+    virtualSourcefile,
     virtualCursorIndex,
   };
 }

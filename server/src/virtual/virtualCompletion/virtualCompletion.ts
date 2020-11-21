@@ -228,7 +228,7 @@ export async function getVirtualViewModelCompletion(
     99
   );
   const {
-    targetVirtualSourcefile,
+    virtualSourcefile,
     virtualCursorIndex,
   } = createVirtualViewModelSourceFile(
     virtualViewModelSourceFile,
@@ -239,7 +239,7 @@ export async function getVirtualViewModelCompletion(
   const {
     virtualCompletions,
     virtualCompletionEntryDetails,
-  } = getVirtualCompletion(targetVirtualSourcefile, virtualCursorIndex);
+  } = getVirtualCompletion(virtualSourcefile, virtualCursorIndex);
 
   if (!virtualCompletions) {
     console.log(`
@@ -293,7 +293,7 @@ export function getVirtualViewModelCompletionSupplyContent(
     99
   );
   const {
-    targetVirtualSourcefile,
+    virtualSourcefile,
     virtualCursorIndex,
   } = createVirtualViewModelSourceFile(
     virtualViewModelSourceFile,
@@ -304,7 +304,7 @@ export function getVirtualViewModelCompletionSupplyContent(
   const {
     virtualCompletions,
     virtualCompletionEntryDetails,
-  } = getVirtualCompletion(targetVirtualSourcefile, virtualCursorIndex);
+  } = getVirtualCompletion(virtualSourcefile, virtualCursorIndex);
 
   if (!virtualCompletions) {
     console.log(`

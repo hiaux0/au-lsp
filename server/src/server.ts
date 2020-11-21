@@ -215,11 +215,13 @@ connection.onCompletion(
       throw new Error("No document found");
       return [];
     }
-
-    const mode = await languageModes.getModeAtPosition(
+    const modeAndRegion = await languageModes.getModeAndRegionAtPosition(
       document,
       _textDocumentPosition.position
     );
+
+    if (!modeAndRegion) return [];
+    const { mode, region } = modeAndRegion;
 
     if (!mode) return [];
 

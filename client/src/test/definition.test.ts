@@ -15,7 +15,7 @@ import * as assert from "assert";
 
 import { activate, getTestApplicationFiles } from "./helper";
 
-suite.only("View Definition", () => {
+suite("View Definition", () => {
   const applicationFile = getTestApplicationFiles();
 
   const docUri = vscode.Uri.file(applicationFile.viewPaths[0]);

@@ -448,7 +448,44 @@ connection.onRequest(
 
 connection.onRequest(
   "get-virtual-hover",
-  ({ documentContent, position, goToSourceWord, filePath }): void => {}
+  async ({
+    documentContent,
+    position,
+    goToSourceWord,
+    filePath,
+  }): Promise<void> => {
+    const documentUri = filePath;
+    const document = TextDocument.create(filePath, "html", 0, documentContent);
+
+    if (!document) {
+      throw new Error("No document found");
+      return;
+    }
+
+    const modeAndRegion = await languageModes.getModeAndRegionAtPosition(
+      document,
+      position
+    );
+
+    if (!modeAndRegion) return;
+    const { mode, region } = modeAndRegion;
+
+    if (!mode) return;
+
+    const doHover = mode.doHover;
+
+    if (doHover) {
+      let hoverResult: AsyncReturnType<typeof doHover>;
+
+      try {
+        hoverResult = await doHover(document, position, goToSourceWord, region);
+      } catch (error) {
+        console.log("TCL: error", error);
+        return;
+      }
+      return hoverResult;
+    }
+  }
 );
 
 // Make the text document manager listen on the connection

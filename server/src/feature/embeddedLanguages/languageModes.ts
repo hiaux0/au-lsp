@@ -54,6 +54,13 @@ export interface LanguageMode {
     goToSourceWord: string,
     region: ViewRegionInfo
   ) => Promise<DefinitionResult | undefined>;
+  doHover?: (
+    document: TextDocument,
+    position: Position,
+    goToSourceWord: string,
+    region: ViewRegionInfo
+  ) => void;
+  // ) => Promise<DefinitionResult | undefined>;
   onDocumentRemoved(document: TextDocument): void;
   dispose(): void;
 }

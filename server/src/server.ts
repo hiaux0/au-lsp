@@ -237,13 +237,13 @@ connection.onCompletion(
     const triggerCharacter = text.substring(offset - 1, offset);
 
     if (doComplete) {
-      let completions: AureliaCompletionItem[] | CompletionList = [];
+      let completions: CompletionItem[] = [CompletionItem.create("")];
       try {
-        completions = await doComplete(
+        completions = ((await doComplete(
           document,
           _textDocumentPosition,
           triggerCharacter
-        );
+        )) as unknown) as CompletionItem[];
       } catch (error) {
         console.log("TCL: error", error);
       }

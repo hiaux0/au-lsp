@@ -1,27 +1,21 @@
-import {
-  ViewRegionInfo,
-  ViewRegionType,
-} from "./../embeddedLanguages/embeddedSupport";
+import { ViewRegionInfo, ViewRegionType } from "../embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
-import { HTMLDocumentRegions } from "../embeddedLanguages/embeddedSupport";
-import { LanguageModelCache } from "../embeddedLanguages/languageModelCache";
+import { HTMLDocumentRegions } from "../embeddedSupport";
+import { LanguageModelCache } from "../languageModelCache";
+import { LanguageMode, Position, TextDocument } from "../languageModes";
+import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
 import {
-  LanguageMode,
-  Position,
-  TextDocument,
-} from "../embeddedLanguages/languageModes";
-import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtualCompletion";
-import { DefinitionResult } from "../definition/getDefinition";
-import { aureliaProgram } from "../viewModel/AureliaProgram";
-import { getVirtualDefinition } from "../virtual/virtualDefinition/virtualDefinition";
-import { getAccessScopeDefinition } from "../definition/accessScopeDefinition";
+  getAccessScopeDefinition,
+  getAccessScopeViewModelDefinition,
+} from "../../definition/accessScopeDefinition";
+import { DefinitionResult } from "../../definition/getDefinition";
 
-export function getAttributeInterpolationMode(
+export function getRepeatForMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
 ): LanguageMode {
   return {
     getId() {
-      return ViewRegionType.AttributeInterpolation;
+      return ViewRegionType.RepeatFor;
     },
     async doComplete(
       document: TextDocument,
@@ -44,11 +38,10 @@ export function getAttributeInterpolationMode(
       attributeRegion: ViewRegionInfo
     ): Promise<DefinitionResult | undefined> {
       const regions = (await documentRegions.get(document)).getRegions();
-      return getAccessScopeDefinition(
+      return getAccessScopeViewModelDefinition(
         document,
         position,
-        goToSourceWord,
-        regions
+        goToSourceWord
       );
     },
     onDocumentRemoved(_document: TextDocument) {},

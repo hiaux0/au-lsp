@@ -4,25 +4,20 @@ import {
   ValueConverterRegionData,
   ViewRegionInfo,
   ViewRegionType,
-} from "./../embeddedLanguages/embeddedSupport";
+} from "../embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
-import { HTMLDocumentRegions } from "../embeddedLanguages/embeddedSupport";
-import { LanguageModelCache } from "../embeddedLanguages/languageModelCache";
+import { HTMLDocumentRegions } from "../embeddedSupport";
+import { LanguageModelCache } from "../languageModelCache";
+import { LanguageMode, Position, TextDocument } from "../languageModes";
 import {
-  LanguageMode,
-  Position,
-  TextDocument,
-} from "../embeddedLanguages/languageModes";
-import {
-  enhanceValueConverterViewArguments,
   getAureliaVirtualCompletions,
   getVirtualViewModelCompletionSupplyContent,
-} from "../virtual/virtualCompletion/virtualCompletion";
-import { createValueConverterCompletion } from "../completions/completions";
-import { aureliaProgram } from "../viewModel/AureliaProgram";
-import { AureliaClassTypes, AureliaViewModel } from "../common/constants";
-import { getAccessScopeDefinition } from "../definition/accessScopeDefinition";
-import { DefinitionResult } from "../definition/getDefinition";
+} from "../../../virtual/virtualCompletion/virtualCompletion";
+import { createValueConverterCompletion } from "../../completions/completions";
+import { aureliaProgram } from "../../../viewModel/AureliaProgram";
+import { AureliaClassTypes, AureliaViewModel } from "../../../common/constants";
+import { getAccessScopeDefinition } from "../../definition/accessScopeDefinition";
+import { DefinitionResult } from "../../definition/getDefinition";
 
 async function onValueConverterCompletion(
   _textDocumentPosition: TextDocumentPositionParams,
@@ -139,4 +134,32 @@ export function getValueConverterMode(
     onDocumentRemoved(_document: TextDocument) {},
     dispose() {},
   };
+}
+
+/**
+ * Convert Value Converter's `toView` to view format.
+ *
+ * @example
+ * ```ts
+ * // TakeValueConverter
+ *   toView(array, count)
+ * ```
+ *   -->
+ * ```html
+ *   array | take:count
+ * ```
+ *
+ */
+function enhanceValueConverterViewArguments(methodArguments: string[]) {
+  // 1. Omit the first argument, because that's piped to the method
+  const [_, ...viewArguments] = methodArguments;
+
+  // 2. prefix with :
+  const result = viewArguments
+    .map((argName, index) => {
+      return `\${${index + 1}:${argName}}`;
+    })
+    .join(":");
+
+  return result;
 }

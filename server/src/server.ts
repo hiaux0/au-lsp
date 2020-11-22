@@ -27,7 +27,7 @@ import {
   getLanguageModes,
   LanguageModes,
   Position,
-} from "./embeddedLanguages/languageModes";
+} from "./feature/embeddedLanguages/languageModes";
 
 // We need to import this to include reflect functionality
 import "reflect-metadata";
@@ -46,14 +46,17 @@ import {
   CustomElementRegionData,
   parseDocumentRegions,
   ViewRegionType,
-} from "./embeddedLanguages/embeddedSupport";
+} from "./feature/embeddedLanguages/embeddedSupport";
 import { AureliaCompletionItem } from "./virtual/virtualCompletion/virtualCompletion";
 
 import * as path from "path";
 import * as ts from "typescript";
 import { createDiagram } from "./viewModel/createDiagram";
 import { getVirtualDefinition } from "./virtual/virtualDefinition/virtualDefinition";
-import { DefinitionResult, getDefinition } from "./definition/getDefinition";
+import {
+  DefinitionResult,
+  getDefinition,
+} from "./feature/definition/getDefinition";
 import { camelCase } from "@aurelia/kernel";
 
 const globalContainer = new Container();

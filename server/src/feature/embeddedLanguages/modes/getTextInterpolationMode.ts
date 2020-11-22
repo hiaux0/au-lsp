@@ -1,27 +1,20 @@
-import {
-  ViewRegionInfo,
-  ViewRegionType,
-} from "./../embeddedLanguages/embeddedSupport";
+import { ViewRegionInfo, ViewRegionType } from "../embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
-import { HTMLDocumentRegions } from "../embeddedLanguages/embeddedSupport";
-import { LanguageModelCache } from "../embeddedLanguages/languageModelCache";
-import {
-  LanguageMode,
-  Position,
-  TextDocument,
-} from "../embeddedLanguages/languageModes";
-import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtualCompletion";
-import { DefinitionResult } from "../definition/getDefinition";
-import { getVirtualDefinition } from "../virtual/virtualDefinition/virtualDefinition";
-import { aureliaProgram } from "../viewModel/AureliaProgram";
-import { getAccessScopeDefinition } from "../definition/accessScopeDefinition";
+import { HTMLDocumentRegions } from "../embeddedSupport";
+import { LanguageModelCache } from "../languageModelCache";
+import { LanguageMode, Position, TextDocument } from "../languageModes";
+import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
+import { DefinitionResult } from "../../definition/getDefinition";
+import { getVirtualDefinition } from "../../../virtual/virtualDefinition/virtualDefinition";
+import { aureliaProgram } from "../../../viewModel/AureliaProgram";
+import { getAccessScopeDefinition } from "../../definition/accessScopeDefinition";
 
-export function getAttributeMode(
+export function getTextInterpolationMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
 ): LanguageMode {
   return {
     getId() {
-      return ViewRegionType.Attribute;
+      return ViewRegionType.TextInterpolation;
     },
     async doComplete(
       document: TextDocument,
@@ -40,7 +33,8 @@ export function getAttributeMode(
     async doDefinition(
       document: TextDocument,
       position: Position,
-      goToSourceWord: string
+      goToSourceWord: string,
+      attributeRegion: ViewRegionInfo
     ): Promise<DefinitionResult | undefined> {
       const regions = (await documentRegions.get(document)).getRegions();
       return getAccessScopeDefinition(

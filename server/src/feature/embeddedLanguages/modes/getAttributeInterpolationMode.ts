@@ -1,28 +1,20 @@
-import {
-  ViewRegionInfo,
-  ViewRegionType,
-} from "../embeddedLanguages/embeddedSupport";
+import { ViewRegionInfo, ViewRegionType } from "../embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
-import { HTMLDocumentRegions } from "../embeddedLanguages/embeddedSupport";
-import { LanguageModelCache } from "../embeddedLanguages/languageModelCache";
-import {
-  LanguageMode,
-  Position,
-  TextDocument,
-} from "../embeddedLanguages/languageModes";
-import { getAureliaVirtualCompletions } from "../virtual/virtualCompletion/virtualCompletion";
-import {
-  getAccessScopeDefinition,
-  getAccessScopeViewModelDefinition,
-} from "../definition/accessScopeDefinition";
-import { DefinitionResult } from "../definition/getDefinition";
+import { HTMLDocumentRegions } from "../embeddedSupport";
+import { LanguageModelCache } from "../languageModelCache";
+import { LanguageMode, Position, TextDocument } from "../languageModes";
+import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
+import { DefinitionResult } from "../../definition/getDefinition";
+import { aureliaProgram } from "../../../viewModel/AureliaProgram";
+import { getVirtualDefinition } from "../../../virtual/virtualDefinition/virtualDefinition";
+import { getAccessScopeDefinition } from "../../definition/accessScopeDefinition";
 
-export function getRepeatForMode(
+export function getAttributeInterpolationMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
 ): LanguageMode {
   return {
     getId() {
-      return ViewRegionType.RepeatFor;
+      return ViewRegionType.AttributeInterpolation;
     },
     async doComplete(
       document: TextDocument,
@@ -45,10 +37,11 @@ export function getRepeatForMode(
       attributeRegion: ViewRegionInfo
     ): Promise<DefinitionResult | undefined> {
       const regions = (await documentRegions.get(document)).getRegions();
-      return getAccessScopeViewModelDefinition(
+      return getAccessScopeDefinition(
         document,
         position,
-        goToSourceWord
+        goToSourceWord,
+        regions
       );
     },
     onDocumentRemoved(_document: TextDocument) {},

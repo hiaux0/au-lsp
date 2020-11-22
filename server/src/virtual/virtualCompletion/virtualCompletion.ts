@@ -37,11 +37,15 @@ import {
   MarkupKind,
   TextDocumentPositionParams,
 } from "vscode-languageserver";
-import { ViewRegionInfo } from "../../embeddedLanguages/embeddedSupport";
-import { getDocumentRegionAtPosition } from "../../embeddedLanguages/languageModes";
+import { ViewRegionInfo } from "../../feature/embeddedLanguages/embeddedSupport";
+import { getDocumentRegionAtPosition } from "../../feature/embeddedLanguages/languageModes";
 import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
 import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from "../../common/constants";
-import { createVirtualCompletionSourceFile } from "../virtualSourceFile";
+import {
+  createVirtualFileWithContent,
+  createVirtualViewModelSourceFile,
+  getVirtualLangagueService,
+} from "../virtualSourceFile";
 import { AsyncReturnType } from "../../common/global";
 
 const PARAMETER_NAME = "parameterName";
@@ -55,32 +59,7 @@ export function getVirtualCompletion(
   sourceFile: ts.SourceFile,
   positionOfAutocomplete: number
 ) {
-  let compilerSettings = {} as ts.CompilerOptions;
-  compilerSettings = {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ESNext,
-    outDir: "dist",
-    emitDecoratorMetadata: true,
-    experimentalDecorators: true,
-    lib: ["es2017.object", "es7", "dom"],
-    sourceMap: true,
-    rootDir: ".",
-  };
-
-  const host: ts.LanguageServiceHost = {
-    getCompilationSettings: () => compilerSettings,
-    getScriptFileNames: () => [sourceFile.fileName],
-    getScriptVersion: () => "0",
-    getScriptSnapshot: () => ts.ScriptSnapshot.fromString(sourceFile.getText()),
-    getCurrentDirectory: () => process.cwd(),
-    getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
-    fileExists: ts.sys.fileExists,
-    readFile: ts.sys.readFile,
-    readDirectory: ts.sys.readDirectory,
-  };
-  const cls = ts.createLanguageService(host, ts.createDocumentRegistry());
-
-  if (!cls) throw new Error("No cls");
+  const cls = getVirtualLangagueService(sourceFile);
 
   const virtualCompletions = cls.getCompletionsAtPosition(
     sourceFile.fileName,
@@ -106,6 +85,7 @@ export function getVirtualCompletion(
   return { virtualCompletions, virtualCompletionEntryDetails };
 }
 
+/** [Ignore] Seems useful, so keeping it for now */
 export function createProgram(
   files: {
     fileName: string;
@@ -157,29 +137,11 @@ export function createProgram(
   );
 }
 
-function visit(
-  node: ts.Node,
-  visitor: (node: ts.Node, level: number) => void,
-  level: number = 0
-) {
-  if (!node) {
-    return;
-  }
-  visitor(node, level);
-  node.forEachChild((child) => visit(child, visitor, level + 1));
-}
-
-function getKindName(kind: ts.SyntaxKind) {
-  return (ts as any).SyntaxKind[kind];
-}
-
-function getSourceFileForVirtualViewModel() {}
-
 export interface AureliaCompletionItem extends CompletionItem {
   data?: AureliaLSP.AureliaCompletionItemDataType;
 }
 
-export async function getVirtualViewModelCompletion(
+async function getVirtualViewModelCompletion(
   textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument,
   aureliaProgram: AureliaProgram
@@ -196,50 +158,20 @@ export async function getVirtualViewModelCompletion(
     .getText()
     .slice(region.startOffset, region.endOffset);
 
-  // 2. Get original viewmodel file from view
-  const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
-  const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
-  const viewBaseName = path.parse(documentUri).name;
-
-  const targetSourceFile = aureliaFiles?.find((aureliaFile) => {
-    return scriptExtensions.find((extension) => {
-      const toViewModelName = `${viewBaseName}${extension}`;
-      const aureliaFileName = path.basename(aureliaFile.fileName);
-      return aureliaFileName === toViewModelName;
-    });
-  });
-
-  if (!targetSourceFile) {
-    throw new Error(`No source file found for current view: ${documentUri}`);
-  }
-
-  const componentList = aureliaProgram.getComponentList();
-  const customElementClassName = componentList.find(
-    (component) =>
-      component.baseFileName === path.parse(targetSourceFile.fileName).name
-  )?.className;
-
-  if (!customElementClassName) return [];
-
-  // 3. Create virtual completion
-  const virtualViewModelSourceFile = ts.createSourceFile(
-    "virtual.ts",
-    targetSourceFile?.getText(),
-    99
-  );
   const {
-    targetVirtualSourcefile,
-    completionIndex,
-  } = createVirtualCompletionSourceFile(
-    virtualViewModelSourceFile,
-    virtualContent,
-    customElementClassName
-  );
+    virtualSourcefile,
+    virtualCursorIndex,
+  } = createVirtualFileWithContent(
+    aureliaProgram,
+    documentUri,
+    virtualContent
+  )!;
 
+  // 4. Use TLS
   const {
     virtualCompletions,
     virtualCompletionEntryDetails,
-  } = getVirtualCompletion(targetVirtualSourcefile, completionIndex);
+  } = getVirtualCompletion(virtualSourcefile, virtualCursorIndex);
 
   if (!virtualCompletions) {
     console.log(`
@@ -266,9 +198,14 @@ export async function getVirtualViewModelCompletion(
 
 interface CustomizeEnhanceDocumentation {
   /** Array of the arguments of the method (without types) */
-  customEnhanceMethodArguments?: (methodArguments: string[]) => string;
+  customEnhanceMethodArguments: (methodArguments: string[]) => string;
   omitMethodNameAndBrackets?: boolean;
 }
+
+const DEFAULT_CUSTOMIZE_ENHANCE_DOCUMENTATION: CustomizeEnhanceDocumentation = {
+  customEnhanceMethodArguments: enhanceMethodArguments,
+  omitMethodNameAndBrackets: false,
+};
 
 /**
  * Pass in arbitrary content for the virtual file.
@@ -293,9 +230,9 @@ export function getVirtualViewModelCompletionSupplyContent(
     99
   );
   const {
-    targetVirtualSourcefile,
-    completionIndex,
-  } = createVirtualCompletionSourceFile(
+    virtualSourcefile,
+    virtualCursorIndex,
+  } = createVirtualViewModelSourceFile(
     virtualViewModelSourceFile,
     virtualContent,
     viewModelClassName
@@ -304,7 +241,7 @@ export function getVirtualViewModelCompletionSupplyContent(
   const {
     virtualCompletions,
     virtualCompletionEntryDetails,
-  } = getVirtualCompletion(targetVirtualSourcefile, completionIndex);
+  } = getVirtualCompletion(virtualSourcefile, virtualCursorIndex);
 
   if (!virtualCompletions) {
     console.log(`
@@ -333,7 +270,7 @@ function enhanceCompletionItemDocumentation(
   virtualCompletionEntryDetails: (ts.CompletionEntryDetails | undefined)[],
   entryDetailsMap: EntryDetailsMap,
   virtualCompletions: ts.CompletionEntry[],
-  customizeEnhanceDocumentation?: CustomizeEnhanceDocumentation
+  customizeEnhanceDocumentation: CustomizeEnhanceDocumentation = DEFAULT_CUSTOMIZE_ENHANCE_DOCUMENTATION
 ) {
   const kindMap = {
     [ts.ScriptElementKind[
@@ -360,19 +297,9 @@ function enhanceCompletionItemDocumentation(
 
   /** ${1: argName1}, ${2: argName2} */
   function createArgCompletion(entryDetail: EntryDetailsMapData) {
-    const numOfArguments = entryDetail;
-
-    if (customizeEnhanceDocumentation?.customEnhanceMethodArguments) {
-      return customizeEnhanceDocumentation.customEnhanceMethodArguments(
-        entryDetail.methodArguments
-      );
-    }
-
-    return entryDetail.methodArguments
-      .map((argName, index) => {
-        return `\${${index + 1}:${argName}}`;
-      })
-      .join(", ");
+    return customizeEnhanceDocumentation.customEnhanceMethodArguments(
+      entryDetail.methodArguments
+    );
   }
 
   const result = virtualCompletions.map((tsCompletion) => {
@@ -417,32 +344,12 @@ function enhanceCompletionItemDocumentation(
   return result;
 }
 
-/**
- * Convert Value Converter's `toView` to view format.
- *
- * @example
- * ```ts
- * // TakeValueConverter
- *   toView(array, count)
- * ```
- *   -->
- * ```html
- *   array | take:count
- * ```
- *
- */
-export function enhanceValueConverterViewArguments(methodArguments: string[]) {
-  // 1. Omit the first argument, because that's piped to the method
-  const [_, ...viewArguments] = methodArguments;
-
-  // 2. prefix with :
-  const result = viewArguments
+function enhanceMethodArguments(methodArguments: string[]): string {
+  return methodArguments
     .map((argName, index) => {
       return `\${${index + 1}:${argName}}`;
     })
-    .join(":");
-
-  return result;
+    .join(", ");
 }
 
 export async function getAureliaVirtualCompletions(

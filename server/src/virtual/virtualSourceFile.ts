@@ -52,7 +52,7 @@ export interface VirtualLanguageService {
   getCompletionsAtPosition: () => any;
   getCompletionEntryDetails: () => any;
   getDefinitionAtPosition: () => any;
-  getQuickInfoAtPosition: () => any;
+  getQuickInfoAtPosition: () => CustomHover | undefined;
 }
 
 export async function createVirtualLanguageService(

@@ -10,7 +10,6 @@ import { HTMLDocumentRegions } from "../embeddedSupport";
 import { LanguageModelCache } from "../languageModelCache";
 import { LanguageMode, Position, TextDocument } from "../languageModes";
 import {
-  enhanceValueConverterViewArguments,
   getAureliaVirtualCompletions,
   getVirtualViewModelCompletionSupplyContent,
 } from "../../../virtual/virtualCompletion/virtualCompletion";
@@ -135,4 +134,32 @@ export function getValueConverterMode(
     onDocumentRemoved(_document: TextDocument) {},
     dispose() {},
   };
+}
+
+/**
+ * Convert Value Converter's `toView` to view format.
+ *
+ * @example
+ * ```ts
+ * // TakeValueConverter
+ *   toView(array, count)
+ * ```
+ *   -->
+ * ```html
+ *   array | take:count
+ * ```
+ *
+ */
+function enhanceValueConverterViewArguments(methodArguments: string[]) {
+  // 1. Omit the first argument, because that's piped to the method
+  const [_, ...viewArguments] = methodArguments;
+
+  // 2. prefix with :
+  const result = viewArguments
+    .map((argName, index) => {
+      return `\${${index + 1}:${argName}}`;
+    })
+    .join(":");
+
+  return result;
 }

@@ -198,9 +198,14 @@ async function getVirtualViewModelCompletion(
 
 interface CustomizeEnhanceDocumentation {
   /** Array of the arguments of the method (without types) */
-  customEnhanceMethodArguments?: (methodArguments: string[]) => string;
+  customEnhanceMethodArguments: (methodArguments: string[]) => string;
   omitMethodNameAndBrackets?: boolean;
 }
+
+const DEFAULT_CUSTOMIZE_ENHANCE_DOCUMENTATION: CustomizeEnhanceDocumentation = {
+  customEnhanceMethodArguments: enhanceMethodArguments,
+  omitMethodNameAndBrackets: false,
+};
 
 /**
  * Pass in arbitrary content for the virtual file.
@@ -265,7 +270,7 @@ function enhanceCompletionItemDocumentation(
   virtualCompletionEntryDetails: (ts.CompletionEntryDetails | undefined)[],
   entryDetailsMap: EntryDetailsMap,
   virtualCompletions: ts.CompletionEntry[],
-  customizeEnhanceDocumentation?: CustomizeEnhanceDocumentation
+  customizeEnhanceDocumentation: CustomizeEnhanceDocumentation = DEFAULT_CUSTOMIZE_ENHANCE_DOCUMENTATION
 ) {
   const kindMap = {
     [ts.ScriptElementKind[
@@ -292,19 +297,9 @@ function enhanceCompletionItemDocumentation(
 
   /** ${1: argName1}, ${2: argName2} */
   function createArgCompletion(entryDetail: EntryDetailsMapData) {
-    const numOfArguments = entryDetail;
-
-    if (customizeEnhanceDocumentation?.customEnhanceMethodArguments) {
-      return customizeEnhanceDocumentation.customEnhanceMethodArguments(
-        entryDetail.methodArguments
-      );
-    }
-
-    return entryDetail.methodArguments
-      .map((argName, index) => {
-        return `\${${index + 1}:${argName}}`;
-      })
-      .join(", ");
+    return customizeEnhanceDocumentation.customEnhanceMethodArguments(
+      entryDetail.methodArguments
+    );
   }
 
   const result = virtualCompletions.map((tsCompletion) => {
@@ -349,32 +344,12 @@ function enhanceCompletionItemDocumentation(
   return result;
 }
 
-/**
- * Convert Value Converter's `toView` to view format.
- *
- * @example
- * ```ts
- * // TakeValueConverter
- *   toView(array, count)
- * ```
- *   -->
- * ```html
- *   array | take:count
- * ```
- *
- */
-export function enhanceValueConverterViewArguments(methodArguments: string[]) {
-  // 1. Omit the first argument, because that's piped to the method
-  const [_, ...viewArguments] = methodArguments;
-
-  // 2. prefix with :
-  const result = viewArguments
+function enhanceMethodArguments(methodArguments: string[]): string {
+  return methodArguments
     .map((argName, index) => {
       return `\${${index + 1}:${argName}}`;
     })
-    .join(":");
-
-  return result;
+    .join(", ");
 }
 
 export async function getAureliaVirtualCompletions(

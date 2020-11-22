@@ -20,6 +20,8 @@ import {
   CompletionList,
   InsertTextFormat,
   Definition,
+  MarkupKind,
+  MarkupContent,
 } from "vscode-languageserver";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
@@ -115,6 +117,7 @@ connection.onInitialize(async (params: InitializeParams) => {
         triggerCharacters: [" ", ".", "[", '"', "'", "{", "<", ":"],
       },
       definitionProvider: true,
+      hoverProvider: true,
     },
   };
   if (hasWorkspaceFolderCapability) {
@@ -269,6 +272,10 @@ connection.onDefinition((_: TextDocumentPositionParams): Definition | null => {
   return null;
 });
 
+connection.onHover((hoverParams) => {
+  return null;
+});
+
 /** On requests */
 connection.onRequest("aurelia-class-diagram", async (filePath: string) => {
   // 1. Find the active component
@@ -360,6 +367,16 @@ connection.onRequest(
       return definitions;
     }
 
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+    console.log("LEGACY DEFINITON");
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+
     try {
       const definitions = await getDefinition(
         document,
@@ -427,6 +444,11 @@ connection.onRequest(
       console.log(err);
     }
   }
+);
+
+connection.onRequest(
+  "get-virtual-hover",
+  ({ documentContent, position, goToSourceWord, filePath }): void => {}
 );
 
 // Make the text document manager listen on the connection

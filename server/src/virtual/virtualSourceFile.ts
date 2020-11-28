@@ -41,6 +41,11 @@ interface VirtualLanguageServiceOptions {
    * TODO: RENAME: virtualCursorOffset
    */
   virtualCursorIndex?: number;
+  /**
+   * In the virtual file put the cursor at the start of the method name.
+   * Used when eg. you want to get definition info.
+   */
+  startAtBeginningOfMethodInVirtualFile?: boolean;
 }
 
 const DEFAULT_VIRTUAL_LANGUAGE_SERVICE_OPTIONS: VirtualLanguageServiceOptions = {};
@@ -85,14 +90,15 @@ export async function createVirtualLanguageService(
   }
 
   // 2. Create virtual file
-  const {
-    virtualSourcefile,
-    virtualCursorIndex,
-  } = createVirtualFileWithContent(
+  let { virtualSourcefile, virtualCursorIndex } = createVirtualFileWithContent(
     aureliaProgram,
     documentUri,
     virtualContent
   )!;
+
+  if (options.startAtBeginningOfMethodInVirtualFile) {
+    virtualCursorIndex -= virtualContent.length - 1; // +2 to start at beginning of method name;
+  }
 
   const languageService = getVirtualLangagueService(virtualSourcefile);
 
@@ -184,7 +190,7 @@ function getQuickInfoAtPosition(
   );
   let documentation = "";
 
-  if (quickInfo?.documentation) {
+  if (quickInfo?.documentation?.length) {
     documentation = quickInfo.documentation[0].text;
   }
 

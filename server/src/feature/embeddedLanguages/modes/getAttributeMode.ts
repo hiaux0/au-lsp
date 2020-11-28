@@ -56,6 +56,7 @@ export function getAttributeMode(
         document,
         {
           region: attributeRegion,
+          startAtBeginningOfMethodInVirtualFile: true,
         }
       );
 

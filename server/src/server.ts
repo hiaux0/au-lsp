@@ -42,7 +42,7 @@ import {
 } from "./configuration/DocumentSettings";
 import { aureliaProgram } from "./viewModel/AureliaProgram";
 import { createAureliaWatchProgram } from "./viewModel/createAureliaWatchProgram";
-import { getAureliaComponentMap } from "./viewModel/getAureliaComponentMap";
+import { setAureliaComponentMap } from "./viewModel/setAureliaComponentMap";
 import { getAureliaComponentList } from "./viewModel/getAureliaComponentList";
 import {
   CustomElementRegionData,
@@ -150,7 +150,7 @@ connection.onInitialized(async () => {
     );
 
     await createAureliaWatchProgram(aureliaProgram);
-    getAureliaComponentMap(aureliaProgram);
+    setAureliaComponentMap(aureliaProgram);
     const componentList = getAureliaComponentList(aureliaProgram);
     if (componentList) {
       aureliaProgram.setComponentList(componentList);
@@ -197,7 +197,7 @@ documents.onDidChangeContent(async (change) => {
   console.log(
     "------------------------------------------------------------------------------------------"
   );
-  getAureliaComponentMap(aureliaProgram);
+  setAureliaComponentMap(aureliaProgram);
   const componentList = getAureliaComponentList(aureliaProgram);
   if (componentList) {
     aureliaProgram.setComponentList(componentList);

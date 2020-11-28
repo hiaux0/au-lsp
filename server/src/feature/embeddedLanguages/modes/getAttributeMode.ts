@@ -6,10 +6,8 @@ import { LanguageMode, Position, TextDocument } from "../languageModes";
 import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
 import { DefinitionResult } from "../../definition/getDefinition";
 import { getAccessScopeDefinition } from "../../definition/accessScopeDefinition";
-import {
-  createVirtualLanguageService,
-  VirtualLanguageService,
-} from "../../../virtual/virtualSourceFile";
+import { VirtualLanguageService } from "../../../virtual/virtualSourceFile";
+import { getAccessScopeHover } from "../../hover/accessScopeHover";
 
 export function getAttributeMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
@@ -51,21 +49,12 @@ export function getAttributeMode(
       goToSourceWord: string,
       attributeRegion: ViewRegionInfo
     ): Promise<ReturnType<VirtualLanguageService["getQuickInfoAtPosition"]>> {
-      const virtualLanguageService = await createVirtualLanguageService(
-        position,
+      return getAccessScopeHover(
         document,
-        {
-          region: attributeRegion,
-          startAtBeginningOfMethodInVirtualFile: true,
-        }
+        position,
+        goToSourceWord,
+        attributeRegion
       );
-
-      if (!virtualLanguageService) return;
-
-      const quickInfo = virtualLanguageService.getQuickInfoAtPosition();
-
-      if (!quickInfo) return;
-      return quickInfo;
     },
     onDocumentRemoved(_document: TextDocument) {},
     dispose() {},

@@ -97,7 +97,7 @@ export async function createVirtualLanguageService(
   )!;
 
   if (options.startAtBeginningOfMethodInVirtualFile) {
-    virtualCursorIndex -= virtualContent.length - 1; // +2 to start at beginning of method name;
+    virtualCursorIndex -= virtualContent.length - 1; // -1 to start at beginning of method name;
   }
 
   const languageService = getVirtualLangagueService(virtualSourcefile);

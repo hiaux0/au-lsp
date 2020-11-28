@@ -76,6 +76,42 @@ class SearchDefinitionInView implements vscode.DefinitionProvider {
   }
 }
 
+class HoverInView implements vscode.HoverProvider {
+  public client: LanguageClient;
+
+  public constructor(client: LanguageClient) {
+    this.client = client;
+  }
+
+  public async provideHover(
+    document: vscode.TextDocument,
+    position: vscode.Position
+  ): Promise<vscode.Hover> {
+    const goToSourceWordRange = document.getWordRangeAtPosition(position);
+    const goToSourceWord = document.getText(goToSourceWordRange);
+
+    try {
+      const result = await this.client.sendRequest<{
+        contents: { kind: string; value: string };
+        documentation: string;
+      }>("get-virtual-hover", {
+        documentContent: document.getText(),
+        position,
+        goToSourceWord,
+        filePath: document.uri.path,
+      });
+
+      const markdown = new vscode.MarkdownString(result.contents.value, false);
+
+      return {
+        contents: [markdown, result.documentation],
+      };
+    } catch (err) {
+      console.log("TCL: SearchDefinitionInView -> err", err);
+    }
+  }
+}
+
 export function activate(context: ExtensionContext) {
   const socketPort = workspace
     .getConfiguration("languageServerExample")
@@ -170,6 +206,13 @@ export function activate(context: ExtensionContext) {
     vscode.languages.registerDefinitionProvider(
       { scheme: "file", language: "html" },
       new SearchDefinitionInView(client)
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      { scheme: "file", language: "html" },
+      new HoverInView(client)
     )
   );
 

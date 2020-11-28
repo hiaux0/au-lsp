@@ -10,20 +10,20 @@
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
 	"engines": {
-		"vscode": "^1.43.0"
+		"vscode": "^1.51.1"
 	},
 	"dependencies": {
+		"mermaid": "^8.4.8",
 		"vscode-languageclient": "^6.1.3",
 		"vscode-languageserver": "^6.1.1",
 		"vscode-languageserver-textdocument": "^1.0.1",
-		"mermaid": "^8.4.8",
 		"ws": "^6.0.0"
 	},
 	"devDependencies": {
 		"@aurelia/kernel": "^0.6.0",
 		"@aurelia/runtime": "^0.6.0",
 		"@aurelia/testing": "^0.6.0",
-		"@types/vscode": "1.43.0",
+		"@types/vscode": "1.51.0",
 		"aurelia-framework": "^1.3.1",
 		"vscode-test": "^1.3.0"
 	}

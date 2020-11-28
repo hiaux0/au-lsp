@@ -8,6 +8,8 @@ import { DefinitionResult } from "../../definition/getDefinition";
 import { aureliaProgram } from "../../../viewModel/AureliaProgram";
 import { getVirtualDefinition } from "../../../virtual/virtualDefinition/virtualDefinition";
 import { getAccessScopeDefinition } from "../../definition/accessScopeDefinition";
+import { VirtualLanguageService } from "../../../virtual/virtualSourceFile";
+import { getAccessScopeHover } from "../../hover/accessScopeHover";
 
 export function getAttributeInterpolationMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
@@ -42,6 +44,19 @@ export function getAttributeInterpolationMode(
         position,
         goToSourceWord,
         regions
+      );
+    },
+    async doHover(
+      document: TextDocument,
+      position: Position,
+      goToSourceWord: string,
+      attributeRegion: ViewRegionInfo
+    ): Promise<ReturnType<VirtualLanguageService["getQuickInfoAtPosition"]>> {
+      return getAccessScopeHover(
+        document,
+        position,
+        goToSourceWord,
+        attributeRegion
       );
     },
     onDocumentRemoved(_document: TextDocument) {},

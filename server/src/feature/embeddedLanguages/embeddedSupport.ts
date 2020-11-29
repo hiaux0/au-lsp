@@ -17,6 +17,7 @@ import { AURELIA_ATTRIBUTES_KEYWORDS } from "../../configuration/DocumentSetting
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { AureliaView } from "../../common/constants";
 import { aureliaProgram } from "../../viewModel/AureliaProgram";
+import { DiagnosticMessages } from "../../common/DiagnosticMessages";
 
 export interface LanguageRange extends Range {
   languageId: string | undefined;
@@ -280,10 +281,11 @@ export function parseDocumentRegions<RegionDataType>(
               ] = valueConverterViewText.split(":");
 
               if (valueConverterRegionsSplit.length >= 2 && index >= 1) {
-                console.error(
-                  "[WARNING] Chained value converters not supported yet"
+                const dm = new DiagnosticMessages(
+                  "Chained value converters not supported yet."
                 );
-                console.error(`No infos for: ${valueConverterViewText}`);
+                dm.log();
+                dm.additionalLog("No infos for", valueConverterViewText);
                 return;
               }
 

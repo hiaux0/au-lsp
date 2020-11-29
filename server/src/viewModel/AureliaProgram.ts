@@ -50,7 +50,7 @@ interface IClassDiagram {}
 @inject(DocumentSettings)
 export class AureliaProgram {
   public components: IWebcomponent[] = [];
-  public watcherProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
+  public builderProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
   public documentSettings: DocumentSettings;
   public componentMap: IComponentMap;
   public classDiagram: IClassDiagram;
@@ -106,28 +106,41 @@ export class AureliaProgram {
    * from the watcher which will listen to IO changes in the tsconfig.
    */
   public getProgram(): ts.Program | undefined {
-    if (this.watcherProgram !== undefined) {
-      return this.watcherProgram.getProgram();
+    if (this.builderProgram !== undefined) {
+      const program = this.builderProgram.getProgram();
+      return program;
     } else {
       return undefined;
     }
   }
 
-  public setProgram(program: ts.SemanticDiagnosticsBuilderProgram): void {
-    this.watcherProgram = program;
+  public setBuilderProgram(
+    builderProgram: ts.SemanticDiagnosticsBuilderProgram
+  ): void {
+    this.builderProgram = builderProgram;
+    this.updateAureliaSourceFiles(this.builderProgram);
   }
 
   /**
-   * Only get relevant aurelia source files from the program.
+   * Only update aurelia source files with relevant source files
    */
-  public getAureliaSourceFiles() {
-    if (this.aureliaSourceFiles) return this.aureliaSourceFiles;
-
-    const sourceFiles = this.watcherProgram?.getSourceFiles();
+  public updateAureliaSourceFiles(
+    builderProgram?: ts.SemanticDiagnosticsBuilderProgram
+  ): void {
+    const sourceFiles = builderProgram?.getSourceFiles();
     this.aureliaSourceFiles = sourceFiles?.filter((sourceFile) => {
       if (sourceFile.fileName.includes("node_modules")) return;
       return sourceFile;
     });
+  }
+
+  /**
+   * Get aurelia source files
+   */
+  public getAureliaSourceFiles() {
+    if (this.aureliaSourceFiles) return this.aureliaSourceFiles;
+
+    this.updateAureliaSourceFiles(this.builderProgram);
     return this.aureliaSourceFiles;
   }
 }

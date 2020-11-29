@@ -42,8 +42,6 @@ import {
 } from "./configuration/DocumentSettings";
 import { aureliaProgram } from "./viewModel/AureliaProgram";
 import { createAureliaWatchProgram } from "./viewModel/createAureliaWatchProgram";
-import { getAureliaComponentMap } from "./viewModel/getAureliaComponentMap";
-import { getAureliaComponentList } from "./viewModel/getAureliaComponentList";
 import {
   CustomElementRegionData,
   parseDocumentRegions,
@@ -150,11 +148,6 @@ connection.onInitialized(async () => {
     );
 
     await createAureliaWatchProgram(aureliaProgram);
-    getAureliaComponentMap(aureliaProgram);
-    const componentList = getAureliaComponentList(aureliaProgram);
-    if (componentList) {
-      aureliaProgram.setComponentList(componentList);
-    }
   }
   if (hasWorkspaceFolderCapability) {
     connection.workspace.onDidChangeWorkspaceFolders((_event) => {
@@ -197,11 +190,6 @@ documents.onDidChangeContent(async (change) => {
   console.log(
     "------------------------------------------------------------------------------------------"
   );
-  getAureliaComponentMap(aureliaProgram);
-  const componentList = getAureliaComponentList(aureliaProgram);
-  if (componentList) {
-    aureliaProgram.setComponentList(componentList);
-  }
   languageModes = await getLanguageModes();
 });
 

@@ -1,5 +1,8 @@
 import { Connection } from "vscode-languageserver";
-import { singleton } from "aurelia-dependency-injection";
+import { Container, singleton } from "aurelia-dependency-injection";
+const globalContainer = new Container();
+
+export const settingsName = "aurelia";
 
 export const AURELIA_ATTRIBUTES_KEYWORDS = [
   "bind",
@@ -55,21 +58,27 @@ export class DocumentSettings {
    * @param resource Allow not to provide a resource, will then return global settings
    * @example
    *   ```ts
-   *   const settings = await DocumentSettingsClass.getDocumentSettings(textDocument.uri);
-   *   const settings = await DocumentSettingsClass.getDocumentSettings();
+   *   const settings = await documentSettingsClass.getDocumentSettings(textDocument.uri);
+   *   const settings = await documentSettingsClass.getDocumentSettings();
    *   ```
    */
-  getDocumentSettings(resource: string = ""): Thenable<ExampleSettings> {
+  async getDocumentSettings(
+    resource: string = ""
+  ): Promise<ExampleSettings | undefined> {
     if (!this.hasConfigurationCapability) {
       return Promise.resolve(this.globalSettings);
     }
     let result = this.settingsMap.get(resource);
     if (!result) {
-      result = this.connection.workspace.getConfiguration({
-        section: "languageServerExample",
+      result = await this.connection.workspace.getConfiguration({
+        section: settingsName,
       });
-      this.settingsMap.set(resource, result);
+      if (result) {
+        this.settingsMap.set(resource, result);
+      }
     }
     return result;
   }
 }
+
+export const documentSettings = globalContainer.get(DocumentSettings);

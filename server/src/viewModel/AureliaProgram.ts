@@ -50,7 +50,7 @@ interface IClassDiagram {}
 @inject(DocumentSettings)
 export class AureliaProgram {
   public components: IWebcomponent[] = [];
-  public watcherProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
+  public builderProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
   public documentSettings: DocumentSettings;
   public componentMap: IComponentMap;
   public classDiagram: IClassDiagram;
@@ -106,23 +106,28 @@ export class AureliaProgram {
    * from the watcher which will listen to IO changes in the tsconfig.
    */
   public getProgram(): ts.Program | undefined {
-    if (this.watcherProgram !== undefined) {
-      const program = this.watcherProgram.getProgram();
+    if (this.builderProgram !== undefined) {
+      const program = this.builderProgram.getProgram();
       return program;
     } else {
       return undefined;
     }
   }
 
-  public setProgram(program: ts.SemanticDiagnosticsBuilderProgram): void {
-    this.watcherProgram = program;
-    this.updateAureliaSourceFiles(this.watcherProgram);
+  public setBuilderProgram(
+    builderProgram: ts.SemanticDiagnosticsBuilderProgram
+  ): void {
+    this.builderProgram = builderProgram;
+    this.updateAureliaSourceFiles(this.builderProgram);
   }
 
+  /**
+   * Only update aurelia source files with relevant source files
+   */
   public updateAureliaSourceFiles(
-    program?: ts.SemanticDiagnosticsBuilderProgram
+    builderProgram?: ts.SemanticDiagnosticsBuilderProgram
   ): void {
-    const sourceFiles = program?.getSourceFiles();
+    const sourceFiles = builderProgram?.getSourceFiles();
     this.aureliaSourceFiles = sourceFiles?.filter((sourceFile) => {
       if (sourceFile.fileName.includes("node_modules")) return;
       return sourceFile;
@@ -130,12 +135,12 @@ export class AureliaProgram {
   }
 
   /**
-   * Only get relevant aurelia source files from the program.
+   * Get aurelia source files
    */
   public getAureliaSourceFiles() {
     if (this.aureliaSourceFiles) return this.aureliaSourceFiles;
 
-    this.updateAureliaSourceFiles(this.watcherProgram);
+    this.updateAureliaSourceFiles(this.builderProgram);
     return this.aureliaSourceFiles;
   }
 }

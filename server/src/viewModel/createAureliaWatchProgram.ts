@@ -63,8 +63,8 @@ export async function createAureliaWatchProgram(
       return origCreateProgram(rootNames, options, programHost, oldProgram);
     };
     // 2.2 We also overwrite afterProgramCreate to avoid actually running a compile towards the file system
-    host.afterProgramCreate = (program) => {
-      aureliaProgram.setProgram(program);
+    host.afterProgramCreate = (builderProgram) => {
+      aureliaProgram.setBuilderProgram(builderProgram);
       updateAureliaComponents(aureliaProgram);
     };
 

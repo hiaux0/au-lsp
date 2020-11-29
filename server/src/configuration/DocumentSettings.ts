@@ -22,10 +22,18 @@ interface IAureliaProject {
   path: string[];
 }
 
+interface Features {}
+
 // The example settings
 export interface ExampleSettings {
-  maxNumberOfProblems: number;
   aureliaProject?: IAureliaProject;
+  featureToggles?: Features;
+  relatedFiles?: {
+    script: [".js", ".ts"];
+    style: [".less", ".sass", ".scss", ".styl", ".css"];
+    unit: [".spec.js", ".spec.ts"];
+    view: [".html"];
+  };
 }
 
 @singleton()
@@ -34,7 +42,12 @@ export class DocumentSettings {
   // Please note that this is not the case when using this server with the client provided in this example
   // but could happen with other clients.
   public defaultSettings: ExampleSettings = {
-    maxNumberOfProblems: 1000,
+    relatedFiles: {
+      script: [".js", ".ts"],
+      style: [".less", ".sass", ".scss", ".styl", ".css"],
+      unit: [".spec.js", ".spec.ts"],
+      view: [".html"],
+    },
   };
   public globalSettings: ExampleSettings;
 

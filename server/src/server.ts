@@ -34,11 +34,10 @@ import {
 // We need to import this to include reflect functionality
 import "reflect-metadata";
 
-import { Container } from "aurelia-dependency-injection";
-
 import {
-  DocumentSettings,
-  ExampleSettings,
+  documentSettings,
+  ExtensionSettings,
+  settingsName,
 } from "./configuration/DocumentSettings";
 import { aureliaProgram } from "./viewModel/AureliaProgram";
 import { createAureliaWatchProgram } from "./viewModel/createAureliaWatchProgram";
@@ -58,9 +57,6 @@ import {
   getDefinition,
 } from "./feature/definition/getDefinition";
 import { camelCase } from "@aurelia/kernel";
-
-const globalContainer = new Container();
-const DocumentSettingsClass = globalContainer.get(DocumentSettings);
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -127,7 +123,7 @@ connection.onInitialize(async (params: InitializeParams) => {
   }
 
   // Injections
-  DocumentSettingsClass.inject(connection, hasConfigurationCapability);
+  documentSettings.inject(connection, hasConfigurationCapability);
 
   return result;
 });
@@ -166,18 +162,17 @@ connection.onDidChangeConfiguration((change) => {
   );
   if (hasConfigurationCapability) {
     // Reset all cached document settings
-    DocumentSettingsClass.settingsMap.clear();
+    documentSettings.settingsMap.clear();
   } else {
-    DocumentSettingsClass.globalSettings = <ExampleSettings>(
-      (change.settings.languageServerExample ||
-        DocumentSettingsClass.defaultSettings)
+    documentSettings.globalSettings = <ExtensionSettings>(
+      (change.settings[settingsName] || documentSettings.defaultSettings)
     );
   }
 });
 
 // Only keep settings for open documents
 documents.onDidClose((e) => {
-  DocumentSettingsClass.settingsMap.delete(e.document.uri);
+  documentSettings.settingsMap.delete(e.document.uri);
 });
 
 // The content of a text document has changed. This event is emitted

@@ -1,13 +1,7 @@
-import {
-  singleton,
-  inject,
-  autoinject,
-  Container,
-} from "aurelia-dependency-injection";
+import { singleton, Container } from "aurelia-dependency-injection";
 import * as ts from "typescript";
 import * as Path from "path";
 import { CompletionItem } from "vscode-languageserver";
-import { DocumentSettings } from "../configuration/DocumentSettings";
 import { AureliaClassTypes } from "../common/constants";
 const globalContainer = new Container();
 
@@ -47,19 +41,13 @@ interface IClassDiagram {}
  * (aka. program in typescript terminology)
  */
 @singleton()
-@inject(DocumentSettings)
 export class AureliaProgram {
   public components: IWebcomponent[] = [];
   public builderProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
-  public documentSettings: DocumentSettings;
   public componentMap: IComponentMap;
   public classDiagram: IClassDiagram;
   public aureliaSourceFiles?: ts.SourceFile[];
   componentList: IComponentList[];
-
-  constructor(documentSettings: DocumentSettings) {
-    this.documentSettings = documentSettings;
-  }
 
   public setComponentMap(componentMap: IComponentMap) {
     console.log("TCL: AureliaProgram -> setComponentMap -> setComponentMap");
@@ -90,7 +78,6 @@ export class AureliaProgram {
   }
 
   public getProjectFiles(sourceDirectory?: string) {
-    this.documentSettings;
     sourceDirectory = sourceDirectory || ts.sys.getCurrentDirectory();
     const paths = ts.sys.readDirectory(
       sourceDirectory,

@@ -1,12 +1,22 @@
 import ts = require("typescript");
 import { AureliaProgram } from "./AureliaProgram";
+import { getAureliaComponentList } from "./getAureliaComponentList";
+import { setAureliaComponentMap } from "./setAureliaComponentMap";
 
-const updateAureliaComponents = async () => {
-  // const fileProcessor = new ProcessFiles();
-  // await fileProcessor.processPath(extensionSettings);
-  // aureliaProgram.components = fileProcessor.components;
-  // console.log('>>> The extension found this many components:');
-  // console.log(aureliaProgram.components.length);
+const updateAureliaComponents = (aureliaProgram: AureliaProgram): void => {
+  console.log("TCL: updateAureliaComponents");
+  /** Think this is not obsolete */
+  setAureliaComponentMap(aureliaProgram);
+
+  const componentList = getAureliaComponentList(aureliaProgram);
+
+  if (componentList) {
+    aureliaProgram.setComponentList(componentList);
+    console.log(">>> The extension found this many components:");
+    console.log(componentList.length);
+  } else {
+    console.log("[WARNING]: No components found");
+  }
 };
 
 export async function createAureliaWatchProgram(
@@ -50,18 +60,12 @@ export async function createAureliaWatchProgram(
       oldProgram
     ) => {
       console.log("-------------- Custom Action ---------------------");
-      aureliaProgram;
-      // Call update on AureliaComponents to ensure that the custom components are in sync
-      updateAureliaComponents().catch((err) => {
-        console.error(
-          `Failed to update aurelia components ${JSON.stringify(err)}`
-        );
-      });
       return origCreateProgram(rootNames, options, programHost, oldProgram);
     };
     // 2.2 We also overwrite afterProgramCreate to avoid actually running a compile towards the file system
     host.afterProgramCreate = (program) => {
       aureliaProgram.setProgram(program);
+      updateAureliaComponents(aureliaProgram);
     };
 
     // 2.3 Create initial watch program with our specially crafted host for aurelia component handling
@@ -72,8 +76,11 @@ export async function createAureliaWatchProgram(
     );
   }
 
+  /** init call */
+  updateAureliaComponents(aureliaProgram);
+
   // 3 .To avoid an extra call to the AureliaComponents mapping we check whether the host has been created
   if (!isCreateWatchProgram) {
-    await updateAureliaComponents();
+    await updateAureliaComponents(aureliaProgram);
   }
 }

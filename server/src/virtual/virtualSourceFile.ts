@@ -65,10 +65,6 @@ export async function createVirtualLanguageService(
   document: TextDocument,
   options: VirtualLanguageServiceOptions = DEFAULT_VIRTUAL_LANGUAGE_SERVICE_OPTIONS
 ): Promise<VirtualLanguageService | undefined> {
-  console.log("TCL: position", position);
-  console.log("TCL: document", document);
-  console.log("TCL: options", options);
-
   const documentUri = document.uri;
 
   // 1. Get content for virtual file

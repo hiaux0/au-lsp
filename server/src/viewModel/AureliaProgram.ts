@@ -107,7 +107,8 @@ export class AureliaProgram {
    */
   public getProgram(): ts.Program | undefined {
     if (this.watcherProgram !== undefined) {
-      return this.watcherProgram.getProgram();
+      const program = this.watcherProgram.getProgram();
+      return program;
     } else {
       return undefined;
     }
@@ -115,6 +116,17 @@ export class AureliaProgram {
 
   public setProgram(program: ts.SemanticDiagnosticsBuilderProgram): void {
     this.watcherProgram = program;
+    this.updateAureliaSourceFiles(this.watcherProgram);
+  }
+
+  public updateAureliaSourceFiles(
+    program?: ts.SemanticDiagnosticsBuilderProgram
+  ): void {
+    const sourceFiles = program?.getSourceFiles();
+    this.aureliaSourceFiles = sourceFiles?.filter((sourceFile) => {
+      if (sourceFile.fileName.includes("node_modules")) return;
+      return sourceFile;
+    });
   }
 
   /**
@@ -123,11 +135,7 @@ export class AureliaProgram {
   public getAureliaSourceFiles() {
     if (this.aureliaSourceFiles) return this.aureliaSourceFiles;
 
-    const sourceFiles = this.watcherProgram?.getSourceFiles();
-    this.aureliaSourceFiles = sourceFiles?.filter((sourceFile) => {
-      if (sourceFile.fileName.includes("node_modules")) return;
-      return sourceFile;
-    });
+    this.updateAureliaSourceFiles(this.watcherProgram);
     return this.aureliaSourceFiles;
   }
 }

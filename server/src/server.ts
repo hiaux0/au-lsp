@@ -36,7 +36,7 @@ import "reflect-metadata";
 
 import {
   documentSettings,
-  ExampleSettings,
+  ExtensionSettings,
   settingsName,
 } from "./configuration/DocumentSettings";
 import { aureliaProgram } from "./viewModel/AureliaProgram";
@@ -164,7 +164,7 @@ connection.onDidChangeConfiguration((change) => {
     // Reset all cached document settings
     documentSettings.settingsMap.clear();
   } else {
-    documentSettings.globalSettings = <ExampleSettings>(
+    documentSettings.globalSettings = <ExtensionSettings>(
       (change.settings[settingsName] || documentSettings.defaultSettings)
     );
   }

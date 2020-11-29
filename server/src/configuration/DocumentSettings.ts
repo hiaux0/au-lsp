@@ -25,7 +25,7 @@ interface IAureliaProject {
 interface Features {}
 
 // The example settings
-export interface ExampleSettings {
+export interface ExtensionSettings {
   aureliaProject?: IAureliaProject;
   featureToggles?: Features;
   relatedFiles?: {
@@ -41,7 +41,7 @@ export class DocumentSettings {
   // The global settings, used when the `workspace/configuration` request is not supported by the client.
   // Please note that this is not the case when using this server with the client provided in this example
   // but could happen with other clients.
-  public defaultSettings: ExampleSettings = {
+  public defaultSettings: ExtensionSettings = {
     relatedFiles: {
       script: [".js", ".ts"],
       style: [".less", ".sass", ".scss", ".styl", ".css"],
@@ -49,10 +49,10 @@ export class DocumentSettings {
       view: [".html"],
     },
   };
-  public globalSettings: ExampleSettings;
+  public globalSettings: ExtensionSettings;
 
   // Cache the settings of all open documents
-  public settingsMap: Map<string, Thenable<ExampleSettings>> = new Map();
+  public settingsMap: Map<string, Thenable<ExtensionSettings>> = new Map();
 
   public connection!: Connection; // !
 
@@ -77,7 +77,7 @@ export class DocumentSettings {
    */
   async getDocumentSettings(
     resource: string = ""
-  ): Promise<ExampleSettings | undefined> {
+  ): Promise<ExtensionSettings | undefined> {
     if (!this.hasConfigurationCapability) {
       return Promise.resolve(this.globalSettings);
     }

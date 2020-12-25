@@ -20,7 +20,7 @@
 		"_code-dep"
 	],
 	"references": [
-		{ "path": "./client" },
-		{ "path": "./server" }
+		{ "path": "./packages/client" },
+		{ "path": "./packages/server" }
 	]
 }

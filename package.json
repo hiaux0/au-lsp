@@ -96,7 +96,7 @@
 		"watch": "tsc -b -w",
 		"watch:client": "tsc -w -p ./client/tsconfig.json",
 		"watch:server": "tsc -w -p ./server/tsconfig.json",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"postinstall": "cd client && yarn && cd ../server && yarn && cd ..",
 		"test": "sh ./scripts/e2e.sh",
 		"start:depTree": "./node_modules/.bin/code-dependency --exclude 'node_modules' --source ./_code-dep"
 	},

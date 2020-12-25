@@ -1,9 +1,4 @@
 {
 	"extends": "../../tsconfig.json",
-	"compilerOptions": {
-		"outDir": "out",
-		"rootDir": "../",
-	},
 	"include": ["src"],
-	"exclude": ["node_modules", ".vscode-test"]
 }

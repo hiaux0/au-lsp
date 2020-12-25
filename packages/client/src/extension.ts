@@ -28,7 +28,7 @@ import {
 } from "vscode-languageclient";
 import { registerDiagramPreview } from "./webview/diagramPreview";
 import { RelatedFiles } from "./feature/relatedFiles";
-import { aureliaProgram } from "../../../server/src/viewModel/AureliaProgram";
+import { aureliaProgram } from "../../server/src/viewModel/AureliaProgram";
 
 let client: LanguageClient;
 
@@ -129,7 +129,7 @@ export function activate(context: ExtensionContext) {
 
   // The server is implemented in node
   let serverModule = context.asAbsolutePath(
-    path.join("server", "out", "server.js")
+    path.join("packages/server", "out", "server.js")
   );
   // The debug options for the server
   // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging

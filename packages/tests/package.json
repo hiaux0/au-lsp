@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "scripts": {
+    "build": "yarn run clean && yarn run compile",
+    "clean": "rimraf -rf ./dist",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "yarn run build",
+    "test": "yarn run build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@aurelia/kernel": "^0.8.0"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

@@ -304,7 +304,7 @@ connection.onRequest("aurelia-get-component-class-declarations", () => {
   return aureliaProgram.getComponentMap().classDeclarations;
 });
 
-connection.onRequest(
+connection.onRequest<any, any>(
   "get-virtual-definition",
   async ({
     documentContent,
@@ -429,7 +429,7 @@ connection.onRequest(
   }
 );
 
-connection.onRequest(
+connection.onRequest<any, any>(
   "get-virtual-hover",
   async ({
     documentContent,

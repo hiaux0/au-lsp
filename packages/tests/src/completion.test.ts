@@ -7,8 +7,8 @@ import * as vscode from "vscode";
 import * as assert from "assert";
 import { intersection, map } from "lodash";
 import { kebabCase } from "@aurelia/kernel";
-import { AureliaProgram } from "../../../server/src/viewModel/AureliaProgram";
-import { IComponentMap } from "../../../server/src/viewModel/AureliaProgram";
+import { AureliaProgram } from "../../server/src/viewModel/AureliaProgram";
+import { IComponentMap } from "../../server/src/viewModel/AureliaProgram";
 
 import {
   activate,

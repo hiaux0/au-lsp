@@ -1,11 +1,15 @@
 {
 	"name": "lsp-sample",
+	"private": true,
 	"description": "A language server example",
 	"author": "Microsoft Corporation",
 	"license": "MIT",
 	"version": "1.0.0",
 	"workspaces": [
-		"packages/*"
+		"packages/client",
+		"packages/server",
+		"packages/tests",
+		"packages/common"
 	],
 	"repository": {
 		"type": "git",

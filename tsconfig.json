@@ -6,6 +6,7 @@
 		"declaration": true,
 	},
 	"paths": {
-		"@aulsp/*": ["packages/*/src"]
+		"@aulsp/*": ["packages/*/src"],
+		"@aulsp/common": ["packages/common/src"]
 	},
 }

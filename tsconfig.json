@@ -1,10 +1,12 @@
 {
 	"compilerOptions": {
+		"experimentalDecorators": true,
 		"module": "commonjs",
 		"target": "es6",
 		"outDir": "out",
 		"rootDir": "src",
 		"sourceMap": true,
+		"strict": true,
 		"strictPropertyInitialization": false,
 		"declaration": true,
 		"resolveJsonModule": true,

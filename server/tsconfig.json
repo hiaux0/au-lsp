@@ -1,15 +1,9 @@
 {
+	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"experimentalDecorators": true,
-		"target": "es6",
-		"module": "commonjs",
 		"moduleResolution": "node",
-		"sourceMap": true,
-		"strict": true,
 		"outDir": "out",
 		"rootDir": "src",
-		"strictPropertyInitialization": false,
-		"resolveJsonModule": true,
 	},
 	"include": ["src"],
 	"exclude": ["node_modules", ".vscode-test"]

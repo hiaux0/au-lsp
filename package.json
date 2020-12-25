@@ -26,7 +26,7 @@
 		"onCommand:extension.auOpenRelatedView",
 		"onLanguage:plaintext"
 	],
-	"main": "./client/out/client/src/extension",
+	"main": "./packages/client/out/client/src/extension",
 	"contributes": {
 		"commands": [
 			{
@@ -89,14 +89,14 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
+		"vscode:prepublish": "cd packages/client && npm run update-vscode && cd .. && npm run compile",
 		"compile": "npm run compile:client && npm run compile:server",
-		"compile:client": "tsc -p ./client/tsconfig.json",
-		"compile:server": "tsc -p ./server/tsconfig.json",
+		"compile:client": "tsc -p ./packages/client/tsconfig.json",
+		"compile:server": "tsc -p ./packages/server/tsconfig.json",
 		"watch": "tsc -b -w",
-		"watch:client": "tsc -w -p ./client/tsconfig.json",
-		"watch:server": "tsc -w -p ./server/tsconfig.json",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"watch:client": "tsc -w -p ./packages/client/tsconfig.json",
+		"watch:server": "tsc -w -p ./packages/server/tsconfig.json",
+		"postinstall": "cd packages/client && yarn && cd ../server && yarn && cd ..",
 		"test": "sh ./scripts/e2e.sh",
 		"start:depTree": "./node_modules/.bin/code-dependency --exclude 'node_modules' --source ./_code-dep"
 	},

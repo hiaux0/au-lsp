@@ -94,7 +94,7 @@ export class RelatedFiles implements Disposable {
       return;
     }
 
-    let relatedFile: string;
+    let relatedFile = "";
     const fileName = editor.document.fileName;
     const extension = path.extname(fileName).toLowerCase();
     const fileExtensionsConfig = this.getRelatedFilePathExtensions();
@@ -122,7 +122,7 @@ export class RelatedFiles implements Disposable {
    * @param switchToExtensions - Possible extensions, for target file
    */
   private openRelatedFactory(switchToExtensions: string[]) {
-    return (editor, edit) => {
+    return (editor: TextEditor, edit: TextEditorEdit) => {
       if (!editor || !editor.document || editor.document.isUntitled) {
         return;
       }
@@ -150,7 +150,7 @@ export class RelatedFiles implements Disposable {
    * @returns targetFile
    */
   private getRelatedFilePath(fullPath: string, relatedExts: string[]): string {
-    let targetFile: string;
+    let targetFile = "";
     try {
       relatedExts.forEach((ext) => {
         const fileName = `${path.basename(

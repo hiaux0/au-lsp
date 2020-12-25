@@ -9,10 +9,13 @@ export class TextDocumentContentProvider
 
   public async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
     let editor = vscode.window.activeTextEditor;
-    if (!vscode.window.activeTextEditor.document) {
+
+    if (!editor) return "";
+
+    if (!editor.document) {
       return Promise.resolve("<p>no data</p>");
     }
-    let fileName = vscode.window.activeTextEditor.document.fileName;
+    let fileName = editor.document.fileName;
 
     let headerHTML = `<h1>Component: '${"Aurelia v2"}'</h1>`;
     headerHTML += "<h2>Files</h2><ul>";

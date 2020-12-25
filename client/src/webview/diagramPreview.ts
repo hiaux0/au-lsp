@@ -22,7 +22,7 @@ export function registerDiagramPreview(
     vscode.commands.registerCommand(
       "aurelia.openClassMethodsHierarchy",
       async () => {
-        const filePath = vscode.window.activeTextEditor.document.fileName;
+        const filePath = vscode.window.activeTextEditor?.document.fileName;
         const classDiagram = await client.sendRequest<any>(
           "aurelia-class-diagram",
           filePath

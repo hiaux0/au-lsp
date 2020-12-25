@@ -72,6 +72,7 @@ class SearchDefinitionInView implements vscode.DefinitionProvider {
       ];
     } catch (err) {
       console.log("TCL: SearchDefinitionInView -> err", err);
+      return [];
     }
   }
 }
@@ -108,6 +109,9 @@ class HoverInView implements vscode.HoverProvider {
       };
     } catch (err) {
       console.log("TCL: SearchDefinitionInView -> err", err);
+      return {
+        contents: [],
+      };
     }
   }
 }

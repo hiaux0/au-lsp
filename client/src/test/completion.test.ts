@@ -21,8 +21,9 @@ function getTestItems(
   completionType: keyof IComponentMap
 ) {
   const componentMap = aureliaProgram.getComponentMap();
+
   const testItems = componentMap[completionType]
-    .map((classDeclaration) => ({
+    ?.map((classDeclaration) => ({
       label: classDeclaration.label,
       kind: classDeclaration.kind,
     }))

@@ -136,7 +136,7 @@ function getDefinitionAtPosition(
   return defintion;
 }
 
-interface CustomHover extends Hover {
+export interface CustomHover extends Hover {
   documentation: string;
 }
 

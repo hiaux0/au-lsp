@@ -4,7 +4,7 @@ import { getAureliaComponentList } from "./getAureliaComponentList";
 import { setAureliaComponentMap } from "./setAureliaComponentMap";
 
 const updateAureliaComponents = (aureliaProgram: AureliaProgram): void => {
-  console.log("TCL: updateAureliaComponents");
+  console.trace("TCL: updateAureliaComponents");
   /** Think this is not obsolete */
   setAureliaComponentMap(aureliaProgram);
 
@@ -77,7 +77,7 @@ export async function createAureliaWatchProgram(
   }
 
   /** init call */
-  updateAureliaComponents(aureliaProgram);
+  // updateAureliaComponents(aureliaProgram);
 
   // 3 .To avoid an extra call to the AureliaComponents mapping we check whether the host has been created
   if (!isCreateWatchProgram) {

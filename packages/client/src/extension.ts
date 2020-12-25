@@ -28,7 +28,7 @@ import {
 } from "vscode-languageclient";
 import { registerDiagramPreview } from "./webview/diagramPreview";
 import { RelatedFiles } from "./feature/relatedFiles";
-import { aureliaProgram } from "../../server/src/viewModel/AureliaProgram";
+import { aureliaProgram } from "../../../server/src/viewModel/AureliaProgram";
 
 let client: LanguageClient;
 

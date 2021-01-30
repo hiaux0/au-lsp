@@ -12,16 +12,26 @@ import {
   Range,
   TextDocument,
 } from "vscode-html-languageservice";
+import { TextDocumentPositionParams } from "vscode-languageserver";
+import { DefinitionResult } from "../definition/getDefinition";
+import { getAttributeInterpolationMode } from "./modes/getAttributeInterpolationMode";
+import { getAttributeMode } from "./modes/getAttributeMode";
+import { getAureliaHtmlMode } from "./modes/getAureliaHtmlMode";
+import { getCustomElementMode } from "./modes/getCustomElementMode";
+import { getRepeatForMode } from "./modes/getRepeatForMode";
+import { getTextInterpolationMode } from "./modes/getTextInterpolationMode";
+import { getValueConverterMode } from "./modes/getValueConverterMode";
+import { aureliaProgram } from "../../viewModel/AureliaProgram";
+import { AureliaCompletionItem } from "../../virtual/virtualCompletion/virtualCompletion";
 import {
-  getDocumentRegions,
   HTMLDocumentRegions,
-  EmbeddedRegion,
   aureliaLanguageId,
-  getDocumentRegionsV2,
+  parseDocumentRegions,
   ViewRegionInfo,
   getRegionAtPosition,
-  getRegionAtPositionV2,
   getRegionFromLineAndCharacter,
+  getDocumentRegions,
+  ViewRegionType,
 } from "./embeddedSupport";
 import {
   getLanguageModelCache,
@@ -33,16 +43,37 @@ export * from "vscode-html-languageservice";
 export interface LanguageMode {
   getId(): string;
   doValidation?: (document: TextDocument) => Diagnostic[];
-  doComplete?: (document: TextDocument, position: Position) => CompletionList;
+  doComplete?: (
+    document: TextDocument,
+    _textDocumentPosition: TextDocumentPositionParams,
+    triggerCharacter?: string
+  ) => Promise<CompletionList | AureliaCompletionItem[]>;
+  doDefinition?: (
+    document: TextDocument,
+    position: Position,
+    goToSourceWord: string,
+    region: ViewRegionInfo
+  ) => Promise<DefinitionResult | undefined>;
+  doHover?: (
+    document: TextDocument,
+    position: Position,
+    goToSourceWord: string,
+    region: ViewRegionInfo
+  ) => void;
+  // ) => Promise<DefinitionResult | undefined>;
   onDocumentRemoved(document: TextDocument): void;
   dispose(): void;
 }
 
 export interface LanguageModes {
-  // getModeAtPosition(
-  //   document: TextDocument,
-  //   position: Position
-  // ): LanguageMode | undefined;
+  getModeAtPosition(
+    document: TextDocument,
+    position: Position
+  ): Promise<LanguageMode | undefined>;
+  getModeAndRegionAtPosition(
+    document: TextDocument,
+    position: Position
+  ): Promise<LanguageModeWithRegion | undefined>;
   // getModesInRange(document: TextDocument, range: Range): LanguageModeRange[];
   getAllModes(): LanguageMode[];
   // getAllModesInDocument(document: TextDocument): LanguageMode[];
@@ -66,55 +97,99 @@ export function getDocumentRegionAtPosition(position: Position) {
     async (document) => {
       let regions: ViewRegionInfo[] = [];
       try {
-        regions = await getDocumentRegionsV2(document);
+        regions = await parseDocumentRegions(document);
       } catch (err) {
         console.log("72 TCL: getDocumentRegionAtPosition -> err", err);
       }
 
-      const reg = getRegionAtPositionV2(document, regions, position);
-      // const reg = getRegionFromLineAndCharacter(regions, position);
+      const reg = getRegionAtPosition(document, regions, position);
 
       return reg;
-      // const region = getDocumentRegions(
-      // htmlLanguageService,
-      // document
-      // ).getRegionAtPosition(position);
-      // return region;
     }
   );
 
   return documentRegion;
 }
 
+export interface LanguageModeWithRegion {
+  mode: LanguageMode;
+  region: ViewRegionInfo;
+}
 export async function getLanguageModes(): Promise<LanguageModes> {
   const htmlLanguageService = getHTMLLanguageService();
   const cssLanguageService = getCSSLanguageService();
 
-  let documentRegions = await getLanguageModelCache<ViewRegionInfo[]>(
+  let documentRegions = await getLanguageModelCache<HTMLDocumentRegions>(
     10,
     60,
-    (document) => getDocumentRegionsV2(document)
+    (document) => getDocumentRegions(document)
   );
 
   let modelCaches: LanguageModelCache<any>[] = [];
   modelCaches.push(documentRegions);
 
   let modes = Object.create(null);
-  modes[aureliaLanguageId] = aureliaLanguageId;
+
+  modes["html"] = {};
+  modes["html"].mode = await getAureliaHtmlMode(documentRegions);
+
+  modes[ViewRegionType.Attribute] = {};
+  modes[ViewRegionType.Attribute].mode = await getAttributeMode(
+    documentRegions
+  );
+
+  modes[ViewRegionType.AttributeInterpolation] = {};
+  modes[
+    ViewRegionType.AttributeInterpolation
+  ].mode = await getAttributeInterpolationMode(documentRegions);
+
+  modes[ViewRegionType.CustomElement] = {};
+  modes[ViewRegionType.CustomElement].mode = await getCustomElementMode(
+    documentRegions
+  );
+
+  modes[ViewRegionType.RepeatFor] = {};
+  modes[ViewRegionType.RepeatFor].mode = await getRepeatForMode(
+    documentRegions
+  );
+
+  modes[ViewRegionType.TextInterpolation] = {};
+  modes[ViewRegionType.TextInterpolation].mode = await getTextInterpolationMode(
+    documentRegions
+  );
+
+  modes[ViewRegionType.ValueConverter] = {};
+  modes[ViewRegionType.ValueConverter].mode = await getValueConverterMode(
+    documentRegions
+  );
 
   return {
-    // async getModeAtPosition(
-    //   document: TextDocument,
-    //   position: Position
-    // ): Promise<LanguageMode | undefined> {
-    //   let languageId = documentRegions
-    //     .get(document)
-    //     .getLanguageAtPosition(position);
-    //   if (languageId) {
-    //     return modes[languageId];
-    //   }
-    //   return undefined;
-    // },
+    async getModeAndRegionAtPosition(
+      document: TextDocument,
+      position: Position
+    ): Promise<LanguageModeWithRegion | undefined> {
+      const documentRegion = await documentRegions.get(document);
+      let regionAtPosition = documentRegion.getRegionAtPosition(position);
+      let languageId = regionAtPosition?.languageId ?? "html";
+
+      if (languageId) {
+        modes[languageId].region = regionAtPosition;
+        return modes[languageId];
+      }
+      return undefined;
+    },
+    async getModeAtPosition(
+      document: TextDocument,
+      position: Position
+    ): Promise<LanguageMode | undefined> {
+      const documentRegion = await documentRegions.get(document);
+      let languageId = documentRegion.getLanguageAtPosition(position);
+
+      if (languageId) {
+        return modes[languageId];
+      }
+      return undefined;
+    },
     // getModesInRange(document: TextDocument, range: Range): LanguageModeRange[] {
     //   return documentRegions
     //     .get(document)

@@ -70,7 +70,17 @@ export class RelatedFiles implements Disposable {
   /**
    * Provide file extensions for navigating between Aurelia files.
    */
-  private getRelatedFilePathExtensions() {
+  private getRelatedFilePathExtensions(): any {
+    const settings = workspace.getConfiguration("aurelia.relatedFiles");
+    if (settings) {
+      return {
+        scriptExtensions: settings.script,
+        styleExtensions: settings.style,
+        unitExtensions: settings.unit,
+        viewExtensions: settings.view,
+      };
+    }
+
     return {
       scriptExtensions: [".js", ".ts"],
       styleExtensions: [".less", ".sass", ".scss", ".styl", ".css"],
@@ -141,15 +151,19 @@ export class RelatedFiles implements Disposable {
    */
   private getRelatedFilePath(fullPath: string, relatedExts: string[]): string {
     let targetFile: string;
-    relatedExts.forEach((ext) => {
-      const fileName = `${path.basename(
-        fullPath,
-        path.extname(fullPath)
-      )}${ext}`.replace(".spec.spec", ".spec"); // Quick fix because we are appending eg. '.spec.ts' to 'file.spec'
-      fullPath = path.join(path.dirname(fullPath), fileName);
-      if (!fs.existsSync(fullPath)) return;
-      targetFile = fullPath;
-    });
+    try {
+      relatedExts.forEach((ext) => {
+        const fileName = `${path.basename(
+          fullPath,
+          path.extname(fullPath)
+        )}${ext}`.replace(".spec.spec", ".spec"); // Quick fix because we are appending eg. '.spec.ts' to 'file.spec'
+        fullPath = path.join(path.dirname(fullPath), fileName);
+        if (!fs.existsSync(fullPath)) return;
+        targetFile = fullPath;
+      });
+    } catch (error) {
+      console.log(error);
+    }
     return targetFile;
   }
 }

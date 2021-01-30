@@ -32,37 +32,6 @@ import { aureliaProgram } from "../../server/src/viewModel/AureliaProgram";
 
 let client: LanguageClient;
 
-class CompletionItemProviderInView implements CompletionItemProvider {
-  public constructor(private readonly client: LanguageClient) {}
-
-  public async provideCompletionItems(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    token: CancellationToken,
-    context: CompletionContext
-  ): Promise<CompletionItem[] | CompletionList> {
-    const text = document.getText();
-    const offset = document.offsetAt(position);
-    const triggerCharacter = text.substring(offset - 1, offset);
-
-    if (triggerCharacter === "<") {
-      return this.client.sendRequest<any>(
-        "aurelia-get-component-class-declarations"
-      );
-    } else if (triggerCharacter === ":") {
-      // NOTE (!): this is actually only logic for the test.
-      // How can I if-clause it?
-      const result = await this.client.sendRequest<any>(
-        "get-value-converter-definition",
-        { _textDocumentPosition: { position }, document }
-      );
-      return result;
-    }
-
-    return [];
-  }
-}
-
 class SearchDefinitionInView implements vscode.DefinitionProvider {
   public client: LanguageClient;
 
@@ -101,6 +70,42 @@ class SearchDefinitionInView implements vscode.DefinitionProvider {
           ),
         },
       ];
+    } catch (err) {
+      console.log("TCL: SearchDefinitionInView -> err", err);
+    }
+  }
+}
+
+class HoverInView implements vscode.HoverProvider {
+  public client: LanguageClient;
+
+  public constructor(client: LanguageClient) {
+    this.client = client;
+  }
+
+  public async provideHover(
+    document: vscode.TextDocument,
+    position: vscode.Position
+  ): Promise<vscode.Hover> {
+    const goToSourceWordRange = document.getWordRangeAtPosition(position);
+    const goToSourceWord = document.getText(goToSourceWordRange);
+
+    try {
+      const result = await this.client.sendRequest<{
+        contents: { kind: string; value: string };
+        documentation: string;
+      }>("get-virtual-hover", {
+        documentContent: document.getText(),
+        position,
+        goToSourceWord,
+        filePath: document.uri.path,
+      });
+
+      const markdown = new vscode.MarkdownString(result.contents.value, false);
+
+      return {
+        contents: [markdown, result.documentation],
+      };
     } catch (err) {
       console.log("TCL: SearchDefinitionInView -> err", err);
     }
@@ -197,18 +202,17 @@ export function activate(context: ExtensionContext) {
 
   context.subscriptions.push(new RelatedFiles());
 
-  /** TODO: This is only needed for test files, in tests, the server.ts completion listener does not trigger as to my current knowledge */
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      { scheme: "file", language: "html" },
-      new CompletionItemProviderInView(client)
-    )
-  );
-
   context.subscriptions.push(
     vscode.languages.registerDefinitionProvider(
       { scheme: "file", language: "html" },
       new SearchDefinitionInView(client)
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      { scheme: "file", language: "html" },
+      new HoverInView(client)
     )
   );
 

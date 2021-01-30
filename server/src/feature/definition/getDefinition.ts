@@ -1,19 +1,18 @@
 import {
-  getRegionAtPositionV2,
+  getRegionAtPosition,
   RepeatForRegionData,
   ValueConverterRegionData,
   ViewRegionInfo,
-} from "./../embeddedLanguages/embeddedSupport";
-import { AureliaClassTypes, AureliaView } from "./../common/constants";
+} from "../embeddedLanguages/embeddedSupport";
+import { AureliaClassTypes, AureliaView } from "../../common/constants";
 import { Position, TextDocument } from "vscode-languageserver-textdocument";
-import { AureliaProgram } from "./../viewModel/AureliaProgram";
+import { AureliaProgram } from "../../viewModel/AureliaProgram";
 import * as path from "path";
 import * as ts from "typescript";
 import { getDocumentRegionAtPosition } from "../embeddedLanguages/languageModes";
 import { createSourceFile, getLineAndCharacterOfPosition } from "typescript";
 import {
-  getDocumentRegions,
-  getDocumentRegionsV2,
+  parseDocumentRegions,
   ViewRegionType,
 } from "../embeddedLanguages/embeddedSupport";
 
@@ -44,10 +43,10 @@ export async function getDefinition(
     };
   }
 
-  const regions = await getDocumentRegionsV2(document);
+  const regions = await parseDocumentRegions(document);
 
   /** Check value converter region */
-  const targetRegion = await getRegionAtPositionV2(document, regions, position);
+  const targetRegion = await getRegionAtPosition(document, regions, position);
 
   if (targetRegion?.type === ViewRegionType.ValueConverter) {
     const valueConverterRegion = targetRegion as ViewRegionInfo<

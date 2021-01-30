@@ -11,7 +11,7 @@ import { kebabCase } from "@aurelia/kernel";
 import { createDiagram } from "./createDiagram";
 import { getElementNameFromClassDeclaration } from "../common/className";
 
-export function getAureliaComponentMap(
+export function setAureliaComponentMap(
   aureliaProgram: AureliaProgram,
   sourceDirectory?: string
 ) {

@@ -37,7 +37,6 @@ export class ViewModelParser {
             ) {
               const elementName = getElementNameFromClassDeclaration(node);
               const symbol = checker.getSymbolAtLocation(node);
-              // const symbol = checker.getSymbolAtLocation(node.name); // TODO look into why .name not needed. Was copy paste
               const documentation = ts.displayPartsToString(
                 symbol?.getDocumentationComment(checker)
               );

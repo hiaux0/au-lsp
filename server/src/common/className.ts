@@ -1,5 +1,6 @@
 import { kebabCase } from "@aurelia/kernel";
 import * as ts from "typescript";
+import { getClassDecoratorInfos } from "../viewModel/getAureliaComponentList";
 import { CUSTOM_ELEMENT_SUFFIX } from "./constants";
 
 /**
@@ -10,6 +11,12 @@ import { CUSTOM_ELEMENT_SUFFIX } from "./constants";
 export function getElementNameFromClassDeclaration(
   classDeclaration: ts.ClassDeclaration
 ): string {
+  const classDecoratorInfos = getClassDecoratorInfos(classDeclaration);
+
+  classDecoratorInfos
+    .find((info) => info.decoratorName === "customElement")
+    ?.decoratorArgument.replace(/'"/, ""); // The argument is a string with the quotes. We don' want the quotes.
+
   const className = classDeclaration.name?.getText() || "";
   const withoutCustomElementSuffix = className.replace(
     CUSTOM_ELEMENT_SUFFIX,

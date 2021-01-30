@@ -1,13 +1,7 @@
-import {
-  singleton,
-  inject,
-  autoinject,
-  Container,
-} from "aurelia-dependency-injection";
+import { singleton, Container } from "aurelia-dependency-injection";
 import * as ts from "typescript";
 import * as Path from "path";
 import { CompletionItem } from "vscode-languageserver";
-import { DocumentSettings } from "../configuration/DocumentSettings";
 import { AureliaClassTypes } from "../common/constants";
 const globalContainer = new Container();
 
@@ -47,33 +41,31 @@ interface IClassDiagram {}
  * (aka. program in typescript terminology)
  */
 @singleton()
-@inject(DocumentSettings)
 export class AureliaProgram {
   public components: IWebcomponent[] = [];
-  public watcherProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
-  public documentSettings: DocumentSettings;
+  public builderProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
   public componentMap: IComponentMap;
   public classDiagram: IClassDiagram;
   public aureliaSourceFiles?: ts.SourceFile[];
   componentList: IComponentList[];
 
-  constructor(documentSettings: DocumentSettings) {
-    this.documentSettings = documentSettings;
-  }
-
   public setComponentMap(componentMap: IComponentMap) {
+    console.log("TCL: AureliaProgram -> setComponentMap -> setComponentMap");
     this.componentMap = componentMap;
   }
 
   public getComponentMap() {
+    console.log("TCL: AureliaProgram -> getComponentMap -> getComponentMap");
     return this.componentMap;
   }
 
   public setComponentList(componentList: IComponentList[]) {
+    console.log("TCL: AureliaProgram -> setComponentList -> setComponentList");
     this.componentList = componentList;
   }
 
   public getComponentList() {
+    console.log("TCL: AureliaProgram -> getComponentList -> getComponentList");
     return this.componentList;
   }
 
@@ -86,9 +78,7 @@ export class AureliaProgram {
   }
 
   public getProjectFiles(sourceDirectory?: string) {
-    this.documentSettings;
     sourceDirectory = sourceDirectory || ts.sys.getCurrentDirectory();
-    // const paths = ts.sys.readDirectory(sourceDirectory, ['ts', 'js', 'html'], ['node_modules', 'aurelia_project'], ['src']);
     const paths = ts.sys.readDirectory(
       sourceDirectory,
       ["ts", "js", "html"],
@@ -107,28 +97,46 @@ export class AureliaProgram {
    * from the watcher which will listen to IO changes in the tsconfig.
    */
   public getProgram(): ts.Program | undefined {
-    if (this.watcherProgram !== undefined) {
-      return this.watcherProgram.getProgram();
+    console.log("TCL: AureliaProgram -> getProgram");
+    if (this.builderProgram !== undefined) {
+      const program = this.builderProgram.getProgram();
+      return program;
     } else {
       return undefined;
     }
   }
 
-  public setProgram(program: ts.SemanticDiagnosticsBuilderProgram): void {
-    this.watcherProgram = program;
+  public setBuilderProgram(
+    builderProgram: ts.SemanticDiagnosticsBuilderProgram
+  ): void {
+    console.log("TCL: AureliaProgram -> setBuilderProgram");
+    this.builderProgram = builderProgram;
+    this.updateAureliaSourceFiles(this.builderProgram);
   }
 
   /**
-   * Only get relevant aurelia source files from the program.
+   * Only update aurelia source files with relevant source files
    */
-  public getAureliaSourceFiles() {
-    if (this.aureliaSourceFiles) return this.aureliaSourceFiles;
-
-    const sourceFiles = this.watcherProgram?.getSourceFiles();
+  public updateAureliaSourceFiles(
+    builderProgram?: ts.SemanticDiagnosticsBuilderProgram
+  ): void {
+    const sourceFiles = builderProgram?.getSourceFiles();
     this.aureliaSourceFiles = sourceFiles?.filter((sourceFile) => {
       if (sourceFile.fileName.includes("node_modules")) return;
       return sourceFile;
     });
+  }
+
+  /**
+   * Get aurelia source files
+   */
+  public getAureliaSourceFiles() {
+    console.log(
+      "TCL: AureliaProgram -> getAureliaSourceFiles -> getAureliaSourceFiles"
+    );
+    if (this.aureliaSourceFiles) return this.aureliaSourceFiles;
+
+    this.updateAureliaSourceFiles(this.builderProgram);
     return this.aureliaSourceFiles;
   }
 }

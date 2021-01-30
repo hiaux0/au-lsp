@@ -7,6 +7,8 @@
 		"sourceMap": true,
 		"strictPropertyInitialization": false,
 		"declaration": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true
 	},
 	"include": [
 		"src",

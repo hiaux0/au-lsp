@@ -15,9 +15,11 @@ export enum AureliaViewModel {
 }
 
 export enum AureliaView {
+  IF = "if",
   TEMPLATE_TAG_NAME = "template",
   REPEAT_FOR = "repeat.for",
   VALUE_CONVERTER_OPERATOR = "|",
+  VALUE_CONVERTER_ARGUMENT = ":",
 }
 
 export enum AureliaLSP {

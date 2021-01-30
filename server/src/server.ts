@@ -1,3 +1,4 @@
+import { AsyncReturnType } from "./common/global.d";
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
@@ -19,63 +20,52 @@ import {
   CompletionList,
   InsertTextFormat,
   Definition,
+  MarkupKind,
+  MarkupContent,
 } from "vscode-languageserver";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Position } from "./embeddedLanguages/languageModes";
+import {
+  getLanguageModes,
+  LanguageModes,
+  Position,
+} from "./feature/embeddedLanguages/languageModes";
 
 // We need to import this to include reflect functionality
 import "reflect-metadata";
 
-import { Container } from "aurelia-dependency-injection";
-
 import {
-  DocumentSettings,
-  ExampleSettings,
+  documentSettings,
+  ExtensionSettings,
+  settingsName,
 } from "./configuration/DocumentSettings";
 import { aureliaProgram } from "./viewModel/AureliaProgram";
 import { createAureliaWatchProgram } from "./viewModel/createAureliaWatchProgram";
-import { getAureliaComponentMap } from "./viewModel/getAureliaComponentMap";
-import { getAureliaComponentList } from "./viewModel/getAureliaComponentList";
 import {
-  aureliaLanguageId,
   CustomElementRegionData,
-  getDocumentRegionsV2,
-  getRegionAtPositionV2,
-  getRegionFromLineAndCharacter,
-  ValueConverterRegionData,
-  ViewRegionInfo,
+  parseDocumentRegions,
   ViewRegionType,
-} from "./embeddedLanguages/embeddedSupport";
-import {
-  enhanceValueConverterViewArguments,
-  getAureliaVirtualCompletions,
-  getVirtualViewModelCompletionSupplyContent,
-} from "./virtual/virtualCompletion/virtualCompletion";
+} from "./feature/embeddedLanguages/embeddedSupport";
+import { AureliaCompletionItem } from "./virtual/virtualCompletion/virtualCompletion";
 
 import * as path from "path";
 import * as ts from "typescript";
 import { createDiagram } from "./viewModel/createDiagram";
 import { getVirtualDefinition } from "./virtual/virtualDefinition/virtualDefinition";
-import { DefinitionResult, getDefinition } from "./definition/getDefinition";
-import { camelCase, kebabCase } from "@aurelia/kernel";
-import { AsyncReturnType } from "./common/global";
-import { AureliaClassTypes, AureliaViewModel } from "./common/constants";
 import {
-  createValueConverterCompletion,
-  getBindablesCompletion,
-} from "./completions/completions";
-
-const globalContainer = new Container();
-const DocumentSettingsClass = globalContainer.get(DocumentSettings);
+  DefinitionResult,
+  getDefinition,
+} from "./feature/definition/getDefinition";
+import { camelCase } from "@aurelia/kernel";
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
-let connection = createConnection(ProposedFeatures.all);
+export let connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+let languageModes: LanguageModes;
 
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
@@ -96,6 +86,7 @@ connection.onInitialize(async (params: InitializeParams) => {
     "------------------------------------------------------------------------------------------"
   );
   let capabilities = params.capabilities;
+  languageModes = await getLanguageModes();
 
   // Does the client support the `workspace/configuration` request?
   // If not, we will fall back using global settings
@@ -120,6 +111,7 @@ connection.onInitialize(async (params: InitializeParams) => {
         triggerCharacters: [" ", ".", "[", '"', "'", "{", "<", ":"],
       },
       definitionProvider: true,
+      hoverProvider: true,
     },
   };
   if (hasWorkspaceFolderCapability) {
@@ -131,7 +123,7 @@ connection.onInitialize(async (params: InitializeParams) => {
   }
 
   // Injections
-  DocumentSettingsClass.inject(connection, hasConfigurationCapability);
+  documentSettings.inject(connection, hasConfigurationCapability);
 
   return result;
 });
@@ -152,11 +144,6 @@ connection.onInitialized(async () => {
     );
 
     await createAureliaWatchProgram(aureliaProgram);
-    getAureliaComponentMap(aureliaProgram);
-    const componentList = getAureliaComponentList(aureliaProgram);
-    if (componentList) {
-      aureliaProgram.setComponentList(componentList);
-    }
   }
   if (hasWorkspaceFolderCapability) {
     connection.workspace.onDidChangeWorkspaceFolders((_event) => {
@@ -175,18 +162,17 @@ connection.onDidChangeConfiguration((change) => {
   );
   if (hasConfigurationCapability) {
     // Reset all cached document settings
-    DocumentSettingsClass.settingsMap.clear();
+    documentSettings.settingsMap.clear();
   } else {
-    DocumentSettingsClass.globalSettings = <ExampleSettings>(
-      (change.settings.languageServerExample ||
-        DocumentSettingsClass.defaultSettings)
+    documentSettings.globalSettings = <ExtensionSettings>(
+      (change.settings[settingsName] || documentSettings.defaultSettings)
     );
   }
 });
 
 // Only keep settings for open documents
 documents.onDidClose((e) => {
-  DocumentSettingsClass.settingsMap.delete(e.document.uri);
+  documentSettings.settingsMap.delete(e.document.uri);
 });
 
 // The content of a text document has changed. This event is emitted
@@ -199,11 +185,7 @@ documents.onDidChangeContent(async (change) => {
   console.log(
     "------------------------------------------------------------------------------------------"
   );
-  getAureliaComponentMap(aureliaProgram);
-  const componentList = getAureliaComponentList(aureliaProgram);
-  if (componentList) {
-    aureliaProgram.setComponentList(componentList);
-  }
+  languageModes = await getLanguageModes();
 });
 
 connection.onDidChangeWatchedFiles((_change) => {
@@ -211,111 +193,44 @@ connection.onDidChangeWatchedFiles((_change) => {
   connection.console.log("We received an file change event");
 });
 
-async function onValueConverterCompletion(
-  _textDocumentPosition: TextDocumentPositionParams,
-  document: TextDocument
-) {
-  const regions = await getDocumentRegionsV2(document);
-  const targetRegion = getRegionAtPositionV2(
-    document,
-    regions,
-    _textDocumentPosition.position
-  );
-
-  if (targetRegion?.type !== ViewRegionType.ValueConverter) return [];
-
-  /** TODO: Infer type via isValueConverterRegion (see ts.isNodeDeclaration) */
-  // Find value converter sourcefile
-  const valueConverterRegion = targetRegion as ViewRegionInfo<
-    ValueConverterRegionData
-  >;
-
-  const targetValueConverterComponent = aureliaProgram
-    .getComponentList()
-    .filter((component) => component.type === AureliaClassTypes.VALUE_CONVERTER)
-    .find(
-      (valueConverterComponent) =>
-        valueConverterComponent.valueConverterName ===
-        valueConverterRegion.data?.valueConverterName
-    );
-
-  if (!targetValueConverterComponent?.sourceFile) return [];
-
-  const valueConverterCompletion = getVirtualViewModelCompletionSupplyContent(
-    aureliaProgram,
-    /**
-     * Aurelia interface method name, that handles interaction with view
-     */
-    AureliaViewModel.TO_VIEW,
-    targetValueConverterComponent?.sourceFile,
-    "SortValueConverter",
-    {
-      customEnhanceMethodArguments: enhanceValueConverterViewArguments,
-      omitMethodNameAndBrackets: true,
-    }
-  ).filter(
-    /** ASSUMPTION: Only interested in `toView` */
-    (completion) => completion.label === AureliaViewModel.TO_VIEW
-  );
-
-  return valueConverterCompletion;
-}
-
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
   async (
     _textDocumentPosition: TextDocumentPositionParams
-  ): Promise<CompletionItem[]> => {
+  ): Promise<CompletionItem[] | CompletionList> => {
     const documentUri = _textDocumentPosition.textDocument.uri;
     const document = documents.get(documentUri);
     if (!document) {
       throw new Error("No document found");
       return [];
     }
-    // Embedded Language
+    const modeAndRegion = await languageModes.getModeAndRegionAtPosition(
+      document,
+      _textDocumentPosition.position
+    );
 
+    if (!modeAndRegion) return [];
+    const { mode, region } = modeAndRegion;
+
+    if (!mode) return [];
+
+    const doComplete = mode.doComplete!;
     const text = document.getText();
     const offset = document.offsetAt(_textDocumentPosition.position);
     const triggerCharacter = text.substring(offset - 1, offset);
 
-    switch (triggerCharacter) {
-      case "<": {
-        return [...aureliaProgram.getComponentMap().classDeclarations!];
-      }
-      case " ": {
-        const bindablesCompletion = await getBindablesCompletion(
-          _textDocumentPosition,
-          document
-        );
-        if (bindablesCompletion.length > 0) return bindablesCompletion;
-      }
-      case ":": {
-        return onValueConverterCompletion(_textDocumentPosition, document);
-      }
-      default: {
-        const regions = await getDocumentRegionsV2(document);
-        const targetRegion = await getRegionAtPositionV2(
+    if (doComplete) {
+      let completions: CompletionItem[] = [CompletionItem.create("")];
+      try {
+        completions = ((await doComplete(
           document,
-          regions,
-          _textDocumentPosition.position
-        );
-
-        /** Infer type via isValueConverterRegion (see ts.isNodeDeclaration) */
-        if (targetRegion?.type === ViewRegionType.ValueConverter) {
-          const valueConverterCompletion = createValueConverterCompletion(
-            targetRegion
-          );
-          return valueConverterCompletion;
-        }
-
-        const aureliaVirtualCompletions = await getAureliaVirtualCompletions(
           _textDocumentPosition,
-          document
-        );
-        if (aureliaVirtualCompletions.length > 0) {
-          return aureliaVirtualCompletions;
-        }
+          triggerCharacter
+        )) as unknown) as CompletionItem[];
+      } catch (error) {
+        console.log("TCL: error", error);
       }
+      return completions;
     }
 
     return [];
@@ -337,6 +252,10 @@ connection.onDefinition((_: TextDocumentPositionParams): Definition | null => {
    * Message: Unhandled method textDocument/definition
    * Code: -32601
    */
+  return null;
+});
+
+connection.onHover((hoverParams) => {
   return null;
 });
 
@@ -385,15 +304,7 @@ connection.onRequest("aurelia-get-component-class-declarations", () => {
   return aureliaProgram.getComponentMap().classDeclarations;
 });
 
-connection.onRequest(
-  "get-value-converter-definition",
-  async ({ _textDocumentPosition, document }) => {
-    // }): Promise<DefinitionResult|undefined> => {
-    return onValueConverterCompletion(_textDocumentPosition, document);
-  }
-);
-
-connection.onRequest(
+connection.onRequest<any, any>(
   "get-virtual-definition",
   async ({
     documentContent,
@@ -401,7 +312,54 @@ connection.onRequest(
     goToSourceWord,
     filePath,
   }): Promise<DefinitionResult | undefined> => {
+    const documentUri = filePath;
     const document = TextDocument.create(filePath, "html", 0, documentContent);
+    const isRefactor = true;
+
+    if (!document) {
+      throw new Error("No document found");
+      return;
+    }
+
+    const modeAndRegion = await languageModes.getModeAndRegionAtPosition(
+      document,
+      position
+    );
+
+    if (!modeAndRegion) return;
+    const { mode, region } = modeAndRegion;
+
+    if (!mode) return;
+
+    const doDefinition = mode.doDefinition!;
+
+    if (doDefinition && isRefactor) {
+      let definitions: AsyncReturnType<typeof doDefinition>;
+
+      try {
+        definitions = await doDefinition(
+          document,
+          position,
+          goToSourceWord,
+          region
+        );
+      } catch (error) {
+        console.log("TCL: error", error);
+        return;
+      }
+      return definitions;
+    }
+
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+    console.log("LEGACY DEFINITON");
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+    console.log("---------------------------------------");
+
     try {
       const definitions = await getDefinition(
         document,
@@ -436,7 +394,7 @@ connection.onRequest(
         character: position.character + 1,
         line: position.line + 1,
       };
-      const regions = await getDocumentRegionsV2<CustomElementRegionData>(
+      const regions = await parseDocumentRegions<CustomElementRegionData>(
         document
       );
       const targetCustomElementRegion = regions
@@ -467,6 +425,47 @@ connection.onRequest(
       );
 
       console.log(err);
+    }
+  }
+);
+connection.onRequest<any, any>(
+  "get-virtual-hover",
+  async ({
+    documentContent,
+    position,
+    goToSourceWord,
+    filePath,
+  }): Promise<void> => {
+    const documentUri = filePath;
+    const document = TextDocument.create(filePath, "html", 0, documentContent);
+
+    if (!document) {
+      throw new Error("No document found");
+      return;
+    }
+
+    const modeAndRegion = await languageModes.getModeAndRegionAtPosition(
+      document,
+      position
+    );
+
+    if (!modeAndRegion) return;
+    const { mode, region } = modeAndRegion;
+
+    if (!mode) return;
+
+    const doHover = mode.doHover;
+
+    if (doHover) {
+      let hoverResult: AsyncReturnType<typeof doHover>;
+
+      try {
+        hoverResult = await doHover(document, position, goToSourceWord, region);
+      } catch (error) {
+        console.log("TCL: error", error);
+        return;
+      }
+      return hoverResult;
     }
   }
 );

@@ -12,7 +12,7 @@ type AureliaClassDecoratorPossibilites =
 
 interface DecoratorInfo {
   decoratorName: AureliaClassDecoratorPossibilites;
-  decoratorArgument: any;
+  decoratorArgument: string;
 }
 
 import {
@@ -100,7 +100,6 @@ function getAureliaComponentInfoFromClassDeclaration(
   sourceFile: ts.SourceFile,
   checker: ts.TypeChecker
 ): IComponentList | undefined {
-  // if (sourceFile?.fileName !== '/Users/hdn/Desktop/aurelia-lsp/client/testFixture/src/my-compo/my-compo.ts') return;
   let result: IComponentList | undefined;
   let componentList: IComponentList;
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
@@ -114,9 +113,6 @@ function getAureliaComponentInfoFromClassDeclaration(
        * && hasCorrectNamingConvention */
     ) {
       targetClassDeclaration = node;
-      const classDecoratorInfos = getClassDecoratorInfos(
-        targetClassDeclaration
-      );
 
       const isValueConverterModel = checkValueConverter(targetClassDeclaration);
       if (isValueConverterModel) {
@@ -135,11 +131,9 @@ function getAureliaComponentInfoFromClassDeclaration(
         return;
       }
 
-      const viewModelName =
-        classDecoratorInfos.find(
-          (info) => info.decoratorName === "customElement"
-        )?.decoratorArgument ||
-        getElementNameFromClassDeclaration(targetClassDeclaration);
+      const viewModelName = getElementNameFromClassDeclaration(
+        targetClassDeclaration
+      );
 
       // Note the `!` in the argument: `getSymbolAtLocation` expects a `Node` arg, but returns undefined
       const symbol = checker.getSymbolAtLocation(node.name!);
@@ -177,7 +171,7 @@ function isNodeExported(node: ts.ClassDeclaration): boolean {
   return (ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Export) !== 0;
 }
 
-function getClassDecoratorInfos(
+export function getClassDecoratorInfos(
   classDeclaration: ts.ClassDeclaration
 ): DecoratorInfo[] {
   let classDecoratorInfos: DecoratorInfo[] = [];

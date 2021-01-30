@@ -37,7 +37,6 @@ import {
   MarkupKind,
   TextDocumentPositionParams,
 } from "vscode-languageserver";
-import { ViewRegionInfo } from "../../feature/embeddedLanguages/embeddedSupport";
 import { getDocumentRegionAtPosition } from "../../feature/embeddedLanguages/languageModes";
 import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
 import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from "../../common/constants";
@@ -56,13 +55,16 @@ const METHOD_NAME = "methodName";
  * Returns the virtual competion. (to be used as real completions)
  */
 export function getVirtualCompletion(
-  sourceFile: ts.SourceFile,
+  virtualSourcefile: ts.SourceFile,
   positionOfAutocomplete: number
 ) {
-  const cls = getVirtualLangagueService(sourceFile);
+  const program = aureliaProgram.getProgram();
+
+  const cls = getVirtualLangagueService(virtualSourcefile, program!);
+  const virtualSourceFilePath = virtualSourcefile.fileName;
 
   const virtualCompletions = cls.getCompletionsAtPosition(
-    sourceFile.fileName,
+    virtualSourceFilePath,
     positionOfAutocomplete,
     undefined
   )?.entries;
@@ -73,7 +75,7 @@ export function getVirtualCompletion(
 
   const virtualCompletionEntryDetails = virtualCompletions.map((completion) => {
     return cls.getCompletionEntryDetails(
-      sourceFile.fileName,
+      virtualSourceFilePath,
       positionOfAutocomplete,
       completion.name,
       undefined,
@@ -357,7 +359,9 @@ export async function getAureliaVirtualCompletions(
   document: TextDocument
 ) {
   // Virtual file
-  let virtualCompletions: AsyncReturnType<typeof getVirtualViewModelCompletion> = [];
+  let virtualCompletions: AsyncReturnType<
+    typeof getVirtualViewModelCompletion
+  > = [];
   try {
     virtualCompletions = await getVirtualViewModelCompletion(
       _textDocumentPosition,

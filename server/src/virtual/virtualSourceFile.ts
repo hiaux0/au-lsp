@@ -209,32 +209,42 @@ function getQuickInfoAtPosition(
 }
 
 export function getVirtualLangagueService(
-  sourceFile: ts.SourceFile
+  sourceFile: ts.SourceFile,
+  watchProgram?: ts.Program,
 ): ts.LanguageService {
-  let compilerSettings = {} as ts.CompilerOptions;
-  compilerSettings = {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ESNext,
-    outDir: "dist",
-    emitDecoratorMetadata: true,
-    experimentalDecorators: true,
-    lib: ["es2017.object", "es7", "dom"],
-    sourceMap: true,
-    rootDir: ".",
-  };
-
-  const host: ts.LanguageServiceHost = {
-    getCompilationSettings: () => compilerSettings,
-    getScriptFileNames: () => [sourceFile.fileName],
+  const compilerSettings = watchProgram?.getCompilerOptions();
+  const watcherProgram = watchProgram;
+  const lSHost: ts.LanguageServiceHost = {
+    getCompilationSettings: () => compilerSettings!,
+    getScriptFileNames: () => {
+      const realFileNames = watcherProgram
+        ?.getSourceFiles()
+        .map((sf) => sf.fileName);
+      // const finalScriptFileName = [virtualSourcefile.fileName, ...realFileNames];
+      const finalScriptFileName = [sourceFile.fileName];
+      return finalScriptFileName;
+    },
     getScriptVersion: () => "0",
-    getScriptSnapshot: () => ts.ScriptSnapshot.fromString(sourceFile.getText()),
+    getScriptSnapshot: (fileName) => {
+      let sourceFileText;
+      if (fileName === VIRTUAL_SOURCE_FILENAME) {
+        sourceFileText = sourceFile.getText();
+      } else {
+        const sourceFile = watcherProgram?.getSourceFile(fileName);
+
+        sourceFileText = sourceFile?.getText() || "";
+      }
+
+      return ts.ScriptSnapshot.fromString(sourceFileText);
+    },
     getCurrentDirectory: () => process.cwd(),
     getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
     fileExists: ts.sys.fileExists,
     readFile: ts.sys.readFile,
     readDirectory: ts.sys.readDirectory,
+    writeFile: ts.sys.writeFile,
   };
-  const cls = ts.createLanguageService(host, ts.createDocumentRegistry());
+  const cls = ts.createLanguageService(lSHost, ts.createDocumentRegistry());
 
   if (!cls) {
     throw new Error("No cls");

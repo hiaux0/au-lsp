@@ -321,10 +321,15 @@ connection.onRequest<any, any>(
       return;
     }
 
-    const modeAndRegion = await languageModes.getModeAndRegionAtPosition(
-      document,
-      position
-    );
+    let modeAndRegion: AsyncReturnType<LanguageModes["getModeAndRegionAtPosition"]>;
+    try {
+      modeAndRegion = await languageModes.getModeAndRegionAtPosition(
+        document,
+        position
+      );
+    } catch (error) {
+      console.log("TCL: error", error);
+    }
 
     if (!modeAndRegion) return;
     const { mode, region } = modeAndRegion;

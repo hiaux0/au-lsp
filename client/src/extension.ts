@@ -26,7 +26,7 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient";
-import { registerDiagramPreview } from "./webview/diagramPreview";
+// import { registerDiagramPreview } from "./webview/diagramPreview";
 import { RelatedFiles } from "./feature/relatedFiles";
 import { aureliaProgram } from "../../server/src/viewModel/AureliaProgram";
 
@@ -216,7 +216,7 @@ export function activate(context: ExtensionContext) {
     )
   );
 
-  registerDiagramPreview(context, client);
+  // registerDiagramPreview(context, client);
 
   // Start the client. This will also launch the server
   client.start();

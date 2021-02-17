@@ -8,7 +8,7 @@ import {
   CompletionItemKind,
 } from "vscode-languageserver";
 import { kebabCase } from "@aurelia/kernel";
-import { createDiagram } from "./createDiagram";
+// import { createDiagram } from "./createDiagram";
 import { getElementNameFromClassDeclaration } from "../common/className";
 
 export function setAureliaComponentMap(
@@ -21,7 +21,7 @@ export function setAureliaComponentMap(
   let classDeclarations: CompletionItem[] = [];
   let classMembers: CompletionItem[] = [];
   let bindables: CompletionItem[] = [];
-  let classDiagram: any;
+  // let classDiagram: any;
   let componentMap: IComponentMap = {
     classDeclarations: [],
     classMembers: [],
@@ -67,7 +67,7 @@ export function setAureliaComponentMap(
         }
         classDeclarations.push(classDeclaration);
 
-        classDiagram = createDiagram(targetClassDeclaration!, checker);
+        // classDiagram = createDiagram(targetClassDeclaration!, checker);
         /* public myVariables: string; */
         const result1 = getAureliaViewModelClassMembers(
           targetClassDeclaration!,
@@ -91,7 +91,7 @@ export function setAureliaComponentMap(
   });
 
   aureliaProgram.setComponentMap(componentMap!);
-  aureliaProgram.setClassDiagram(classDiagram);
+  // aureliaProgram.setClassDiagram(classDiagram);
 }
 
 function getAureliaViewModelClassDeclaration(

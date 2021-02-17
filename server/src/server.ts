@@ -72,19 +72,8 @@ let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
 
 connection.onInitialize(async (params: InitializeParams) => {
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log("1. TCL: onInitialize");
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
+  console.log("[server.ts] 1. onInitialize");
+
   let capabilities = params.capabilities;
   languageModes = await getLanguageModes();
 
@@ -129,13 +118,8 @@ connection.onInitialize(async (params: InitializeParams) => {
 });
 
 connection.onInitialized(async () => {
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log("2. TCL: onInitialized");
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
+  console.log("[server.ts] 2. onInitialized");
+
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
     connection.client.register(
@@ -143,6 +127,7 @@ connection.onInitialized(async () => {
       undefined
     );
 
+    console.log("[server.ts] 3. Create Aurelia Watch Program");
     await createAureliaWatchProgram(aureliaProgram);
   }
   if (hasWorkspaceFolderCapability) {
@@ -153,13 +138,8 @@ connection.onInitialized(async () => {
 });
 
 connection.onDidChangeConfiguration((change) => {
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log("3. TCL: onDidChangeConfiguration");
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
+  console.log("[server.ts] onDidChangeConfiguration");
+
   if (hasConfigurationCapability) {
     // Reset all cached document settings
     documentSettings.settingsMap.clear();
@@ -178,13 +158,7 @@ documents.onDidClose((e) => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(async (change) => {
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log("4. TCL: onDidChangeContent");
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
+  console.log("[server.ts] (re-)get Language Modes");
   languageModes = await getLanguageModes();
 });
 
@@ -239,11 +213,11 @@ connection.onCompletion(
 
 // This handler resolves additional information for the item selected in
 // the completion list.
-connection.onCompletionResolve(
-  (item: CompletionItem): CompletionItem => {
-    return item;
-  }
-);
+// connection.onCompletionResolve(
+//   (item: CompletionItem): CompletionItem => {
+//     return item;
+//   }
+// );
 
 connection.onDefinition((_: TextDocumentPositionParams): Definition | null => {
   /**
@@ -321,7 +295,9 @@ connection.onRequest<any, any>(
       return;
     }
 
-    let modeAndRegion: AsyncReturnType<LanguageModes["getModeAndRegionAtPosition"]>;
+    let modeAndRegion: AsyncReturnType<
+      LanguageModes["getModeAndRegionAtPosition"]
+    >;
     try {
       modeAndRegion = await languageModes.getModeAndRegionAtPosition(
         document,

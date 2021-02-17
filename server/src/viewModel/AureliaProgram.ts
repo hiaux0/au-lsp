@@ -50,22 +50,18 @@ export class AureliaProgram {
   componentList: IComponentList[];
 
   public setComponentMap(componentMap: IComponentMap) {
-    console.log("TCL: AureliaProgram -> setComponentMap -> setComponentMap");
     this.componentMap = componentMap;
   }
 
   public getComponentMap() {
-    console.log("TCL: AureliaProgram -> getComponentMap -> getComponentMap");
     return this.componentMap;
   }
 
   public setComponentList(componentList: IComponentList[]) {
-    console.log("TCL: AureliaProgram -> setComponentList -> setComponentList");
     this.componentList = componentList;
   }
 
   public getComponentList() {
-    console.log("TCL: AureliaProgram -> getComponentList -> getComponentList");
     return this.componentList;
   }
 
@@ -97,7 +93,6 @@ export class AureliaProgram {
    * from the watcher which will listen to IO changes in the tsconfig.
    */
   public getProgram(): ts.Program | undefined {
-    console.log("TCL: AureliaProgram -> getProgram");
     if (this.builderProgram !== undefined) {
       const program = this.builderProgram.getProgram();
       return program;
@@ -109,7 +104,6 @@ export class AureliaProgram {
   public setBuilderProgram(
     builderProgram: ts.SemanticDiagnosticsBuilderProgram
   ): void {
-    console.log("TCL: AureliaProgram -> setBuilderProgram");
     this.builderProgram = builderProgram;
     this.updateAureliaSourceFiles(this.builderProgram);
   }

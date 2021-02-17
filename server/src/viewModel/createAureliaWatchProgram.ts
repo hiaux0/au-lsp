@@ -4,7 +4,6 @@ import { getAureliaComponentList } from "./getAureliaComponentList";
 import { setAureliaComponentMap } from "./setAureliaComponentMap";
 
 const updateAureliaComponents = (aureliaProgram: AureliaProgram): void => {
-  console.log("TCL: updateAureliaComponents");
   /** Think this is not obsolete */
   setAureliaComponentMap(aureliaProgram);
 
@@ -39,7 +38,7 @@ export async function createAureliaWatchProgram(
   const isCreateWatchProgram = configPath !== undefined;
   if (isCreateWatchProgram) {
     console.log(
-      ">>> 1.4 Initiating a watcher for documentation and fetching changes in custom components"
+      "[carw.ts] 3.4 Initiating a watcher for documentation and fetching changes in custom components"
     );
     const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
 
@@ -77,7 +76,7 @@ export async function createAureliaWatchProgram(
   }
 
   /** init call */
-  updateAureliaComponents(aureliaProgram);
+  // updateAureliaComponents(aureliaProgram);
 
   // 3 .To avoid an extra call to the AureliaComponents mapping we check whether the host has been created
   if (!isCreateWatchProgram) {

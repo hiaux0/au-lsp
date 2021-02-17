@@ -59,7 +59,7 @@ export function setAureliaComponentMap(
           classDeclaration === undefined ||
           targetClassDeclaration === undefined
         ) {
-          console.log("No Class statement found.");
+          console.log("[acm.ts] No Class statement found for file: ", path);
           break;
         }
         classDeclarations.push(classDeclaration);

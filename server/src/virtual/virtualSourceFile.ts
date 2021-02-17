@@ -6,7 +6,6 @@ import { Position, TextDocument } from "vscode-html-languageservice";
 import {
   Hover,
   MarkupKind,
-  TextDocumentPositionParams,
 } from "vscode-languageserver";
 import { getDocumentRegionAtPosition } from "../feature/embeddedLanguages/languageModes";
 

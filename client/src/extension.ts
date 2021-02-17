@@ -6,17 +6,7 @@
 import "reflect-metadata";
 import * as path from "path";
 import * as vscode from "vscode";
-import {
-  workspace,
-  commands,
-  ExtensionContext,
-  OutputChannel,
-  CompletionItemProvider,
-  CancellationToken,
-  CompletionList,
-  CompletionContext,
-  CompletionItem,
-} from "vscode";
+import { workspace, commands, ExtensionContext, OutputChannel } from "vscode";
 import * as WebSocket from "ws";
 import * as ts from "typescript";
 
@@ -28,7 +18,6 @@ import {
 } from "vscode-languageclient";
 // import { registerDiagramPreview } from "./webview/diagramPreview";
 import { RelatedFiles } from "./feature/relatedFiles";
-import { aureliaProgram } from "../../server/src/viewModel/AureliaProgram";
 
 let client: LanguageClient;
 

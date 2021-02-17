@@ -3,22 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as fs from "fs";
 import * as parse5 from "parse5";
 import * as SaxStream from "parse5-sax-parser";
-import {
-  Position,
-  LanguageService,
-  TokenType,
-  Range,
-  Scanner,
-} from "./languageModes";
+import { Position, Range } from "./languageModes";
 import { AURELIA_ATTRIBUTES_KEYWORDS } from "../../configuration/DocumentSettings";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { AureliaView } from "../../common/constants";
 import { aureliaProgram } from "../../viewModel/AureliaProgram";
 import { DiagnosticMessages } from "../../common/DiagnosticMessages";
-import { AsyncReturnType } from '../../common/global';
+import { AsyncReturnType } from "../../common/global";
 
 export interface LanguageRange extends Range {
   languageId: string | undefined;
@@ -317,19 +310,19 @@ export function parseDocumentRegions<RegionDataType>(
               };
 
               // 6.5. Create region with useful info
-              const valueConverterRegion = createRegion<
-                ValueConverterRegionData
-              >({
-                attributeName: attr.name,
-                sourceCodeLocation: updatedLocation,
-                type: ViewRegionType.ValueConverter,
-                regionValue: attr.value,
-                data: {
-                  initiatorText,
-                  valueConverterName: valueConverterName.trim(),
-                  valueConverterText: valueConverterArguments.join(":"),
-                },
-              });
+              const valueConverterRegion = createRegion<ValueConverterRegionData>(
+                {
+                  attributeName: attr.name,
+                  sourceCodeLocation: updatedLocation,
+                  type: ViewRegionType.ValueConverter,
+                  regionValue: attr.value,
+                  data: {
+                    initiatorText,
+                    valueConverterName: valueConverterName.trim(),
+                    valueConverterText: valueConverterArguments.join(":"),
+                  },
+                }
+              );
               viewRegions.push(valueConverterRegion);
             }
           );
@@ -397,11 +390,11 @@ export function parseDocumentRegions<RegionDataType>(
 export async function getDocumentRegions(
   document: TextDocument
 ): Promise<HTMLDocumentRegions> {
-  let regions: AsyncReturnType<typeof parseDocumentRegions>
+  let regions: AsyncReturnType<typeof parseDocumentRegions>;
   try {
     regions = await parseDocumentRegions(document);
   } catch (error) {
-    console.log('TCL: error', error)
+    console.log("TCL: error", error);
   }
 
   return {

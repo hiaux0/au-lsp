@@ -36,8 +36,11 @@ export function setAureliaComponentMap(
   const checker = program.getTypeChecker();
 
   paths.forEach(async (path) => {
+    const isDTs = Path.basename(path).endsWith('.d.ts');
+    if (isDTs) return;
+
     const ext = Path.extname(path);
-    ext;
+
     switch (ext) {
       case ".js":
       case ".ts": {

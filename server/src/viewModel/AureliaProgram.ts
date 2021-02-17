@@ -1,6 +1,5 @@
 import { singleton, Container } from "aurelia-dependency-injection";
 import * as ts from "typescript";
-import * as Path from "path";
 import { CompletionItem } from "vscode-languageserver";
 import { AureliaClassTypes } from "../common/constants";
 const globalContainer = new Container();

@@ -13,15 +13,11 @@ import {
   InitializeParams,
   DidChangeConfigurationNotification,
   CompletionItem,
-  CompletionItemKind,
   TextDocumentPositionParams,
   TextDocumentSyncKind,
   InitializeResult,
   CompletionList,
-  InsertTextFormat,
   Definition,
-  MarkupKind,
-  MarkupContent,
 } from "vscode-languageserver";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
@@ -46,7 +42,6 @@ import {
   parseDocumentRegions,
   ViewRegionType,
 } from "./feature/embeddedLanguages/embeddedSupport";
-import { AureliaCompletionItem } from "./virtual/virtualCompletion/virtualCompletion";
 
 import * as path from "path";
 import * as ts from "typescript";

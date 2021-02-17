@@ -21,15 +21,12 @@ import { getCustomElementMode } from "./modes/getCustomElementMode";
 import { getRepeatForMode } from "./modes/getRepeatForMode";
 import { getTextInterpolationMode } from "./modes/getTextInterpolationMode";
 import { getValueConverterMode } from "./modes/getValueConverterMode";
-import { aureliaProgram } from "../../viewModel/AureliaProgram";
 import { AureliaCompletionItem } from "../../virtual/virtualCompletion/virtualCompletion";
 import {
   HTMLDocumentRegions,
-  aureliaLanguageId,
   parseDocumentRegions,
   ViewRegionInfo,
   getRegionAtPosition,
-  getRegionFromLineAndCharacter,
   getDocumentRegions,
   ViewRegionType,
 } from "./embeddedSupport";

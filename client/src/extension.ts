@@ -6,17 +6,7 @@
 import "reflect-metadata";
 import * as path from "path";
 import * as vscode from "vscode";
-import {
-  workspace,
-  commands,
-  ExtensionContext,
-  OutputChannel,
-  CompletionItemProvider,
-  CancellationToken,
-  CompletionList,
-  CompletionContext,
-  CompletionItem,
-} from "vscode";
+import { workspace, commands, ExtensionContext, OutputChannel } from "vscode";
 import * as WebSocket from "ws";
 import * as ts from "typescript";
 
@@ -26,9 +16,8 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient";
-import { registerDiagramPreview } from "./webview/diagramPreview";
+// import { registerDiagramPreview } from "./webview/diagramPreview";
 import { RelatedFiles } from "./feature/relatedFiles";
-import { aureliaProgram } from "../../server/src/viewModel/AureliaProgram";
 
 let client: LanguageClient;
 
@@ -216,7 +205,7 @@ export function activate(context: ExtensionContext) {
     )
   );
 
-  registerDiagramPreview(context, client);
+  // registerDiagramPreview(context, client);
 
   // Start the client. This will also launch the server
   client.start();

@@ -8,7 +8,7 @@ import {
   CompletionItemKind,
 } from "vscode-languageserver";
 import { kebabCase } from "@aurelia/kernel";
-import { createDiagram } from "./createDiagram";
+// import { createDiagram } from "./createDiagram";
 import { getElementNameFromClassDeclaration } from "../common/className";
 
 export function setAureliaComponentMap(
@@ -21,7 +21,7 @@ export function setAureliaComponentMap(
   let classDeclarations: CompletionItem[] = [];
   let classMembers: CompletionItem[] = [];
   let bindables: CompletionItem[] = [];
-  let classDiagram: any;
+  // let classDiagram: any;
   let componentMap: IComponentMap = {
     classDeclarations: [],
     classMembers: [],
@@ -36,8 +36,11 @@ export function setAureliaComponentMap(
   const checker = program.getTypeChecker();
 
   paths.forEach(async (path) => {
+    const isDTs = Path.basename(path).endsWith('.d.ts');
+    if (isDTs) return;
+
     const ext = Path.extname(path);
-    ext;
+
     switch (ext) {
       case ".js":
       case ".ts": {
@@ -59,12 +62,12 @@ export function setAureliaComponentMap(
           classDeclaration === undefined ||
           targetClassDeclaration === undefined
         ) {
-          console.log("No Class statement found.");
+          console.log("[acm.ts] No Class statement found for file: ", path);
           break;
         }
         classDeclarations.push(classDeclaration);
 
-        classDiagram = createDiagram(targetClassDeclaration!, checker);
+        // classDiagram = createDiagram(targetClassDeclaration!, checker);
         /* public myVariables: string; */
         const result1 = getAureliaViewModelClassMembers(
           targetClassDeclaration!,
@@ -88,7 +91,7 @@ export function setAureliaComponentMap(
   });
 
   aureliaProgram.setComponentMap(componentMap!);
-  aureliaProgram.setClassDiagram(classDiagram);
+  // aureliaProgram.setClassDiagram(classDiagram);
 }
 
 function getAureliaViewModelClassDeclaration(

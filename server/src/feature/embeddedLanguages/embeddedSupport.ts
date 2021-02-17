@@ -18,6 +18,7 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 import { AureliaView } from "../../common/constants";
 import { aureliaProgram } from "../../viewModel/AureliaProgram";
 import { DiagnosticMessages } from "../../common/DiagnosticMessages";
+import { AsyncReturnType } from '../../common/global';
 
 export interface LanguageRange extends Range {
   languageId: string | undefined;
@@ -396,7 +397,12 @@ export function parseDocumentRegions<RegionDataType>(
 export async function getDocumentRegions(
   document: TextDocument
 ): Promise<HTMLDocumentRegions> {
-  const regions = await parseDocumentRegions(document);
+  let regions: AsyncReturnType<typeof parseDocumentRegions>
+  try {
+    regions = await parseDocumentRegions(document);
+  } catch (error) {
+    console.log('TCL: error', error)
+  }
 
   return {
     getLanguageRanges: (range: Range) =>

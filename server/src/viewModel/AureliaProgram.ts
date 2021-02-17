@@ -45,7 +45,7 @@ export class AureliaProgram {
   public components: IWebcomponent[] = [];
   public builderProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
   public componentMap: IComponentMap;
-  public classDiagram: IClassDiagram;
+  // public classDiagram: IClassDiagram;
   public aureliaSourceFiles?: ts.SourceFile[];
   componentList: IComponentList[];
 
@@ -65,13 +65,13 @@ export class AureliaProgram {
     return this.componentList;
   }
 
-  public setClassDiagram(classDiagram: IClassDiagram) {
-    this.classDiagram = classDiagram;
-  }
+  // public setClassDiagram(classDiagram: IClassDiagram) {
+  //   this.classDiagram = classDiagram;
+  // }
 
-  public getClassDiagram() {
-    return this.classDiagram;
-  }
+  // public getClassDiagram() {
+  //   return this.classDiagram;
+  // }
 
   public getProjectFiles(sourceDirectory?: string) {
     sourceDirectory = sourceDirectory || ts.sys.getCurrentDirectory();

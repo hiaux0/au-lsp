@@ -15,6 +15,8 @@ export function setAureliaComponentMap(
   aureliaProgram: AureliaProgram,
   sourceDirectory?: string
 ) {
+  console.log("[acm.ts] Starting Component Map collection");
+
   const paths = aureliaProgram.getProjectFiles(sourceDirectory);
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
   let classDeclaration: CompletionItem | undefined;

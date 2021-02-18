@@ -33,6 +33,17 @@
 				"${workspaceRoot}/client/testFixture"
 			],
 			"outFiles": ["${workspaceRoot}/client/out/client/src/test/**/*.js"]
+		},
+		// https://www.hossambarakat.net/2017/06/01/running-mocha-with-typescript/
+		  {
+			"name": "Run mocha",
+			"type": "node",
+			"request": "launch",
+			"program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+			"stopOnEntry": false,
+			"args": ["--require", "ts-node/register", "${workspaceRoot}/tests/unit/*.spec.ts"],
+			"cwd": "${workspaceRoot}",
+			"protocol": "inspector"
 		}
 	],
 	"compounds": [

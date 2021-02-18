@@ -100,6 +100,7 @@ export function parseDocumentRegions<RegionDataType>(
   document: TextDocument
 ): Promise<ViewRegionInfo<RegionDataType>[]> {
   return new Promise((resolve) => {
+    console.log('[eb.ts] Starting document parsing')
     const saxStream = new SaxStream({ sourceCodeLocationInfo: true });
     const viewRegions: ViewRegionInfo[] = [];
     const interpolationRegex = /\$(?:\s*)\{(?!\s*`)(?<interpolationValue>.*?)\}/g;

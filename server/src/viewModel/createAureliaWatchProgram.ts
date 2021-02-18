@@ -11,8 +11,12 @@ const updateAureliaComponents = (aureliaProgram: AureliaProgram): void => {
 
   if (componentList) {
     aureliaProgram.setComponentList(componentList);
-    console.log(">>> The extension found this many components:");
-    console.log(componentList.length);
+    console.log(`>>> The extension found this many components: ${componentList.length}`);
+    if (componentList.length < 10) {
+      componentList.forEach((component, index) => {
+        console.log(`${index} - ${component.filePath}`)
+      })
+    }
   } else {
     console.log("[WARNING]: No components found");
   }

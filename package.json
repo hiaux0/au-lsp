@@ -79,10 +79,24 @@
 					"type": "object",
 					"description": "Aurelia quick switching between related files",
 					"default": {
-						"script": [ ".js", ".ts" ],
-						"style": [ ".less", ".sass", ".scss", ".styl", ".css" ],
-						"unit": [ ".spec.js", ".spec.ts" ],
-						"view": [ ".html" ]
+						"script": [
+							".js",
+							".ts"
+						],
+						"style": [
+							".less",
+							".sass",
+							".scss",
+							".styl",
+							".css"
+						],
+						"unit": [
+							".spec.js",
+							".spec.ts"
+						],
+						"view": [
+							".html"
+						]
 					}
 				}
 			}

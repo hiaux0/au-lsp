@@ -42,12 +42,15 @@
       "name": "Run mocha",
       "type": "node",
       "request": "launch",
+      "env": {
+        "TS_NODE_PROJECT": "./tsconfig.json"
+      },
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "stopOnEntry": false,
       "args": [
         "--require",
         "ts-node/register",
-        "${workspaceRoot}/tests/unit/*.spec.ts"
+        "${workspaceRoot}/tests/unit/**/*.spec.ts"
       ],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector"

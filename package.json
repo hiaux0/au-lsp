@@ -112,7 +112,7 @@
 		"watch:server": "tsc -w -p ./server/tsconfig.json",
 		"postinstall": "cd client && yarn && cd ../server && yarn && cd ..",
 		"test": "sh ./scripts/e2e.sh",
-		"test:unit": "./node_modules/.bin/_mocha --require ts-node/register tests/unit/*.spec.ts",
+		"test:unit": "TS_NODE_PROJECT='./tsconfig.json' ./node_modules/.bin/_mocha --require ts-node/register tests/unit/**/*.spec.ts",
 		"start:depTree": "./node_modules/.bin/code-dependency --exclude 'node_modules' --source ./_code-dep"
 	},
 	"devDependencies": {

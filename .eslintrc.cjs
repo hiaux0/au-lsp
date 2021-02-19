@@ -226,7 +226,7 @@ module.exports = {
     'eqeqeq': ['warn', 'smart'],
     'no-await-in-loop': 'warn',
     'no-cond-assign': 'warn',
-    'no-console': 'warn',
+    // 'no-console': 'warn',
     'no-constructor-return':'warn',
     'no-extra-boolean-cast': 'warn',
     'no-fallthrough': 'warn',

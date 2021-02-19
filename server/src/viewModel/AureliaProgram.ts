@@ -78,7 +78,7 @@ export class AureliaProgram {
     const targetSourceDirectory =
       sourceDirectory || ts.sys.getCurrentDirectory();
 
-    let finalExcludes = ["node_modules", "aurelia_project"];
+    const finalExcludes = ["node_modules", "aurelia_project"];
     if (exclude?.length) {
       finalExcludes.push(...exclude);
     }
@@ -86,7 +86,7 @@ export class AureliaProgram {
     let finalIncludes: string[];
 
     if (include?.length) {
-      finalIncludes = include
+      finalIncludes = include;
     } else {
       finalIncludes = ["src"];
     }

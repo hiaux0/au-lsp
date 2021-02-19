@@ -1,11 +1,11 @@
 import * as DIAGNOSTIC_MESSAGES from "./diagnosticMessages.json";
 
 export class DiagnosticMessages {
-  private aureliaCode = "auvsc";
+  private readonly aureliaCode = "auvsc";
 
-  private diagnosticCodeForMessage = "";
+  private readonly diagnosticCodeForMessage = "";
 
-  constructor(private message: keyof typeof DIAGNOSTIC_MESSAGES) {
+  constructor(private readonly message: keyof typeof DIAGNOSTIC_MESSAGES) {
     this.message = message;
     this.diagnosticCodeForMessage = `${this.aureliaCode}(${DIAGNOSTIC_MESSAGES[message].code})`;
   }
@@ -13,9 +13,9 @@ export class DiagnosticMessages {
   public log(): void {
     const targetMessage = DIAGNOSTIC_MESSAGES[this.message];
     const consoleMessage =
-      `[${targetMessage.category}] ` +
-      this.message +
-      ` ${this.diagnosticCodeForMessage}`;
+      `[${targetMessage.category}] ${
+      this.message
+      } ${this.diagnosticCodeForMessage}`;
 
     console.log(consoleMessage);
   }

@@ -60,7 +60,7 @@ export function getVirtualCompletion(
 ) {
   const program = aureliaProgram.getProgram();
 
-  const cls = getVirtualLangagueService(virtualSourcefile, program!);
+  const cls = getVirtualLangagueService(virtualSourcefile, program);
   const virtualSourceFilePath = virtualSourcefile.fileName;
 
   const virtualCompletions = cls.getCompletionsAtPosition(
@@ -81,7 +81,7 @@ export function getVirtualCompletion(
       undefined,
       undefined,
       undefined
-    ); /*?*/
+    ); /* ? */
   });
 
   return { virtualCompletions, virtualCompletionEntryDetails };
@@ -111,7 +111,7 @@ export function createProgram(
 	  }
 	`
   );
-  let { options, errors } = ts.convertCompilerOptionsFromJson(
+  const { options, errors } = ts.convertCompilerOptionsFromJson(
     tsConfigJson.config.compilerOptions,
     "."
   );
@@ -195,7 +195,7 @@ async function getVirtualViewModelCompletion(
     virtualCompletions
   );
 
-  return result as AureliaCompletionItem[];
+  return result ;
 }
 
 interface CustomizeEnhanceDocumentation {
@@ -286,7 +286,7 @@ function enhanceCompletionItemDocumentation(
   virtualCompletionEntryDetails.reduce((acc, entryDetail) => {
     if (!entryDetail) return acc;
 
-    acc[entryDetail.name!] = {
+    acc[entryDetail.name] = {
       displayParts: entryDetail.displayParts?.map((part) => part.text).join(""),
       documentation: entryDetail.documentation?.map((doc) => doc.text).join(""),
       kind: kindMap[entryDetail.kind],
@@ -314,7 +314,7 @@ function enhanceCompletionItemDocumentation(
         insertMethodTextWithArguments = createArgCompletion(entryDetail);
       } else {
         insertMethodTextWithArguments =
-          tsCompletion.name + "(" + createArgCompletion(entryDetail) + ")";
+          `${tsCompletion.name  }(${  createArgCompletion(entryDetail)  })`;
       }
     }
 

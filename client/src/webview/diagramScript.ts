@@ -1,7 +1,7 @@
-//@ts-check
-//@ts-ignore
+// @ts-check
+// @ts-ignore
 
-let count = 0;
+const count = 0;
 window.setTimeout(() => {
   // <button id="copyAsMarkdown">Copy as mermaid markdown</button>
   const copyAsMarkdownButton = document.getElementById("copyAsMarkdown");

@@ -21,11 +21,11 @@ export function setAureliaComponentMap(
   const paths = aureliaProgram.getProjectFiles(projectOptions);
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
   let classDeclaration: CompletionItem | undefined;
-  let classDeclarations: CompletionItem[] = [];
+  const classDeclarations: CompletionItem[] = [];
   let classMembers: CompletionItem[] = [];
   let bindables: CompletionItem[] = [];
   // let classDiagram: any;
-  let componentMap: IComponentMap = {
+  const componentMap: IComponentMap = {
     classDeclarations: [],
     classMembers: [],
     bindables: [],
@@ -55,7 +55,7 @@ export function setAureliaComponentMap(
 
         /* export class MyCustomElement */
         const result = getAureliaViewModelClassDeclaration(
-          sourceFile!,
+          sourceFile,
           checker
         );
         classDeclaration = result?.classDeclaration;
@@ -73,7 +73,7 @@ export function setAureliaComponentMap(
         // classDiagram = createDiagram(targetClassDeclaration!, checker);
         /* public myVariables: string; */
         const result1 = getAureliaViewModelClassMembers(
-          targetClassDeclaration!,
+          targetClassDeclaration,
           checker
         );
         classMembers = result1.classMembers;
@@ -93,7 +93,7 @@ export function setAureliaComponentMap(
     }
   });
 
-  aureliaProgram.setComponentMap(componentMap!);
+  aureliaProgram.setComponentMap(componentMap);
   // aureliaProgram.setClassDiagram(classDiagram);
 }
 
@@ -180,8 +180,8 @@ function getAureliaViewModelClassMembers(
   checker: ts.TypeChecker
 ) {
   const elementName = getElementNameFromClassDeclaration(classDeclaration);
-  let classMembers: CompletionItem[] = [];
-  let bindables: CompletionItem[] = [];
+  const classMembers: CompletionItem[] = [];
+  const bindables: CompletionItem[] = [];
 
   classDeclaration.forEachChild((classMember) => {
     ts;

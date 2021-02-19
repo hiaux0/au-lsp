@@ -7,8 +7,7 @@ import * as vscode from "vscode";
 import * as assert from "assert";
 import { intersection, map } from "lodash";
 import { kebabCase } from "@aurelia/kernel";
-import { AureliaProgram } from "./../../../server/src/viewModel/AureliaProgram";
-import { IComponentMap } from "./../../../server/src/viewModel/AureliaProgram";
+import { AureliaProgram , IComponentMap } from "../../../server/src/viewModel/AureliaProgram";
 
 import {
   activate,
@@ -184,7 +183,7 @@ async function testCompletion(
     docUri,
     position,
     triggerCharacter
-  )) as vscode.CompletionList;
+  ));
 
   // assert.ok(actualCompletionList.items.length >= 2);
   const result = intersection(

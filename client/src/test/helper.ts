@@ -13,7 +13,7 @@ import * as path from "path";
 import * as ts from "typescript";
 
 import { Container } from "aurelia-dependency-injection";
-import { AureliaProgram } from "./../../../server/src/viewModel/AureliaProgram";
+import { AureliaProgram } from "../../../server/src/viewModel/AureliaProgram";
 import { createAureliaWatchProgram } from "../../../server/src/viewModel/createAureliaWatchProgram";
 import { setAureliaComponentMap } from "../../../server/src/viewModel/setAureliaComponentMap";
 
@@ -74,7 +74,7 @@ export function getTestApplicationFiles() {
     ["node_modules", "aurelia_project"],
     ["src"]
   );
-  let applicationFiles: IApplicationFiles = {
+  const applicationFiles: IApplicationFiles = {
     viewPaths: [],
     viewModelPaths: [],
   };

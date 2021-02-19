@@ -7,15 +7,15 @@ export function registerDiagramPreview(
   context: vscode.ExtensionContext,
   client: LanguageClient
 ) {
-  let previewUri = vscode.Uri.parse(
+  const previewUri = vscode.Uri.parse(
     "aurelia-preview://authority/aurelia-preview"
   );
-  let provider = new TextDocumentContentProvider(client);
-  let registration = vscode.workspace.registerTextDocumentContentProvider(
+  const provider = new TextDocumentContentProvider(client);
+  const registration = vscode.workspace.registerTextDocumentContentProvider(
     "aurelia-preview",
     provider
   );
-  let isPanelVisible: boolean = false;
+  const isPanelVisible: boolean = false;
   let panel: vscode.WebviewPanel;
 
   context.subscriptions.push(

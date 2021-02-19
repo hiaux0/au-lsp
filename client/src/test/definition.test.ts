@@ -92,7 +92,7 @@ async function testCompletion(
     "vscode.executeDefinitionProvider",
     docUri,
     position
-  )) as vscode.Location[];
+  ));
 
   // If expected shows up in actual, we are done.
   assert.equal(

@@ -8,4 +8,4 @@ export const defaultProjectOptions: IProjectOptions = {
   include: [],
   exclude: [],
   sourceDirectory: '',
-}
+};

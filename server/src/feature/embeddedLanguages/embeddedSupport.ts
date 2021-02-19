@@ -1,7 +1,7 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+ *-------------------------------------------------------------------------------------------- */
 
 import * as parse5 from "parse5";
 import * as SaxStream from "parse5-sax-parser";
@@ -100,7 +100,7 @@ export function parseDocumentRegions<RegionDataType>(
   document: TextDocument
 ): Promise<ViewRegionInfo<RegionDataType>[]> {
   return new Promise((resolve) => {
-    console.log('[eb.ts] Starting document parsing')
+    console.log('[eb.ts] Starting document parsing');
     const saxStream = new SaxStream({ sourceCodeLocationInfo: true });
     const viewRegions: ViewRegionInfo[] = [];
     const interpolationRegex = /\$(?:\s*)\{(?!\s*`)(?<interpolationValue>.*?)\}/g;
@@ -291,7 +291,7 @@ export function parseDocumentRegions<RegionDataType>(
                 1; /** | */
 
               const startColAdjust =
-                attrLocation.startCol /** indentation and to length attribute*/ +
+                attrLocation.startCol /** indentation and to length attribute */ +
                 startValueConverterLength;
 
               const endValueConverterLength =
@@ -432,8 +432,8 @@ function createRegion<RegionDataType = any>({
   tagName?: string;
   data?: RegionDataType;
 }): ViewRegionInfo {
-  let calculatedStart = sourceCodeLocation?.startOffset;
-  let calculatedEnd = sourceCodeLocation?.endOffset;
+  const calculatedStart = sourceCodeLocation?.startOffset;
+  const calculatedEnd = sourceCodeLocation?.endOffset;
 
   return {
     type,
@@ -457,16 +457,16 @@ function getLanguageRanges(
   regions: ViewRegionInfo[],
   range: Range
 ): LanguageRange[] {
-  let result: LanguageRange[] = [];
+  const result: LanguageRange[] = [];
   let currentPos = range ? range.start : Position.create(0, 0);
   let currentOffset = range ? document.offsetAt(range.start) : 0;
-  let endOffset = range
+  const endOffset = range
     ? document.offsetAt(range.end)
     : document.getText().length;
-  for (let region of regions) {
+  for (const region of regions) {
     if (region.endOffset! > currentOffset && region.startOffset! < endOffset) {
-      let start = Math.max(region.startOffset!, currentOffset);
-      let startPos = document.positionAt(start);
+      const start = Math.max(region.startOffset!, currentOffset);
+      const startPos = document.positionAt(start);
       if (currentOffset < region.startOffset!) {
         result.push({
           start: currentPos,
@@ -474,8 +474,8 @@ function getLanguageRanges(
           languageId: "html",
         });
       }
-      let end = Math.min(region.endOffset!, endOffset);
-      let endPos = document.positionAt(end);
+      const end = Math.min(region.endOffset!, endOffset);
+      const endPos = document.positionAt(end);
       if (end > region.startOffset!) {
         result.push({
           start: startPos,
@@ -489,7 +489,7 @@ function getLanguageRanges(
     }
   }
   if (currentOffset < endOffset) {
-    let endPos = range ? range.end : document.positionAt(endOffset);
+    const endPos = range ? range.end : document.positionAt(endOffset);
     result.push({
       start: currentPos,
       end: endPos,
@@ -503,9 +503,9 @@ function getLanguagesInDocument(
   _document: TextDocument,
   regions: ViewRegionInfo[]
 ): string[] {
-  let result = [];
-  for (let region of regions) {
-    if (region.languageId && result.indexOf(region.languageId) === -1) {
+  const result = [];
+  for (const region of regions) {
+    if (region.languageId && !result.includes(region.languageId)) {
       result.push(region.languageId);
       if (result.length === 3) {
         return result;
@@ -522,7 +522,7 @@ function getLanguageAtPosition(
   regions: ViewRegionInfo[],
   position: Position
 ): string | undefined {
-  let offset = document.offsetAt(position);
+  const offset = document.offsetAt(position);
 
   const potentialRegions = regions.filter((region) => {
     if (region.startOffset! <= offset) {
@@ -601,7 +601,7 @@ export function getRegionAtPosition(
   regions: ViewRegionInfo[],
   position: Position
 ): ViewRegionInfo | undefined {
-  let offset = document.offsetAt(position);
+  const offset = document.offsetAt(position);
 
   const potentialRegions = regions.filter((region) => {
     if (region.startOffset! <= offset) {
@@ -631,10 +631,10 @@ function getEmbeddedDocument(
   ignoreAttributeValues: boolean
 ): TextDocument {
   let currentPos = 0;
-  let oldContent = document.getText();
+  const oldContent = document.getText();
   let result = "";
   let lastSuffix = "";
-  for (let c of contents) {
+  for (const c of contents) {
     if (
       c.languageId === languageId &&
       (!ignoreAttributeValues || !c.attributeName)
@@ -647,7 +647,7 @@ function getEmbeddedDocument(
         lastSuffix,
         getPrefix(c)
       );
-      result += oldContent.substring(c.startOffset!, c.endOffset!);
+      result += oldContent.substring(c.startOffset!, c.endOffset);
       currentPos = c.endOffset!;
       lastSuffix = getSuffix(c);
     }
@@ -672,7 +672,7 @@ function getPrefix(c: ViewRegionInfo) {
   if (c.attributeName) {
     switch (c.languageId) {
       case "css":
-        return CSS_STYLE_RULE + "{";
+        return `${CSS_STYLE_RULE  }{`;
     }
   }
   return "";
@@ -700,7 +700,7 @@ function substituteWithWhitespace(
   let accumulatedWS = 0;
   result += before;
   for (let i = start + before.length; i < end; i++) {
-    let ch = oldContent[i];
+    const ch = oldContent[i];
     if (ch === "\n" || ch === "\r") {
       // only write new lines, skip the whitespace
       accumulatedWS = 0;
@@ -726,7 +726,7 @@ function append(result: string, str: string, n: number): string {
 }
 
 function getAttributeLanguage(attributeName: string): string | null {
-  let match = attributeName.match(/^(style)$|^(on\w+)$/i);
+  const match = attributeName.match(/^(style)$|^(on\w+)$/i);
   if (!match) {
     return null;
   }

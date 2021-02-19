@@ -17,7 +17,7 @@ export function createDiagram(
   classDeclaration: ts.ClassDeclaration,
   checker: ts.TypeChecker
 ) {
-  let classMembers: string[] = [];
+  const classMembers: string[] = [];
   const classMethods: ClassInfo = {};
   const classVariables: ClassInfo = {};
 
@@ -129,7 +129,7 @@ function assembleUmlString({
     (acc, classInfo, index) => {
       const { node, name, types, documentation } = classInfo;
       // 1. Call hierarchy
-      let classMemberStatements: any = {};
+      const classMemberStatements: any = {};
       node.forEachChild((methodBodyStatement) => {
         const children = methodBodyStatement.getChildren();
         // 1.1 Find references within class
@@ -200,7 +200,7 @@ ${callHierarchyOfMethod}`;
       const methodIndex = classMethodNames.findIndex(
         (classMethodName) => classMethodName === name
       );
-      let variableIndex = classVariableNames.findIndex(
+      const variableIndex = classVariableNames.findIndex(
         (classVariableName) => classVariableName === name
       );
 
@@ -217,19 +217,19 @@ ${callHierarchyOfMethod}`;
   }, "");
 
   const result =
-    "\n" +
-    mermaidMdStringStart +
-    "\n    " +
-    classNameStringStart +
-    "\n" +
-    classVariablesString +
-    "\n\n" +
-    classMethodsString +
-    "\n" +
-    classNameStringEnd +
-    callHierarchyDiagram +
-    "\n" +
-    mermaidMdStringEnd;
+    `\n${
+    mermaidMdStringStart
+    }\n    ${
+    classNameStringStart
+    }\n${
+    classVariablesString
+    }\n\n${
+    classMethodsString
+    }\n${
+    classNameStringEnd
+    }${callHierarchyDiagram
+    }\n${
+    mermaidMdStringEnd}`;
 
   return result;
 }

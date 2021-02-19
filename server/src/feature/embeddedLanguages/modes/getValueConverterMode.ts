@@ -4,9 +4,9 @@ import {
   ValueConverterRegionData,
   ViewRegionInfo,
   ViewRegionType,
-} from "../embeddedSupport";
+ HTMLDocumentRegions } from "../embeddedSupport";
 import { TextDocumentPositionParams } from "vscode-languageserver";
-import { HTMLDocumentRegions } from "../embeddedSupport";
+
 import { LanguageModelCache } from "../languageModelCache";
 import { LanguageMode, Position, TextDocument } from "../languageModes";
 import {

@@ -55,11 +55,11 @@ import { camelCase } from "@aurelia/kernel";
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
-export let connection = createConnection(ProposedFeatures.all);
+export const connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
-let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let languageModes: LanguageModes;
 
 let hasConfigurationCapability: boolean = false;
@@ -69,7 +69,7 @@ let hasDiagnosticRelatedInformationCapability: boolean = false;
 connection.onInitialize(async (params: InitializeParams) => {
   console.log("[server.ts] 1. onInitialize");
 
-  let capabilities = params.capabilities;
+  const capabilities = params.capabilities;
   languageModes = await getLanguageModes();
 
   // Does the client support the `workspace/configuration` request?
@@ -257,7 +257,7 @@ connection.onRequest("aurelia-class-diagram", async (filePath: string) => {
       if (!checker) {
         console.log("no checker");
       }
-      classDiagram = createDiagram(fileMembers!, checker!);
+      classDiagram = createDiagram(fileMembers, checker!);
     }
   });
   console.log("TCL: classDiagram", classDiagram);

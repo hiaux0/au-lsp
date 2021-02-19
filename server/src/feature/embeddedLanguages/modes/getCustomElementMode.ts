@@ -1,12 +1,12 @@
-import { ViewRegionInfo } from "../embeddedSupport";
-import * as path from "path";
-import {
+import { ViewRegionInfo ,
   CustomElementRegionData,
   parseDocumentRegions,
   ViewRegionType,
-} from "../embeddedSupport";
+, HTMLDocumentRegions } from "../embeddedSupport";
+import * as path from "path";
+
 import { TextDocumentPositionParams } from "vscode-languageserver";
-import { HTMLDocumentRegions } from "../embeddedSupport";
+
 import { LanguageModelCache } from "../languageModelCache";
 import { LanguageMode, Position, TextDocument } from "../languageModes";
 import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";

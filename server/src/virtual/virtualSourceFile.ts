@@ -262,7 +262,7 @@ export function getVirtualLangagueService(
  *
  * @param originalSourceFile
  * @param virtualContent
- * @param targetClassName Name of the class associated to your view
+ * @param targetClassName - Name of the class associated to your view
  */
 export function createVirtualViewModelSourceFile(
   originalSourceFile: ts.SourceFile,

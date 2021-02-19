@@ -68,7 +68,7 @@ export class DocumentSettings {
   }
 
   /**
-   * @param resource Allow not to provide a resource, will then return global settings
+   * @param resource - Allow not to provide a resource, will then return global settings
    * @example
    *   ```ts
    *   const settings = await documentSettingsClass.getDocumentSettings(textDocument.uri);

@@ -41,15 +41,15 @@ export function getAureliaComponentList(
   const paths = aureliaProgram.getProjectFiles(projectOptions);
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
   let classDeclaration: CompletionItem | undefined;
-  let classDeclarations: CompletionItem[] = [];
-  let classMembers: CompletionItem[] = [];
-  let bindables: CompletionItem[] = [];
-  let componentMap: IComponentMap = {
+  const classDeclarations: CompletionItem[] = [];
+  const classMembers: CompletionItem[] = [];
+  const bindables: CompletionItem[] = [];
+  const componentMap: IComponentMap = {
     classDeclarations: [],
     classMembers: [],
     bindables: [],
   };
-  let componentList: IComponentList[] = [];
+  const componentList: IComponentList[] = [];
 
   const program = aureliaProgram.getProgram();
   if (program === undefined) {
@@ -71,7 +71,7 @@ export function getAureliaComponentList(
 
         /* export class MyCustomElement */
         const componentInfo = getAureliaComponentInfoFromClassDeclaration(
-          sourceFile!,
+          sourceFile,
           checker
         );
 
@@ -175,11 +175,11 @@ function isNodeExported(node: ts.ClassDeclaration): boolean {
 export function getClassDecoratorInfos(
   classDeclaration: ts.ClassDeclaration
 ): DecoratorInfo[] {
-  let classDecoratorInfos: DecoratorInfo[] = [];
+  const classDecoratorInfos: DecoratorInfo[] = [];
 
   const aureliaDecorators = ["customElement", "useView", "noView"];
   classDeclaration.decorators?.forEach((decorator) => {
-    let result: DecoratorInfo = {
+    const result: DecoratorInfo = {
       decoratorName: "",
       decoratorArgument: "",
     };

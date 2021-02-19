@@ -3,19 +3,26 @@ import { AureliaProgram } from "./AureliaProgram";
 import { getAureliaComponentList } from "./getAureliaComponentList";
 import { setAureliaComponentMap } from "./setAureliaComponentMap";
 
-const updateAureliaComponents = (aureliaProgram: AureliaProgram): void => {
+const updateAureliaComponents = (
+  aureliaProgram: AureliaProgram,
+  sourceDirectory?: string
+): void => {
   /** Think this is not obsolete */
-  setAureliaComponentMap(aureliaProgram);
+  setAureliaComponentMap(aureliaProgram, sourceDirectory);
 
   const componentList = getAureliaComponentList(aureliaProgram);
 
   if (componentList) {
     aureliaProgram.setComponentList(componentList);
-    console.log(`>>> The extension found this many components: ${componentList.length}`);
+    console.log(
+      `>>> The extension found this many components: ${componentList.length}`
+    );
     if (componentList.length < 10) {
+      console.log("List: ");
+
       componentList.forEach((component, index) => {
-        console.log(`${index} - ${component.filePath}`)
-      })
+        console.log(`${index} - ${component.filePath}`);
+      });
     }
   } else {
     console.log("[WARNING]: No components found");
@@ -68,7 +75,7 @@ export async function createAureliaWatchProgram(
     // 2.2 We also overwrite afterProgramCreate to avoid actually running a compile towards the file system
     host.afterProgramCreate = (builderProgram) => {
       aureliaProgram.setBuilderProgram(builderProgram);
-      updateAureliaComponents(aureliaProgram);
+      updateAureliaComponents(aureliaProgram, sourceDirectory);
     };
 
     // 2.3 Create initial watch program with our specially crafted host for aurelia component handling

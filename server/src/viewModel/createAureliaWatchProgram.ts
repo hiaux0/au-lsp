@@ -1,4 +1,4 @@
-import ts = require('typescript');
+import * as ts from 'typescript';
 import { AureliaProgram } from './AureliaProgram';
 import { getAureliaComponentList } from './getAureliaComponentList';
 import { setAureliaComponentMap } from './setAureliaComponentMap';
@@ -30,13 +30,13 @@ const updateAureliaComponents = (
   }
 };
 
-export async function createAureliaWatchProgram(
+export function createAureliaWatchProgram(
   aureliaProgram: AureliaProgram,
   projectOptions?: IProjectOptions
-) {
+): void {
   // 1. Define/default path/to/tsconfig.json
   const targetSourceDirectory =
-    projectOptions?.sourceDirectory || ts.sys.getCurrentDirectory();
+    projectOptions?.sourceDirectory ?? ts.sys.getCurrentDirectory();
   let configPath = ts.findConfigFile(
     // /* searchPath */ "./",
     /* searchPath */ targetSourceDirectory,
@@ -93,6 +93,6 @@ export async function createAureliaWatchProgram(
 
   // 3 .To avoid an extra call to the AureliaComponents mapping we check whether the host has been created
   if (!isCreateWatchProgram) {
-    await updateAureliaComponents(aureliaProgram);
+    updateAureliaComponents(aureliaProgram);
   }
 }

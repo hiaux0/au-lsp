@@ -1,4 +1,4 @@
-import { kebabCase } from "@aurelia/kernel";
+import { kebabCase } from '@aurelia/kernel';
 import {
   CompletionItem,
   CompletionItemKind,
@@ -6,8 +6,8 @@ import {
   MarkupKind,
   TextDocument,
   TextDocumentPositionParams,
-} from "vscode-languageserver";
-import { AureliaClassTypes } from "../../common/constants";
+} from 'vscode-languageserver';
+import { AureliaClassTypes } from '../../common/constants';
 import {
   CustomElementRegionData,
   parseDocumentRegions,
@@ -15,11 +15,11 @@ import {
   ValueConverterRegionData,
   ViewRegionInfo,
   ViewRegionType,
-} from "../embeddedLanguages/embeddedSupport";
-import { Position } from "../embeddedLanguages/languageModes";
+} from '../embeddedLanguages/embeddedSupport';
+import { Position } from '../embeddedLanguages/languageModes';
 
-import { aureliaProgram } from "../../viewModel/AureliaProgram";
-import { getAureliaVirtualCompletions } from "../../virtual/virtualCompletion/virtualCompletion";
+import { aureliaProgram } from '../../viewModel/AureliaProgram';
+import { getAureliaVirtualCompletions } from '../../virtual/virtualCompletion/virtualCompletion';
 
 export async function getBindablesCompletion(
   _textDocumentPosition: TextDocumentPositionParams,
@@ -62,7 +62,7 @@ export function createValueConverterCompletion(
       const result: CompletionItem = {
         documentation: {
           kind: MarkupKind.Markdown,
-          value: "doc todod",
+          value: 'doc todod',
         },
         detail: `${elementName}`,
         insertText: `${elementName}`,

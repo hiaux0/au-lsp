@@ -1,22 +1,22 @@
-import { AureliaProgram, IComponentMap } from "./AureliaProgram";
-import * as ts from "typescript";
-import * as Path from "path";
+import { AureliaProgram, IComponentMap } from './AureliaProgram';
+import * as ts from 'typescript';
+import * as Path from 'path';
 import {
   CompletionItem,
   MarkupKind,
   InsertTextFormat,
   CompletionItemKind,
-} from "vscode-languageserver";
-import { kebabCase } from "@aurelia/kernel";
+} from 'vscode-languageserver';
+import { kebabCase } from '@aurelia/kernel';
 // import { createDiagram } from "./createDiagram";
-import { getElementNameFromClassDeclaration } from "../common/className";
-import { IProjectOptions } from "../common/common.types";
+import { getElementNameFromClassDeclaration } from '../common/className';
+import { IProjectOptions } from '../common/common.types';
 
 export function setAureliaComponentMap(
   aureliaProgram: AureliaProgram,
   projectOptions?: IProjectOptions
 ) {
-  console.log("[acm.ts] Starting Component Map collection");
+  console.log('[acm.ts] Starting Component Map collection');
 
   const paths = aureliaProgram.getProjectFiles(projectOptions);
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
@@ -33,23 +33,23 @@ export function setAureliaComponentMap(
 
   const program = aureliaProgram.getProgram();
   if (program === undefined) {
-    console.log("No Program associated with your Aurelia project.");
+    console.log('No Program associated with your Aurelia project.');
     return;
   }
   const checker = program.getTypeChecker();
 
   paths.forEach(async (path) => {
-    const isDTs = Path.basename(path).endsWith(".d.ts");
+    const isDTs = Path.basename(path).endsWith('.d.ts');
     if (isDTs) return;
 
     const ext = Path.extname(path);
 
     switch (ext) {
-      case ".js":
-      case ".ts": {
+      case '.js':
+      case '.ts': {
         const sourceFile = program.getSourceFile(path);
         if (sourceFile === undefined) {
-          console.log("Watcher program did not find file: ", path);
+          console.log('Watcher program did not find file: ', path);
           return;
         }
 
@@ -65,7 +65,7 @@ export function setAureliaComponentMap(
           classDeclaration === undefined ||
           targetClassDeclaration === undefined
         ) {
-          console.log("[acm.ts] No Class statement found for file: ", path);
+          console.log('[acm.ts] No Class statement found for file: ', path);
           break;
         }
         classDeclarations.push(classDeclaration);
@@ -84,11 +84,11 @@ export function setAureliaComponentMap(
         componentMap?.bindables?.push(...bindables);
         break;
       }
-      case ".html": {
+      case '.html': {
         break;
       }
       default: {
-        console.log("Unsupported extension");
+        console.log('Unsupported extension');
       }
     }
   });
@@ -125,7 +125,7 @@ function getAureliaViewModelClassDeclaration(
       // Note the `!` in the argument: `getSymbolAtLocation` expects a `Node` arg, but returns undefined
       const symbol = checker.getSymbolAtLocation(node.name!);
       if (symbol === undefined) {
-        console.log("No symbol found for: ", node.name);
+        console.log('No symbol found for: ', node.name);
         return;
       }
       const documentation = ts.displayPartsToString(
@@ -166,8 +166,8 @@ function classDeclarationHasUseViewOrNoView(
 ): boolean | undefined {
   return classDeclaration.decorators?.some((decorator) => {
     return (
-      decorator.getText().includes("@useView") ||
-      decorator.getText().includes("@noView")
+      decorator.getText().includes('@useView') ||
+      decorator.getText().includes('@noView')
     );
   });
 }
@@ -192,23 +192,23 @@ function getAureliaViewModelClassMembers(
       const classMemberName = classMember.name?.getText();
 
       const isBindable = classMember.decorators?.find((decorator) => {
-        return decorator.getText().includes("@bindable");
+        return decorator.getText().includes('@bindable');
       });
 
       // Get bindable type. If bindable type is undefined, we set it to be "unknown".
       const memberType =
         classMember.type?.getText() !== undefined
           ? classMember.type?.getText()
-          : "unknown";
+          : 'unknown';
       const memberTypeText =
-        "" + `${isBindable ? "Bindable " : ""}` + `Type: \`${memberType}\``;
+        '' + `${isBindable ? 'Bindable ' : ''}` + `Type: \`${memberType}\``;
       // Add comment documentation if available
       const symbol = checker.getSymbolAtLocation(classMember.name);
       const commentDoc = ts.displayPartsToString(
         symbol?.getDocumentationComment(checker)
       );
 
-      let defaultValueText: string = "";
+      let defaultValueText: string = '';
       if (ts.isPropertyDeclaration(classMember)) {
         // Add default values. The value can be undefined, but that is correct in most cases.
         const defaultValue = classMember.initializer?.getText();
@@ -237,8 +237,8 @@ function getAureliaViewModelClassMembers(
         insertTextFormat: InsertTextFormat.Snippet,
         kind,
         label:
-          "" +
-          `(Au ${isBindable ? "Bindable" : "Class member"}) ` +
+          '' +
+          `(Au ${isBindable ? 'Bindable' : 'Class member'}) ` +
           `${isBindable ? varAsKebabCase : classMemberName}`,
         data: {
           elementName,

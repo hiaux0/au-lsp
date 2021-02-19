@@ -6,12 +6,12 @@ import {
   RepeatForRegionData,
   ViewRegionInfo,
   ViewRegionType,
-} from "../embeddedLanguages/embeddedSupport";
-import { TextDocument } from "vscode-languageserver";
-import { aureliaProgram } from "../../viewModel/AureliaProgram";
-import { getVirtualDefinition } from "../../virtual/virtualDefinition/virtualDefinition";
-import { DefinitionResult } from "./getDefinition";
-import { Position } from "../embeddedLanguages/languageModes";
+} from '../embeddedLanguages/embeddedSupport';
+import { TextDocument } from 'vscode-languageserver';
+import { aureliaProgram } from '../../viewModel/AureliaProgram';
+import { getVirtualDefinition } from '../../virtual/virtualDefinition/virtualDefinition';
+import { DefinitionResult } from './getDefinition';
+import { Position } from '../embeddedLanguages/languageModes';
 
 /**
  * Priority

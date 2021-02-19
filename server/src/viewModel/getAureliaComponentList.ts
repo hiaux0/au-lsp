@@ -5,10 +5,10 @@ export interface AureliaClassDecorators {
 }
 
 type AureliaClassDecoratorPossibilites =
-  | "customElement"
-  | "useView"
-  | "noView"
-  | "";
+  | 'customElement'
+  | 'useView'
+  | 'noView'
+  | '';
 
 interface DecoratorInfo {
   decoratorName: AureliaClassDecoratorPossibilites;
@@ -19,19 +19,19 @@ import {
   AureliaProgram,
   IComponentList,
   IComponentMap,
-} from "./AureliaProgram";
-import * as ts from "typescript";
-import * as Path from "path";
+} from './AureliaProgram';
+import * as ts from 'typescript';
+import * as Path from 'path';
 import {
   CompletionItem,
   MarkupKind,
   InsertTextFormat,
   CompletionItemKind,
-} from "vscode-languageserver";
-import { kebabCase } from "@aurelia/kernel";
-import { createDiagram } from "./createDiagram";
-import { getElementNameFromClassDeclaration } from "../common/className";
-import { AureliaClassTypes, VALUE_CONVERTER_SUFFIX } from "../common/constants";
+} from 'vscode-languageserver';
+import { kebabCase } from '@aurelia/kernel';
+import { createDiagram } from './createDiagram';
+import { getElementNameFromClassDeclaration } from '../common/className';
+import { AureliaClassTypes, VALUE_CONVERTER_SUFFIX } from '../common/constants';
 import { IProjectOptions } from '../common/common.types';
 
 export function getAureliaComponentList(
@@ -53,7 +53,7 @@ export function getAureliaComponentList(
 
   const program = aureliaProgram.getProgram();
   if (program === undefined) {
-    console.log("No Program associated with your Aurelia project.");
+    console.log('No Program associated with your Aurelia project.');
     return;
   }
   const checker = program.getTypeChecker();
@@ -61,11 +61,11 @@ export function getAureliaComponentList(
   paths.forEach(async (path) => {
     const ext = Path.extname(path);
     switch (ext) {
-      case ".js":
-      case ".ts": {
+      case '.js':
+      case '.ts': {
         const sourceFile = program.getSourceFile(path);
         if (sourceFile === undefined) {
-          console.log("Watcher program did not find file: ", path);
+          console.log('Watcher program did not find file: ', path);
           return;
         }
 
@@ -81,17 +81,17 @@ export function getAureliaComponentList(
 
         break;
       }
-      case ".html": {
+      case '.html': {
         break;
       }
       default: {
-        console.log("Unsupported extension");
+        console.log('Unsupported extension');
       }
     }
   });
 
   if (componentList.length === 0) {
-    console.log("Error: No Aurelia class found");
+    console.log('Error: No Aurelia class found');
   }
 
   return componentList;
@@ -119,10 +119,10 @@ function getAureliaComponentInfoFromClassDeclaration(
       if (isValueConverterModel) {
         const valueConverterName = targetClassDeclaration.name
           ?.getText()
-          .replace(VALUE_CONVERTER_SUFFIX, "")
+          .replace(VALUE_CONVERTER_SUFFIX, '')
           .toLocaleLowerCase();
         result = {
-          className: targetClassDeclaration.name?.getText() || "",
+          className: targetClassDeclaration.name?.getText() || '',
           valueConverterName,
           baseFileName: Path.parse(sourceFile.fileName).name,
           filePath: sourceFile.fileName,
@@ -139,16 +139,16 @@ function getAureliaComponentInfoFromClassDeclaration(
       // Note the `!` in the argument: `getSymbolAtLocation` expects a `Node` arg, but returns undefined
       const symbol = checker.getSymbolAtLocation(node.name!);
       if (symbol === undefined) {
-        console.log("No symbol found for: ", node.name);
+        console.log('No symbol found for: ', node.name);
         return;
       }
 
       result = {
-        className: targetClassDeclaration.name?.getText() || "",
+        className: targetClassDeclaration.name?.getText() || '',
         viewModelName,
         baseFileName: Path.parse(sourceFile.fileName).name,
         filePath: sourceFile.fileName,
-        viewFileName: "TODO",
+        viewFileName: 'TODO',
         type: AureliaClassTypes.CUSTOM_ELEMENT,
         sourceFile,
       };
@@ -177,11 +177,11 @@ export function getClassDecoratorInfos(
 ): DecoratorInfo[] {
   const classDecoratorInfos: DecoratorInfo[] = [];
 
-  const aureliaDecorators = ["customElement", "useView", "noView"];
+  const aureliaDecorators = ['customElement', 'useView', 'noView'];
   classDeclaration.decorators?.forEach((decorator) => {
     const result: DecoratorInfo = {
-      decoratorName: "",
-      decoratorArgument: "",
+      decoratorName: '',
+      decoratorArgument: '',
     };
 
     decorator.expression.forEachChild((decoratorChild) => {
@@ -199,7 +199,7 @@ export function getClassDecoratorInfos(
     classDecoratorInfos.push(result);
   });
 
-  return classDecoratorInfos.filter((info) => info.decoratorName !== "");
+  return classDecoratorInfos.filter((info) => info.decoratorName !== '');
 }
 
 /**
@@ -212,8 +212,8 @@ function classDeclarationHasUseViewOrNoView(
 ): boolean | undefined {
   return classDeclaration.decorators?.some((decorator) => {
     return (
-      decorator.getText().includes("@useView") ||
-      decorator.getText().includes("@noView")
+      decorator.getText().includes('@useView') ||
+      decorator.getText().includes('@noView')
     );
   });
 }

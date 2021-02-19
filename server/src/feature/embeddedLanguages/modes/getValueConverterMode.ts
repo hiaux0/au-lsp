@@ -4,20 +4,20 @@ import {
   ValueConverterRegionData,
   ViewRegionInfo,
   ViewRegionType,
- HTMLDocumentRegions } from "../embeddedSupport";
-import { TextDocumentPositionParams } from "vscode-languageserver";
+ HTMLDocumentRegions } from '../embeddedSupport';
+import { TextDocumentPositionParams } from 'vscode-languageserver';
 
-import { LanguageModelCache } from "../languageModelCache";
-import { LanguageMode, Position, TextDocument } from "../languageModes";
+import { LanguageModelCache } from '../languageModelCache';
+import { LanguageMode, Position, TextDocument } from '../languageModes';
 import {
   getAureliaVirtualCompletions,
   getVirtualViewModelCompletionSupplyContent,
-} from "../../../virtual/virtualCompletion/virtualCompletion";
-import { createValueConverterCompletion } from "../../completions/completions";
-import { aureliaProgram } from "../../../viewModel/AureliaProgram";
-import { AureliaClassTypes, AureliaViewModel } from "../../../common/constants";
-import { getAccessScopeDefinition } from "../../definition/accessScopeDefinition";
-import { DefinitionResult } from "../../definition/getDefinition";
+} from '../../../virtual/virtualCompletion/virtualCompletion';
+import { createValueConverterCompletion } from '../../completions/completions';
+import { aureliaProgram } from '../../../viewModel/AureliaProgram';
+import { AureliaClassTypes, AureliaViewModel } from '../../../common/constants';
+import { getAccessScopeDefinition } from '../../definition/accessScopeDefinition';
+import { DefinitionResult } from '../../definition/getDefinition';
 
 async function onValueConverterCompletion(
   _textDocumentPosition: TextDocumentPositionParams,
@@ -56,7 +56,7 @@ async function onValueConverterCompletion(
      */
     AureliaViewModel.TO_VIEW,
     targetValueConverterComponent?.sourceFile,
-    "SortValueConverter",
+    'SortValueConverter',
     {
       customEnhanceMethodArguments: enhanceValueConverterViewArguments,
       omitMethodNameAndBrackets: true,
@@ -81,7 +81,7 @@ export function getValueConverterMode(
       _textDocumentPosition: TextDocumentPositionParams,
       triggerCharacter: string | undefined
     ) {
-      if (triggerCharacter === ":") {
+      if (triggerCharacter === ':') {
         const completions = await onValueConverterCompletion(
           _textDocumentPosition,
           document
@@ -159,7 +159,7 @@ function enhanceValueConverterViewArguments(methodArguments: string[]) {
     .map((argName, index) => {
       return `\${${index + 1}:${argName}}`;
     })
-    .join(":");
+    .join(':');
 
   return result;
 }

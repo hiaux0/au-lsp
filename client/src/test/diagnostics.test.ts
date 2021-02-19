@@ -3,32 +3,32 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as vscode from "vscode";
-import * as assert from "assert";
-import { getDocUri, activate } from "./helper";
+import * as vscode from 'vscode';
+import * as assert from 'assert';
+import { getDocUri, activate } from './helper';
 
-suite.skip("Should get diagnostics", () => {
-  const docUri = getDocUri("diagnostics.txt");
+suite.skip('Should get diagnostics', () => {
+  const docUri = getDocUri('diagnostics.txt');
 
-  test("Diagnoses uppercase texts", async () => {
+  test('Diagnoses uppercase texts', async () => {
     await testDiagnostics(docUri, [
       {
-        message: "ANY is all uppercase.",
+        message: 'ANY is all uppercase.',
         range: toRange(0, 0, 0, 3),
         severity: vscode.DiagnosticSeverity.Warning,
-        source: "ex",
+        source: 'ex',
       },
       {
-        message: "ANY is all uppercase.",
+        message: 'ANY is all uppercase.',
         range: toRange(0, 14, 0, 17),
         severity: vscode.DiagnosticSeverity.Warning,
-        source: "ex",
+        source: 'ex',
       },
       {
-        message: "OS is all uppercase.",
+        message: 'OS is all uppercase.',
         range: toRange(0, 18, 0, 20),
         severity: vscode.DiagnosticSeverity.Warning,
-        source: "ex",
+        source: 'ex',
       },
     ]);
   });

@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *-------------------------------------------------------------------------------------------- */
 
-import * as parse5 from "parse5";
-import * as SaxStream from "parse5-sax-parser";
-import { Position, Range } from "./languageModes";
-import { AURELIA_ATTRIBUTES_KEYWORDS } from "../../configuration/DocumentSettings";
-import { TextDocument } from "vscode-languageserver-textdocument";
-import { AureliaView } from "../../common/constants";
-import { aureliaProgram } from "../../viewModel/AureliaProgram";
-import { DiagnosticMessages } from "../../common/DiagnosticMessages";
-import { AsyncReturnType } from "../../common/global";
+import * as parse5 from 'parse5';
+import * as SaxStream from 'parse5-sax-parser';
+import { Position, Range } from './languageModes';
+import { AURELIA_ATTRIBUTES_KEYWORDS } from '../../configuration/DocumentSettings';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { AureliaView } from '../../common/constants';
+import { aureliaProgram } from '../../viewModel/AureliaProgram';
+import { DiagnosticMessages } from '../../common/DiagnosticMessages';
+import { AsyncReturnType } from '../../common/global';
 
 export interface LanguageRange extends Range {
   languageId: string | undefined;
@@ -31,15 +31,15 @@ export interface HTMLDocumentRegions {
   getRegions(): ViewRegionInfo[];
 }
 
-export const CSS_STYLE_RULE = "__";
+export const CSS_STYLE_RULE = '__';
 
 export enum ViewRegionType {
-  Attribute = "Attribute",
-  AttributeInterpolation = "AttributeInterpolation",
-  RepeatFor = "RepeatFor",
-  TextInterpolation = "TextInterpolation",
-  CustomElement = "CustomElement",
-  ValueConverter = "ValueConverter",
+  Attribute = 'Attribute',
+  AttributeInterpolation = 'AttributeInterpolation',
+  RepeatFor = 'RepeatFor',
+  TextInterpolation = 'TextInterpolation',
+  CustomElement = 'CustomElement',
+  ValueConverter = 'ValueConverter',
 }
 
 export interface ViewRegionInfo<RegionDataType = any> {
@@ -94,7 +94,7 @@ interface ViewRegions {
   customElementRegions: ViewRegionInfo[];
 }
 
-export const aureliaLanguageId = "aurelia";
+export const aureliaLanguageId = 'aurelia';
 
 export function parseDocumentRegions<RegionDataType>(
   document: TextDocument
@@ -120,7 +120,7 @@ export function parseDocumentRegions<RegionDataType>(
      * 5. repeat.for=""
      * 6. Value converter region (value | take:10)
      */
-    saxStream.on("startTag", (startTag) => {
+    saxStream.on('startTag', (startTag) => {
       const customElementAttributeRegions: ViewRegionInfo[] = [];
       const { tagName } = startTag;
       const isTemplateTag = tagName === AureliaView.TEMPLATE_TAG_NAME;
@@ -197,7 +197,7 @@ export function parseDocumentRegions<RegionDataType>(
             endOffset: endInterpolationLength,
           };
           function getRepeatForData() {
-            const splitUpRepeatFor = attr.value.split(" ");
+            const splitUpRepeatFor = attr.value.split(' ');
             const repeatForData: RepeatForRegionData = {
               iterator: splitUpRepeatFor[0],
               iterableName: splitUpRepeatFor[2],
@@ -264,7 +264,7 @@ export function parseDocumentRegions<RegionDataType>(
           const [
             initiatorText,
             ...valueConverterRegionsSplit
-          ] = attr.value.split("|");
+          ] = attr.value.split('|');
 
           // 6.2. For each value converter
           valueConverterRegionsSplit.forEach(
@@ -273,14 +273,14 @@ export function parseDocumentRegions<RegionDataType>(
               const [
                 valueConverterName,
                 ...valueConverterArguments
-              ] = valueConverterViewText.split(":");
+              ] = valueConverterViewText.split(':');
 
               if (valueConverterRegionsSplit.length >= 2 && index >= 1) {
                 const dm = new DiagnosticMessages(
-                  "Chained value converters not supported yet."
+                  'Chained value converters not supported yet.'
                 );
                 dm.log();
-                dm.additionalLog("No infos for", valueConverterViewText);
+                dm.additionalLog('No infos for', valueConverterViewText);
                 return;
               }
 
@@ -320,7 +320,7 @@ export function parseDocumentRegions<RegionDataType>(
                   data: {
                     initiatorText,
                     valueConverterName: valueConverterName.trim(),
-                    valueConverterText: valueConverterArguments.join(":"),
+                    valueConverterText: valueConverterArguments.join(':'),
                   },
                 }
               );
@@ -343,7 +343,7 @@ export function parseDocumentRegions<RegionDataType>(
       }
     });
 
-    saxStream.on("text", (text) => {
+    saxStream.on('text', (text) => {
       let interpolationMatch;
       while ((interpolationMatch = interpolationRegex.exec(text.text))) {
         if (interpolationMatch !== null) {
@@ -377,7 +377,7 @@ export function parseDocumentRegions<RegionDataType>(
       }
     });
 
-    saxStream.on("endTag", (endTag) => {
+    saxStream.on('endTag', (endTag) => {
       const isTemplateTag = endTag.tagName === AureliaView.TEMPLATE_TAG_NAME;
       if (isTemplateTag) {
         resolve(viewRegions);
@@ -395,7 +395,7 @@ export async function getDocumentRegions(
   try {
     regions = await parseDocumentRegions(document);
   } catch (error) {
-    console.log("TCL: error", error);
+    console.log('TCL: error', error);
   }
 
   return {
@@ -409,7 +409,7 @@ export async function getDocumentRegions(
       getRegionAtPosition(document, regions, position),
     getRegions: () => regions,
     getLanguagesInDocument: () => getLanguagesInDocument(document, regions),
-    getImportedScripts: () => [""], // TODO: figure out if actually wanted/needed
+    getImportedScripts: () => [''], // TODO: figure out if actually wanted/needed
   };
 }
 
@@ -423,7 +423,7 @@ function createRegion<RegionDataType = any>({
   regionValue,
 }: {
   sourceCodeLocation:
-    | SaxStream.StartTagToken["sourceCodeLocation"]
+    | SaxStream.StartTagToken['sourceCodeLocation']
     | parse5.AttributesLocation[string];
   type: ViewRegionType;
   regionValue?: string;
@@ -471,7 +471,7 @@ function getLanguageRanges(
         result.push({
           start: currentPos,
           end: startPos,
-          languageId: "html",
+          languageId: 'html',
         });
       }
       const end = Math.min(region.endOffset!, endOffset);
@@ -493,7 +493,7 @@ function getLanguageRanges(
     result.push({
       start: currentPos,
       end: endPos,
-      languageId: "html",
+      languageId: 'html',
     });
   }
   return result;
@@ -512,7 +512,7 @@ function getLanguagesInDocument(
       }
     }
   }
-  result.push("html");
+  result.push('html');
   return result;
 }
 
@@ -533,7 +533,7 @@ function getLanguageAtPosition(
   });
 
   if (!potentialRegions) {
-    console.error("embeddedSupport -> getRegionAtPosition -> No Region found");
+    console.error('embeddedSupport -> getRegionAtPosition -> No Region found');
     return undefined;
   }
 
@@ -547,7 +547,7 @@ function getLanguageAtPosition(
     return targetRegion.languageId;
   }
 
-  return "html";
+  return 'html';
 }
 
 export function getRegionFromLineAndCharacter(
@@ -612,7 +612,7 @@ export function getRegionAtPosition(
   });
 
   if (!potentialRegions) {
-    console.error("embeddedSupport -> getRegionAtPosition -> No Region found");
+    console.error('embeddedSupport -> getRegionAtPosition -> No Region found');
     return undefined;
   }
 
@@ -632,8 +632,8 @@ function getEmbeddedDocument(
 ): TextDocument {
   let currentPos = 0;
   const oldContent = document.getText();
-  let result = "";
-  let lastSuffix = "";
+  let result = '';
+  let lastSuffix = '';
   for (const c of contents) {
     if (
       c.languageId === languageId &&
@@ -658,7 +658,7 @@ function getEmbeddedDocument(
     oldContent.length,
     oldContent,
     lastSuffix,
-    ""
+    ''
   );
   return TextDocument.create(
     document.uri,
@@ -671,22 +671,22 @@ function getEmbeddedDocument(
 function getPrefix(c: ViewRegionInfo) {
   if (c.attributeName) {
     switch (c.languageId) {
-      case "css":
+      case 'css':
         return `${CSS_STYLE_RULE  }{`;
     }
   }
-  return "";
+  return '';
 }
 function getSuffix(c: ViewRegionInfo) {
   if (c.attributeName) {
     switch (c.languageId) {
-      case "css":
-        return "}";
-      case "javascript":
-        return ";";
+      case 'css':
+        return '}';
+      case 'javascript':
+        return ';';
     }
   }
-  return "";
+  return '';
 }
 
 function substituteWithWhitespace(
@@ -701,7 +701,7 @@ function substituteWithWhitespace(
   result += before;
   for (let i = start + before.length; i < end; i++) {
     const ch = oldContent[i];
-    if (ch === "\n" || ch === "\r") {
+    if (ch === '\n' || ch === '\r') {
       // only write new lines, skip the whitespace
       accumulatedWS = 0;
       result += ch;
@@ -709,7 +709,7 @@ function substituteWithWhitespace(
       accumulatedWS++;
     }
   }
-  result = append(result, " ", accumulatedWS - after.length);
+  result = append(result, ' ', accumulatedWS - after.length);
   result += after;
   return result;
 }
@@ -730,5 +730,5 @@ function getAttributeLanguage(attributeName: string): string | null {
   if (!match) {
     return null;
   }
-  return match[1] ? "css" : "javascript";
+  return match[1] ? 'css' : 'javascript';
 }

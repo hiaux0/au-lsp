@@ -1,13 +1,13 @@
-import { ViewRegionInfo, ViewRegionType , HTMLDocumentRegions } from "../embeddedSupport";
-import { TextDocumentPositionParams } from "vscode-languageserver";
+import { ViewRegionInfo, ViewRegionType , HTMLDocumentRegions } from '../embeddedSupport';
+import { TextDocumentPositionParams } from 'vscode-languageserver';
 
-import { LanguageModelCache } from "../languageModelCache";
-import { LanguageMode, Position, TextDocument } from "../languageModes";
-import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
-import { DefinitionResult } from "../../definition/getDefinition";
-import { getAccessScopeDefinition } from "../../definition/accessScopeDefinition";
-import { VirtualLanguageService } from "../../../virtual/virtualSourceFile";
-import { getAccessScopeHover } from "../../hover/accessScopeHover";
+import { LanguageModelCache } from '../languageModelCache';
+import { LanguageMode, Position, TextDocument } from '../languageModes';
+import { getAureliaVirtualCompletions } from '../../../virtual/virtualCompletion/virtualCompletion';
+import { DefinitionResult } from '../../definition/getDefinition';
+import { getAccessScopeDefinition } from '../../definition/accessScopeDefinition';
+import { VirtualLanguageService } from '../../../virtual/virtualSourceFile';
+import { getAccessScopeHover } from '../../hover/accessScopeHover';
 
 export function getAttributeMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
@@ -48,7 +48,7 @@ export function getAttributeMode(
       position: Position,
       goToSourceWord: string,
       attributeRegion: ViewRegionInfo
-    ): Promise<ReturnType<VirtualLanguageService["getQuickInfoAtPosition"]>> {
+    ): Promise<ReturnType<VirtualLanguageService['getQuickInfoAtPosition']>> {
       return getAccessScopeHover(
         document,
         position,

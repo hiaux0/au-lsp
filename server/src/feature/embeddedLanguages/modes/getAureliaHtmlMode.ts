@@ -1,24 +1,24 @@
-import { ViewRegionType , HTMLDocumentRegions } from "../embeddedSupport";
-import { TextDocumentPositionParams } from "vscode-languageserver";
+import { ViewRegionType , HTMLDocumentRegions } from '../embeddedSupport';
+import { TextDocumentPositionParams } from 'vscode-languageserver';
 
-import { LanguageModelCache } from "../languageModelCache";
-import { LanguageMode, Position, TextDocument } from "../languageModes";
-import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
-import { aureliaProgram } from "../../../viewModel/AureliaProgram";
+import { LanguageModelCache } from '../languageModelCache';
+import { LanguageMode, Position, TextDocument } from '../languageModes';
+import { getAureliaVirtualCompletions } from '../../../virtual/virtualCompletion/virtualCompletion';
+import { aureliaProgram } from '../../../viewModel/AureliaProgram';
 
 export function getAureliaHtmlMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
 ): LanguageMode {
   return {
     getId() {
-      return "html";
+      return 'html';
     },
     async doComplete(
       document: TextDocument,
       _textDocumentPosition: TextDocumentPositionParams,
       triggerCharacter: string | undefined
     ) {
-      if (triggerCharacter === "<") {
+      if (triggerCharacter === '<') {
         return [...aureliaProgram.getComponentMap().classDeclarations!];
       }
       return [];

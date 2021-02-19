@@ -1,15 +1,15 @@
-import { ViewRegionInfo, ViewRegionType , HTMLDocumentRegions } from "../embeddedSupport";
-import { TextDocumentPositionParams } from "vscode-languageserver";
+import { ViewRegionInfo, ViewRegionType , HTMLDocumentRegions } from '../embeddedSupport';
+import { TextDocumentPositionParams } from 'vscode-languageserver';
 
-import { LanguageModelCache } from "../languageModelCache";
-import { LanguageMode, Position, TextDocument } from "../languageModes";
-import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
-import { DefinitionResult } from "../../definition/getDefinition";
-import { getVirtualDefinition } from "../../../virtual/virtualDefinition/virtualDefinition";
-import { aureliaProgram } from "../../../viewModel/AureliaProgram";
-import { getAccessScopeDefinition } from "../../definition/accessScopeDefinition";
-import { VirtualLanguageService } from "../../../virtual/virtualSourceFile";
-import { getAccessScopeHover } from "../../hover/accessScopeHover";
+import { LanguageModelCache } from '../languageModelCache';
+import { LanguageMode, Position, TextDocument } from '../languageModes';
+import { getAureliaVirtualCompletions } from '../../../virtual/virtualCompletion/virtualCompletion';
+import { DefinitionResult } from '../../definition/getDefinition';
+import { getVirtualDefinition } from '../../../virtual/virtualDefinition/virtualDefinition';
+import { aureliaProgram } from '../../../viewModel/AureliaProgram';
+import { getAccessScopeDefinition } from '../../definition/accessScopeDefinition';
+import { VirtualLanguageService } from '../../../virtual/virtualSourceFile';
+import { getAccessScopeHover } from '../../hover/accessScopeHover';
 
 export function getTextInterpolationMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
@@ -51,7 +51,7 @@ export function getTextInterpolationMode(
       position: Position,
       goToSourceWord: string,
       attributeRegion: ViewRegionInfo
-    ): Promise<ReturnType<VirtualLanguageService["getQuickInfoAtPosition"]>> {
+    ): Promise<ReturnType<VirtualLanguageService['getQuickInfoAtPosition']>> {
       return getAccessScopeHover(
         document,
         position,

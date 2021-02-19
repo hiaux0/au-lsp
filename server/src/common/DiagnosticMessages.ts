@@ -1,9 +1,9 @@
-import * as DIAGNOSTIC_MESSAGES from "./diagnosticMessages.json";
+import * as DIAGNOSTIC_MESSAGES from './diagnosticMessages.json';
 
 export class DiagnosticMessages {
-  private readonly aureliaCode = "auvsc";
+  private readonly aureliaCode = 'auvsc';
 
-  private readonly diagnosticCodeForMessage = "";
+  private readonly diagnosticCodeForMessage = '';
 
   constructor(private readonly message: keyof typeof DIAGNOSTIC_MESSAGES) {
     this.message = message;

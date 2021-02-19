@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *-------------------------------------------------------------------------------------------- */
 
-import { getCSSLanguageService } from "vscode-css-languageservice";
+import { getCSSLanguageService } from 'vscode-css-languageservice';
 import {
   CompletionList,
   Diagnostic,
@@ -11,17 +11,17 @@ import {
   Position,
   Range,
   TextDocument,
-} from "vscode-html-languageservice";
-import { TextDocumentPositionParams } from "vscode-languageserver";
-import { DefinitionResult } from "../definition/getDefinition";
-import { getAttributeInterpolationMode } from "./modes/getAttributeInterpolationMode";
-import { getAttributeMode } from "./modes/getAttributeMode";
-import { getAureliaHtmlMode } from "./modes/getAureliaHtmlMode";
-import { getCustomElementMode } from "./modes/getCustomElementMode";
-import { getRepeatForMode } from "./modes/getRepeatForMode";
-import { getTextInterpolationMode } from "./modes/getTextInterpolationMode";
-import { getValueConverterMode } from "./modes/getValueConverterMode";
-import { AureliaCompletionItem } from "../../virtual/virtualCompletion/virtualCompletion";
+} from 'vscode-html-languageservice';
+import { TextDocumentPositionParams } from 'vscode-languageserver';
+import { DefinitionResult } from '../definition/getDefinition';
+import { getAttributeInterpolationMode } from './modes/getAttributeInterpolationMode';
+import { getAttributeMode } from './modes/getAttributeMode';
+import { getAureliaHtmlMode } from './modes/getAureliaHtmlMode';
+import { getCustomElementMode } from './modes/getCustomElementMode';
+import { getRepeatForMode } from './modes/getRepeatForMode';
+import { getTextInterpolationMode } from './modes/getTextInterpolationMode';
+import { getValueConverterMode } from './modes/getValueConverterMode';
+import { AureliaCompletionItem } from '../../virtual/virtualCompletion/virtualCompletion';
 import {
   HTMLDocumentRegions,
   parseDocumentRegions,
@@ -29,13 +29,13 @@ import {
   getRegionAtPosition,
   getDocumentRegions,
   ViewRegionType,
-} from "./embeddedSupport";
+} from './embeddedSupport';
 import {
   getLanguageModelCache,
   LanguageModelCache,
-} from "./languageModelCache";
+} from './languageModelCache';
 
-export * from "vscode-html-languageservice";
+export * from 'vscode-html-languageservice';
 
 export interface LanguageMode {
   getId(): string;
@@ -96,7 +96,7 @@ export function getDocumentRegionAtPosition(position: Position) {
       try {
         regions = await parseDocumentRegions(document);
       } catch (err) {
-        console.log("72 TCL: getDocumentRegionAtPosition -> err", err);
+        console.log('72 TCL: getDocumentRegionAtPosition -> err', err);
       }
 
       const reg = getRegionAtPosition(document, regions, position);
@@ -127,8 +127,8 @@ export async function getLanguageModes(): Promise<LanguageModes> {
 
   let modes = Object.create(null);
 
-  modes["html"] = {};
-  modes["html"].mode = await getAureliaHtmlMode(documentRegions);
+  modes['html'] = {};
+  modes['html'].mode = await getAureliaHtmlMode(documentRegions);
 
   modes[ViewRegionType.Attribute] = {};
   modes[ViewRegionType.Attribute].mode = await getAttributeMode(
@@ -167,7 +167,7 @@ export async function getLanguageModes(): Promise<LanguageModes> {
     ): Promise<LanguageModeWithRegion | undefined> {
       const documentRegion = await documentRegions.get(document);
       const regionAtPosition = documentRegion.getRegionAtPosition(position);
-      const languageId = regionAtPosition?.languageId ?? "html";
+      const languageId = regionAtPosition?.languageId ?? 'html';
 
       if (languageId) {
         modes[languageId].region = regionAtPosition;

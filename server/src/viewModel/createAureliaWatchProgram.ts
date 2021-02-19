@@ -1,8 +1,8 @@
-import ts = require("typescript");
-import { AureliaProgram } from "./AureliaProgram";
-import { getAureliaComponentList } from "./getAureliaComponentList";
-import { setAureliaComponentMap } from "./setAureliaComponentMap";
-import { IProjectOptions } from "../common/common.types";
+import ts = require('typescript');
+import { AureliaProgram } from './AureliaProgram';
+import { getAureliaComponentList } from './getAureliaComponentList';
+import { setAureliaComponentMap } from './setAureliaComponentMap';
+import { IProjectOptions } from '../common/common.types';
 
 const updateAureliaComponents = (
   aureliaProgram: AureliaProgram,
@@ -19,14 +19,14 @@ const updateAureliaComponents = (
       `>>> The extension found this many components: ${componentList.length}`
     );
     if (componentList.length < 10) {
-      console.log("List: ");
+      console.log('List: ');
 
       componentList.forEach((component, index) => {
         console.log(`${index} - ${component.filePath}`);
       });
     }
   } else {
-    console.log("[WARNING]: No components found");
+    console.log('[WARNING]: No components found');
   }
 };
 
@@ -41,17 +41,17 @@ export async function createAureliaWatchProgram(
     // /* searchPath */ "./",
     /* searchPath */ targetSourceDirectory,
     ts.sys.fileExists,
-    "tsconfig.json"
+    'tsconfig.json'
   );
   if (configPath === undefined) {
-    configPath = "../../tsconfig.json"; // use config file from the extension as default
+    configPath = '../../tsconfig.json'; // use config file from the extension as default
   }
 
   // 2. Skip watcher if no tsconfig found
   const isCreateWatchProgram = configPath !== undefined;
   if (isCreateWatchProgram) {
     console.log(
-      "[carw.ts] 3.4 Initiating a watcher for documentation and fetching changes in custom components"
+      '[carw.ts] 3.4 Initiating a watcher for documentation and fetching changes in custom components'
     );
     const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
 
@@ -71,7 +71,7 @@ export async function createAureliaWatchProgram(
       programHost,
       oldProgram
     ) => {
-      console.log("-------------- Custom Action ---------------------");
+      console.log('-------------- Custom Action ---------------------');
       return origCreateProgram(rootNames, options, programHost, oldProgram);
     };
     // 2.2 We also overwrite afterProgramCreate to avoid actually running a compile towards the file system
@@ -84,7 +84,7 @@ export async function createAureliaWatchProgram(
     ts.createWatchProgram(host);
   } else {
     console.log(
-      "Not tsconfig file found. The watcher needs a working tsconfig file to"
+      'Not tsconfig file found. The watcher needs a working tsconfig file to'
     );
   }
 

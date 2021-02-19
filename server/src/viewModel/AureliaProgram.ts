@@ -1,8 +1,8 @@
-import { singleton, Container } from "aurelia-dependency-injection";
-import * as ts from "typescript";
-import { CompletionItem } from "vscode-languageserver";
-import { defaultProjectOptions, IProjectOptions } from "../common/common.types";
-import { AureliaClassTypes } from "../common/constants";
+import { singleton, Container } from 'aurelia-dependency-injection';
+import * as ts from 'typescript';
+import { CompletionItem } from 'vscode-languageserver';
+import { defaultProjectOptions, IProjectOptions } from '../common/common.types';
+import { AureliaClassTypes } from '../common/constants';
 const globalContainer = new Container();
 
 interface IWebcomponent {}
@@ -26,7 +26,7 @@ export interface IComponentList {
    * */
   valueConverterName?: string;
   /**
-   * @customElement(">component-name<")
+   * \@customElement(">component-name<")
    * export class >ComponentName< {} --> component-name
    * */
   viewModelName?: string;
@@ -47,21 +47,21 @@ export class AureliaProgram {
   public componentMap: IComponentMap;
   // public classDiagram: IClassDiagram;
   public aureliaSourceFiles?: ts.SourceFile[];
-  componentList: IComponentList[];
+  private componentList: IComponentList[];
 
-  public setComponentMap(componentMap: IComponentMap) {
+  public setComponentMap(componentMap: IComponentMap): void {
     this.componentMap = componentMap;
   }
 
-  public getComponentMap() {
+  public getComponentMap(): IComponentMap {
     return this.componentMap;
   }
 
-  public setComponentList(componentList: IComponentList[]) {
+  public setComponentList(componentList: IComponentList[]): void {
     this.componentList = componentList;
   }
 
-  public getComponentList() {
+  public getComponentList(): IComponentList[] {
     return this.componentList;
   }
 
@@ -73,27 +73,27 @@ export class AureliaProgram {
   //   return this.classDiagram;
   // }
 
-  public getProjectFiles(options: IProjectOptions = defaultProjectOptions) {
+  public getProjectFiles(options: IProjectOptions = defaultProjectOptions): string[] {
     const { sourceDirectory, exclude, include } = options;
     const targetSourceDirectory =
-      sourceDirectory || ts.sys.getCurrentDirectory();
+      sourceDirectory ?? ts.sys.getCurrentDirectory();
 
-    const finalExcludes = ["node_modules", "aurelia_project"];
-    if (exclude?.length) {
+    const finalExcludes = ['node_modules', 'aurelia_project'];
+    if (exclude !== undefined) {
       finalExcludes.push(...exclude);
     }
 
     let finalIncludes: string[];
 
-    if (include?.length) {
+    if (include !== undefined) {
       finalIncludes = include;
     } else {
-      finalIncludes = ["src"];
+      finalIncludes = ['src'];
     }
 
     const paths = ts.sys.readDirectory(
       targetSourceDirectory,
-      ["ts", "js", "html"],
+      ['ts', 'js', 'html'],
       finalExcludes,
       finalIncludes
     );
@@ -132,7 +132,7 @@ export class AureliaProgram {
   ): void {
     const sourceFiles = builderProgram?.getSourceFiles();
     this.aureliaSourceFiles = sourceFiles?.filter((sourceFile) => {
-      if (sourceFile.fileName.includes("node_modules")) return;
+      if (sourceFile.fileName.includes('node_modules')) return false;
       return sourceFile;
     });
   }
@@ -140,7 +140,7 @@ export class AureliaProgram {
   /**
    * Get aurelia source files
    */
-  public getAureliaSourceFiles() {
+  public getAureliaSourceFiles(): ts.SourceFile[] | undefined {
     if (this.aureliaSourceFiles) return this.aureliaSourceFiles;
 
     this.updateAureliaSourceFiles(this.builderProgram);

@@ -116,9 +116,7 @@ module.exports = {
       peerDependencies: false
     }],
     'import/no-mutable-exports': 'error',
-    'import/no-nodejs-modules': 'error',
     'import/no-self-import': 'error',
-    'import/no-unassigned-import': 'error',
     'import/no-useless-path-segments': ['error'],
     'import/order': ['error', { 'groups': [], 'newlines-between': 'ignore' }],
     'import/no-deprecated': 'off', // this rule is extremely slow (takes 95% of the time of the full lint operation) so we disable it for that reason only
@@ -239,7 +237,7 @@ module.exports = {
     'require-atomic-updates': 'warn',
 
     // Off for now as they create way to much noise
-    '@typescript-eslint/quotes': ['off']
+    '@typescript-eslint/quotes': ['warn', 'single']
   },
   overrides: [{ // Specific overrides for JS files as some TS rules don't make sense there.
     files: ['**/*.js'],
@@ -249,14 +247,12 @@ module.exports = {
       '@typescript-eslint/no-var-requires': 'off',
       '@typescript-eslint/restrict-plus-operands': 'off',
       '@typescript-eslint/typedef': 'off',
-      'import/no-nodejs-modules': 'off',
     }
   }, { // Specific overrides for TS files within examples, scripts and tests as some rules don't make sense there.
     files: ['examples/**', 'scripts/**', 'test/**'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-var-requires': 'off',
-      'import/no-nodejs-modules': 'off',
       'import/no-extraneous-dependencies': 'off',
     }
   }],

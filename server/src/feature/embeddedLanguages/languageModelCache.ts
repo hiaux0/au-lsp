@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *-------------------------------------------------------------------------------------------- */
 
-import { TextDocument } from "vscode-html-languageservice";
+import { TextDocument } from 'vscode-html-languageservice';
 
 export interface LanguageModelCache<T> {
   get(document: TextDocument): T;
@@ -90,7 +90,7 @@ export function getLanguageModelCache<T>(
       }
     },
     dispose() {
-      if (typeof cleanupInterval !== "undefined") {
+      if (typeof cleanupInterval !== 'undefined') {
         clearInterval(cleanupInterval);
         cleanupInterval = undefined;
         languageModels = {};

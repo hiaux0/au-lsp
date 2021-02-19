@@ -25,31 +25,31 @@ interface EntryDetailsMap {
   [key: string]: EntryDetailsMapData;
 }
 
-import * as ts from "typescript";
-import * as path from "path";
+import * as ts from 'typescript';
+import * as path from 'path';
 import {
   CompletionItem,
   InsertTextFormat,
   TextDocument,
-} from "vscode-css-languageservice";
+} from 'vscode-css-languageservice';
 import {
   CompletionItemKind,
   MarkupKind,
   TextDocumentPositionParams,
-} from "vscode-languageserver";
-import { getDocumentRegionAtPosition } from "../../feature/embeddedLanguages/languageModes";
-import { aureliaProgram, AureliaProgram } from "../../viewModel/AureliaProgram";
-import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from "../../common/constants";
+} from 'vscode-languageserver';
+import { getDocumentRegionAtPosition } from '../../feature/embeddedLanguages/languageModes';
+import { aureliaProgram, AureliaProgram } from '../../viewModel/AureliaProgram';
+import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from '../../common/constants';
 import {
   createVirtualFileWithContent,
   createVirtualViewModelSourceFile,
   getVirtualLangagueService,
-} from "../virtualSourceFile";
-import { AsyncReturnType } from "../../common/global";
+} from '../virtualSourceFile';
+import { AsyncReturnType } from '../../common/global';
 
-const PARAMETER_NAME = "parameterName";
-const PROPERTY_NAME = "propertyName";
-const METHOD_NAME = "methodName";
+const PARAMETER_NAME = 'parameterName';
+const PROPERTY_NAME = 'propertyName';
+const METHOD_NAME = 'methodName';
 
 /**
  * Returns the virtual competion. (to be used as real completions)
@@ -70,7 +70,7 @@ export function getVirtualCompletion(
   )?.entries;
 
   if (!virtualCompletions) {
-    throw new Error("No completions found");
+    throw new Error('No completions found');
   }
 
   const virtualCompletionEntryDetails = virtualCompletions.map((completion) => {
@@ -97,7 +97,7 @@ export function createProgram(
   compilerOptions?: ts.CompilerOptions
 ): ts.Program {
   const tsConfigJson = ts.parseConfigFileTextToJson(
-    "tsconfig.json",
+    'tsconfig.json',
     compilerOptions
       ? JSON.stringify(compilerOptions)
       : `{
@@ -113,7 +113,7 @@ export function createProgram(
   );
   const { options, errors } = ts.convertCompilerOptionsFromJson(
     tsConfigJson.config.compilerOptions,
-    "."
+    '.'
   );
   if (errors.length) {
     throw errors;
@@ -276,10 +276,10 @@ function enhanceCompletionItemDocumentation(
 ) {
   const kindMap = {
     [ts.ScriptElementKind[
-      "memberVariableElement"
+      'memberVariableElement'
     ] as ts.ScriptElementKind]: CompletionItemKind.Field,
     [ts.ScriptElementKind[
-      "memberFunctionElement"
+      'memberFunctionElement'
     ] as ts.ScriptElementKind]: CompletionItemKind.Method,
   };
 
@@ -287,8 +287,8 @@ function enhanceCompletionItemDocumentation(
     if (!entryDetail) return acc;
 
     acc[entryDetail.name] = {
-      displayParts: entryDetail.displayParts?.map((part) => part.text).join(""),
-      documentation: entryDetail.documentation?.map((doc) => doc.text).join(""),
+      displayParts: entryDetail.displayParts?.map((part) => part.text).join(''),
+      documentation: entryDetail.documentation?.map((doc) => doc.text).join(''),
       kind: kindMap[entryDetail.kind],
       methodArguments: entryDetail.displayParts
         .filter((part) => part.kind === PARAMETER_NAME)
@@ -321,9 +321,9 @@ function enhanceCompletionItemDocumentation(
     const completionItem: AureliaCompletionItem = {
       documentation: {
         kind: MarkupKind.Markdown,
-        value: entryDetail.documentation || "",
+        value: entryDetail.documentation || '',
       },
-      detail: entryDetail.displayParts || "",
+      detail: entryDetail.displayParts || '',
       insertText: isMethod ? insertMethodTextWithArguments : tsCompletion.name,
       insertTextFormat: InsertTextFormat.Snippet,
       kind: entryDetail.kind,
@@ -351,7 +351,7 @@ function enhanceMethodArguments(methodArguments: string[]): string {
     .map((argName, index) => {
       return `\${${index + 1}:${argName}}`;
     })
-    .join(", ");
+    .join(', ');
 }
 
 export async function getAureliaVirtualCompletions(
@@ -369,7 +369,7 @@ export async function getAureliaVirtualCompletions(
       aureliaProgram
     );
   } catch (err) {
-    console.log("onCompletion 261 TCL: err", err);
+    console.log('onCompletion 261 TCL: err', err);
   }
 
   const aureliaVirtualCompletions = virtualCompletions.filter((completion) => {

@@ -1,16 +1,16 @@
-import * as ts from "typescript";
-import * as path from "path";
-import { ViewRegionInfo } from "../feature/embeddedLanguages/embeddedSupport";
-import { aureliaProgram, AureliaProgram } from "../viewModel/AureliaProgram";
-import { Position, TextDocument } from "vscode-html-languageservice";
+import * as ts from 'typescript';
+import * as path from 'path';
+import { ViewRegionInfo } from '../feature/embeddedLanguages/embeddedSupport';
+import { aureliaProgram, AureliaProgram } from '../viewModel/AureliaProgram';
+import { Position, TextDocument } from 'vscode-html-languageservice';
 import {
   Hover,
   MarkupKind,
-} from "vscode-languageserver";
-import { getDocumentRegionAtPosition } from "../feature/embeddedLanguages/languageModes";
+} from 'vscode-languageserver';
+import { getDocumentRegionAtPosition } from '../feature/embeddedLanguages/languageModes';
 
-export const VIRTUAL_SOURCE_FILENAME = "virtual.ts";
-const VIRTUAL_METHOD_NAME = "__vir";
+export const VIRTUAL_SOURCE_FILENAME = 'virtual.ts';
+const VIRTUAL_METHOD_NAME = '__vir';
 
 export interface VirtualSourceFileInfo {
   virtualSourcefile: ts.SourceFile;
@@ -67,7 +67,7 @@ export async function createVirtualLanguageService(
   const documentUri = document.uri;
 
   // 1. Get content for virtual file
-  let virtualContent: string = "";
+  let virtualContent: string = '';
   if (options.region) {
     const region = await getDocumentRegionAtPosition(position).get(document);
 
@@ -81,7 +81,7 @@ export async function createVirtualLanguageService(
   }
 
   if (!virtualContent) {
-    throw new Error("No virtual content");
+    throw new Error('No virtual content');
   }
 
   // 2. Create virtual file
@@ -158,7 +158,7 @@ function getQuickInfoAtPosition(
   if (defintion.length > 1) {
     // TODO: Add VSCode warning, to know how to actually handle this case.
     // Currently, I think, only one defintion will be returned.
-    throw new Error("Unsupported: Multiple defintions.");
+    throw new Error('Unsupported: Multiple defintions.');
   }
 
   /**
@@ -183,7 +183,7 @@ function getQuickInfoAtPosition(
     virtualSourcefile.fileName,
     virtualCursorIndex
   );
-  let documentation = "";
+  let documentation = '';
 
   if (quickInfo?.documentation?.length) {
     documentation = quickInfo.documentation[0].text;
@@ -194,9 +194,9 @@ function getQuickInfoAtPosition(
    * Format taken from VSCode hovering
    */
   const result =
-    "```ts\n" +
+    '```ts\n' +
     `(${defintion[0].kind}) ${defintion[0].containerName}.${sourceCodeText}` +
-    "\n```";
+    '\n```';
 
   return {
     contents: {
@@ -223,7 +223,7 @@ export function getVirtualLangagueService(
       const finalScriptFileName = [sourceFile.fileName];
       return finalScriptFileName;
     },
-    getScriptVersion: () => "0",
+    getScriptVersion: () => '0',
     getScriptSnapshot: (fileName) => {
       let sourceFileText;
       if (fileName === VIRTUAL_SOURCE_FILENAME) {
@@ -231,7 +231,7 @@ export function getVirtualLangagueService(
       } else {
         const sourceFile = watcherProgram?.getSourceFile(fileName);
 
-        sourceFileText = sourceFile?.getText() || "";
+        sourceFileText = sourceFile?.getText() || '';
       }
 
       return ts.ScriptSnapshot.fromString(sourceFileText);
@@ -246,7 +246,7 @@ export function getVirtualLangagueService(
   const cls = ts.createLanguageService(lSHost, ts.createDocumentRegistry());
 
   if (!cls) {
-    throw new Error("No cls");
+    throw new Error('No cls');
   }
 
   return cls;
@@ -271,7 +271,7 @@ export function createVirtualViewModelSourceFile(
 ): VirtualSourceFileInfo {
   /** Match [...] export class MyCustomElement { [...] */
   const virtualViewModelContent = originalSourceFile.getText();
-  const classDeclaration = "class ";
+  const classDeclaration = 'class ';
   const classNameToOpeningBracketRegex = new RegExp(
     `${classDeclaration}${targetClassName}(.*?{)`
   );
@@ -299,7 +299,7 @@ export function createVirtualViewModelSourceFile(
 
   /**  Create temp content */
   const tempMethodTextStart = `${VIRTUAL_METHOD_NAME}() {this.`;
-  const tempMethodTextEnd = "};\n  ";
+  const tempMethodTextEnd = '};\n  ';
   const tempMethodText =
     tempMethodTextStart + virtualContent + tempMethodTextEnd;
   const tempWithContent = starter + tempMethodText + ender;
@@ -328,7 +328,7 @@ export function createVirtualFileWithContent(
 ): VirtualSourceFileInfo | undefined {
   // 1. Get original viewmodel file associated with view
   const aureliaFiles = aureliaProgram.getAureliaSourceFiles();
-  const scriptExtensions = [".js", ".ts"]; // TODO find common place or take from package.json config
+  const scriptExtensions = ['.js', '.ts']; // TODO find common place or take from package.json config
   const viewBaseName = path.parse(documentUri).name;
 
   const targetSourceFile = aureliaFiles?.find((aureliaFile) => {

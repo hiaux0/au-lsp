@@ -1,14 +1,14 @@
-import { ViewRegionInfo, ViewRegionType , HTMLDocumentRegions } from "../embeddedSupport";
-import { TextDocumentPositionParams } from "vscode-languageserver";
+import { ViewRegionInfo, ViewRegionType , HTMLDocumentRegions } from '../embeddedSupport';
+import { TextDocumentPositionParams } from 'vscode-languageserver';
 
-import { LanguageModelCache } from "../languageModelCache";
-import { LanguageMode, Position, TextDocument } from "../languageModes";
-import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
+import { LanguageModelCache } from '../languageModelCache';
+import { LanguageMode, Position, TextDocument } from '../languageModes';
+import { getAureliaVirtualCompletions } from '../../../virtual/virtualCompletion/virtualCompletion';
 import {
   getAccessScopeDefinition,
   getAccessScopeViewModelDefinition,
-} from "../../definition/accessScopeDefinition";
-import { DefinitionResult } from "../../definition/getDefinition";
+} from '../../definition/accessScopeDefinition';
+import { DefinitionResult } from '../../definition/getDefinition';
 
 export function getRepeatForMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>

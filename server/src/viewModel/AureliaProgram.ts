@@ -1,6 +1,7 @@
 import { singleton, Container } from "aurelia-dependency-injection";
 import * as ts from "typescript";
 import { CompletionItem } from "vscode-languageserver";
+import { defaultProjectOptions, IProjectOptions } from "../common/common.types";
 import { AureliaClassTypes } from "../common/constants";
 const globalContainer = new Container();
 
@@ -72,13 +73,29 @@ export class AureliaProgram {
   //   return this.classDiagram;
   // }
 
-  public getProjectFiles(sourceDirectory?: string) {
-    sourceDirectory = sourceDirectory || ts.sys.getCurrentDirectory();
+  public getProjectFiles(options: IProjectOptions = defaultProjectOptions) {
+    const { sourceDirectory, exclude, include } = options;
+    const targetSourceDirectory =
+      sourceDirectory || ts.sys.getCurrentDirectory();
+
+    let finalExcludes = ["node_modules", "aurelia_project"];
+    if (exclude?.length) {
+      finalExcludes.push(...exclude);
+    }
+
+    let finalIncludes: string[];
+
+    if (include?.length) {
+      finalIncludes = include
+    } else {
+      finalIncludes = ["src"];
+    }
+
     const paths = ts.sys.readDirectory(
-      sourceDirectory,
+      targetSourceDirectory,
       ["ts", "js", "html"],
-      ["node_modules", "aurelia_project"],
-      ["src"]
+      finalExcludes,
+      finalIncludes
     );
     return paths;
   }

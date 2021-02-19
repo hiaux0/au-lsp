@@ -2,15 +2,16 @@ import ts = require("typescript");
 import { AureliaProgram } from "./AureliaProgram";
 import { getAureliaComponentList } from "./getAureliaComponentList";
 import { setAureliaComponentMap } from "./setAureliaComponentMap";
+import { IProjectOptions } from "../common/common.types";
 
 const updateAureliaComponents = (
   aureliaProgram: AureliaProgram,
-  sourceDirectory?: string
+  projectOptions?: IProjectOptions
 ): void => {
   /** Think this is not obsolete */
-  setAureliaComponentMap(aureliaProgram, sourceDirectory);
+  setAureliaComponentMap(aureliaProgram, projectOptions);
 
-  const componentList = getAureliaComponentList(aureliaProgram);
+  const componentList = getAureliaComponentList(aureliaProgram, projectOptions);
 
   if (componentList) {
     aureliaProgram.setComponentList(componentList);
@@ -31,13 +32,14 @@ const updateAureliaComponents = (
 
 export async function createAureliaWatchProgram(
   aureliaProgram: AureliaProgram,
-  sourceDirectory?: string
+  projectOptions?: IProjectOptions
 ) {
   // 1. Define/default path/to/tsconfig.json
-  sourceDirectory = sourceDirectory || ts.sys.getCurrentDirectory();
+  const targetSourceDirectory =
+    projectOptions?.sourceDirectory || ts.sys.getCurrentDirectory();
   let configPath = ts.findConfigFile(
     // /* searchPath */ "./",
-    /* searchPath */ sourceDirectory,
+    /* searchPath */ targetSourceDirectory,
     ts.sys.fileExists,
     "tsconfig.json"
   );
@@ -75,7 +77,7 @@ export async function createAureliaWatchProgram(
     // 2.2 We also overwrite afterProgramCreate to avoid actually running a compile towards the file system
     host.afterProgramCreate = (builderProgram) => {
       aureliaProgram.setBuilderProgram(builderProgram);
-      updateAureliaComponents(aureliaProgram, sourceDirectory);
+      updateAureliaComponents(aureliaProgram, projectOptions);
     };
 
     // 2.3 Create initial watch program with our specially crafted host for aurelia component handling

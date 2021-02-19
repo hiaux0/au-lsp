@@ -10,14 +10,15 @@ import {
 import { kebabCase } from "@aurelia/kernel";
 // import { createDiagram } from "./createDiagram";
 import { getElementNameFromClassDeclaration } from "../common/className";
+import { IProjectOptions } from "../common/common.types";
 
 export function setAureliaComponentMap(
   aureliaProgram: AureliaProgram,
-  sourceDirectory?: string
+  projectOptions?: IProjectOptions
 ) {
   console.log("[acm.ts] Starting Component Map collection");
 
-  const paths = aureliaProgram.getProjectFiles(sourceDirectory);
+  const paths = aureliaProgram.getProjectFiles(projectOptions);
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
   let classDeclaration: CompletionItem | undefined;
   let classDeclarations: CompletionItem[] = [];
@@ -38,7 +39,7 @@ export function setAureliaComponentMap(
   const checker = program.getTypeChecker();
 
   paths.forEach(async (path) => {
-    const isDTs = Path.basename(path).endsWith('.d.ts');
+    const isDTs = Path.basename(path).endsWith(".d.ts");
     if (isDTs) return;
 
     const ext = Path.extname(path);

@@ -32,12 +32,13 @@ import { kebabCase } from "@aurelia/kernel";
 import { createDiagram } from "./createDiagram";
 import { getElementNameFromClassDeclaration } from "../common/className";
 import { AureliaClassTypes, VALUE_CONVERTER_SUFFIX } from "../common/constants";
+import { IProjectOptions } from '../common/common.types';
 
 export function getAureliaComponentList(
   aureliaProgram: AureliaProgram,
-  sourceDirectory?: string
+  projectOptions?: IProjectOptions
 ) {
-  const paths = aureliaProgram.getProjectFiles(sourceDirectory);
+  const paths = aureliaProgram.getProjectFiles(projectOptions);
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
   let classDeclaration: CompletionItem | undefined;
   let classDeclarations: CompletionItem[] = [];

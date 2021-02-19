@@ -104,7 +104,7 @@ export function getAureliaProgramForTesting() {
   const aureliaProgram = container.get(AureliaProgram);
   const sourceDirectory = path.resolve(__dirname, "../../../../testFixture");
 
-  createAureliaWatchProgram(aureliaProgram, sourceDirectory);
-  setAureliaComponentMap(aureliaProgram, sourceDirectory);
+  createAureliaWatchProgram(aureliaProgram, {sourceDirectory});
+  setAureliaComponentMap(aureliaProgram, {sourceDirectory});
   return aureliaProgram;
 }

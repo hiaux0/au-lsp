@@ -33,7 +33,7 @@ export interface IComponentList {
   type: AureliaClassTypes;
 }
 
-interface IClassDiagram {}
+// interface IClassDiagram {}
 
 /**
  * The AureliaProgram class represents your whole applicaton
@@ -124,9 +124,6 @@ export class AureliaProgram {
    * Get aurelia source files
    */
   public getAureliaSourceFiles() {
-    console.log(
-      "TCL: AureliaProgram -> getAureliaSourceFiles -> getAureliaSourceFiles"
-    );
     if (this.aureliaSourceFiles) return this.aureliaSourceFiles;
 
     this.updateAureliaSourceFiles(this.builderProgram);

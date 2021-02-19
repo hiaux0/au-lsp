@@ -7,7 +7,7 @@ import {
   InsertTextFormat,
   CompletionItemKind,
 } from 'vscode-languageserver';
-import { kebabCase } from '@aurelia/kernel';
+import { kebabCase } from 'lodash';
 // import { createDiagram } from "./createDiagram";
 import { getElementNameFromClassDeclaration } from '../common/className';
 import { IProjectOptions } from '../common/common.types';
@@ -15,7 +15,7 @@ import { IProjectOptions } from '../common/common.types';
 export function setAureliaComponentMap(
   aureliaProgram: AureliaProgram,
   projectOptions?: IProjectOptions
-) {
+): void {
   console.log('[acm.ts] Starting Component Map collection');
 
   const paths = aureliaProgram.getProjectFiles(projectOptions);
@@ -38,7 +38,7 @@ export function setAureliaComponentMap(
   }
   const checker = program.getTypeChecker();
 
-  paths.forEach(async (path) => {
+  paths.forEach((path) => {
     const isDTs = Path.basename(path).endsWith('.d.ts');
     if (isDTs) return;
 

@@ -1,4 +1,4 @@
-import { kebabCase } from '@aurelia/kernel';
+import { kebabCase } from 'lodash';
 import * as ts from 'typescript';
 import { getClassDecoratorInfos } from '../viewModel/getAureliaComponentList';
 import { CUSTOM_ELEMENT_SUFFIX } from './constants';

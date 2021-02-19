@@ -1,4 +1,4 @@
-import { kebabCase } from '@aurelia/kernel';
+import { kebabCase } from 'lodash';
 import {
   CompletionItem,
   CompletionItemKind,

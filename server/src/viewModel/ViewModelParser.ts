@@ -8,7 +8,7 @@ import {
 } from 'vscode-languageserver';
 import * as ts from 'typescript';
 import { AureliaProgram } from './AureliaProgram';
-import { kebabCase } from '@aurelia/kernel';
+import { kebabCase } from 'lodash';
 import { getElementNameFromClassDeclaration } from '../common/className';
 
 const connection: IConnection = createConnection();

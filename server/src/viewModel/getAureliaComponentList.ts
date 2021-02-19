@@ -28,7 +28,7 @@ import {
   InsertTextFormat,
   CompletionItemKind,
 } from 'vscode-languageserver';
-import { kebabCase } from '@aurelia/kernel';
+import { kebabCase } from 'lodash';
 import { createDiagram } from './createDiagram';
 import { getElementNameFromClassDeclaration } from '../common/className';
 import { AureliaClassTypes, VALUE_CONVERTER_SUFFIX } from '../common/constants';

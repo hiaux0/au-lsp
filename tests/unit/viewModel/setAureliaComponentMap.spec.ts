@@ -5,6 +5,7 @@ import * as path from 'path';
 
 import { AureliaProgram } from '../../../server/src/viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from '../../../server/src/viewModel/createAureliaWatchProgram';
+import { CompletionItemKind } from 'vscode-html-languageservice';
 
 // const testAureliaProgram = new AureliaProgram();
 
@@ -31,7 +32,17 @@ describe('Aurelia Component Map', () => {
 
   it('setAureliaComponentMap', () => {
     const componentMap = testAureliaProgram.getComponentMap();
-    console.log('TCL: componentMap.bindables', componentMap.bindables);
-    strictEqual(componentMap.bindables.length, 0);
+    strictEqual(componentMap.bindables?.length, 0);
+
+    strictEqual(componentMap.classDeclarations?.length, 1);
+    strictEqual(componentMap.classDeclarations[0].kind, CompletionItemKind.Class);
+
+    strictEqual(componentMap.classMembers?.length, 6);
+
+    const variables = componentMap.classMembers.filter(classMember => classMember.kind === CompletionItemKind.Field);
+    strictEqual(variables?.length, 2);
+
+    const methods = componentMap.classMembers.filter(classMember => classMember.kind === CompletionItemKind.Method);
+    strictEqual(methods?.length, 4);
   });
 });

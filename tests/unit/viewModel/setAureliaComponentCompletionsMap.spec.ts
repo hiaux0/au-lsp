@@ -7,8 +7,6 @@ import { AureliaProgram } from '../../../server/src/viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from '../../../server/src/viewModel/createAureliaWatchProgram';
 import { CompletionItemKind } from 'vscode-html-languageservice';
 
-// const testAureliaProgram = new AureliaProgram();
-
 export function getAureliaProgramForTesting(): AureliaProgram {
   const container = new Container();
   const aureliaProgram = container.get(AureliaProgram);
@@ -17,7 +15,7 @@ export function getAureliaProgramForTesting(): AureliaProgram {
     '../../../client/testFixture'
   );
 
-  void createAureliaWatchProgram(aureliaProgram, {
+  createAureliaWatchProgram(aureliaProgram, {
     sourceDirectory,
     include: ['src/realdworld-advanced'],
   });

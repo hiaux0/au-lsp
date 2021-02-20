@@ -99,16 +99,10 @@ function getAureliaViewModelClassDeclaration(
   sourceFile: ts.SourceFile,
   checker: ts.TypeChecker
 ) {
-  // if (sourceFile?.fileName !== '/Users/hdn/Desktop/aurelia-lsp/client/testFixture/src/my-compo/my-compo.ts') return;
   let result: CompletionItem | undefined;
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
 
   sourceFile.forEachChild((node) => {
-    const asht = ts.isClassDeclaration(node);
-    let qdrw;
-    if (ts.isClassDeclaration(node)) {
-      qdrw = isNodeExported(node);
-    }
     if (
       ts.isClassDeclaration(node) &&
       isNodeExported(node) &&
@@ -208,7 +202,6 @@ function getAureliaViewModelClassMembers(
   const bindables: CompletionItem[] = [];
 
   classDeclaration.forEachChild((classMember) => {
-    ts;
     if (
       ts.isPropertyDeclaration(classMember) ||
       ts.isMethodDeclaration(classMember)
@@ -235,7 +228,7 @@ function getAureliaViewModelClassMembers(
       let defaultValueText: string = '';
       if (ts.isPropertyDeclaration(classMember)) {
         // Add default values. The value can be undefined, but that is correct in most cases.
-        const defaultValue = classMember.initializer?.getText();
+        const defaultValue = classMember.initializer?.getText() ?? '';
         defaultValueText = `Default value: \`${defaultValue}\``;
       }
 
@@ -248,7 +241,7 @@ function getAureliaViewModelClassMembers(
 
       // const quote = this.settings.quote;
       const quote = '"';
-      const varAsKebabCase = kebabCase(classMemberName);
+      const varAsKebabCase = kebabCase(classMemberName) as string;
       const result: CompletionItem = {
         documentation: {
           kind: MarkupKind.Markdown,

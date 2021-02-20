@@ -270,7 +270,7 @@ connection.onRequest('aurelia-get-component-list', () => {
 });
 
 connection.onRequest('aurelia-get-component-class-declarations', () => {
-  return aureliaProgram.getComponentMap().classDeclarations;
+  return aureliaProgram.getComponentCompletionsMap().classDeclarations;
 });
 
 connection.onRequest<any, any>(

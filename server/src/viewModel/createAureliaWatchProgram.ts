@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 import { AureliaProgram } from './AureliaProgram';
 import { getAureliaComponentList } from './getAureliaComponentList';
-import { setAureliaComponentMap } from './setAureliaComponentMap';
+import { setAureliaComponentCompletionsMap } from './setAureliaComponentCompletionsMap';
 import { IProjectOptions } from '../common/common.types';
 
 const updateAureliaComponents = (
@@ -9,7 +9,7 @@ const updateAureliaComponents = (
   projectOptions?: IProjectOptions
 ): void => {
   /** Think this is not obsolete */
-  setAureliaComponentMap(aureliaProgram, projectOptions);
+  setAureliaComponentCompletionsMap(aureliaProgram, projectOptions);
 
   const componentList = getAureliaComponentList(aureliaProgram, projectOptions);
 

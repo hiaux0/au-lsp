@@ -41,7 +41,7 @@ export async function getBindablesCompletion(
 
   if (!targetCustomElementRegion) return [];
 
-  return [...aureliaProgram.getComponentMap().bindables!].filter(
+  return [...aureliaProgram.getComponentCompletionsMap().bindables!].filter(
     (bindable) =>
       kebabCase(bindable.data.elementName) === targetCustomElementRegion.tagName
   );

@@ -6,7 +6,7 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { intersection, map, kebabCase } from 'lodash';
-import { AureliaProgram , IComponentMap } from '../../../server/src/viewModel/AureliaProgram';
+import { AureliaProgram , IComponentCompletionsMap } from '../../../server/src/viewModel/AureliaProgram';
 
 import {
   activate,
@@ -16,10 +16,10 @@ import {
 
 function getTestItems(
   aureliaProgram: AureliaProgram,
-  completionType: keyof IComponentMap
+  completionType: keyof IComponentCompletionsMap
 ) {
-  const componentMap = aureliaProgram.getComponentMap();
-  const completionMapOfType = componentMap[completionType] as unknown as vscode.CompletionItem[];
+  const componentCompletionsMap = aureliaProgram.getComponentCompletionsMap();
+  const completionMapOfType = componentCompletionsMap[completionType] as unknown as vscode.CompletionItem[];
 
   if (!Array.isArray(completionMapOfType)) return;
 

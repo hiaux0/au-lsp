@@ -19,7 +19,7 @@ export function getAureliaHtmlMode(
       triggerCharacter: string | undefined
     ) {
       if (triggerCharacter === '<') {
-        return [...aureliaProgram.getComponentMap().classDeclarations!];
+        return [...aureliaProgram.getComponentCompletionsMap().classDeclarations!];
       }
       return [];
     },

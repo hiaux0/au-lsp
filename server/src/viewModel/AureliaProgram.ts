@@ -7,7 +7,7 @@ const globalContainer = new Container();
 
 interface IWebcomponent {}
 
-export interface IComponentMap {
+export interface IComponentCompletionsMap {
   classDeclarations: CompletionItem[] | undefined;
   classMembers: CompletionItem[] | undefined;
   bindables: CompletionItem[] | undefined;
@@ -44,17 +44,17 @@ export interface IComponentList {
 export class AureliaProgram {
   public components: IWebcomponent[] = [];
   public builderProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
-  public componentMap: IComponentMap;
+  public componentCompletionsMap: IComponentCompletionsMap;
   // public classDiagram: IClassDiagram;
   public aureliaSourceFiles?: ts.SourceFile[];
   private componentList: IComponentList[];
 
-  public setComponentMap(componentMap: IComponentMap): void {
-    this.componentMap = componentMap;
+  public setComponentCompletionsMap(componentCompletionsMap: IComponentCompletionsMap): void {
+    this.componentCompletionsMap = componentCompletionsMap;
   }
 
-  public getComponentMap(): IComponentMap {
-    return this.componentMap;
+  public getComponentCompletionsMap(): IComponentCompletionsMap {
+    return this.componentCompletionsMap;
   }
 
   public setComponentList(componentList: IComponentList[]): void {

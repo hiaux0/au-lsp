@@ -1,4 +1,4 @@
-import { AureliaProgram, IComponentMap } from './AureliaProgram';
+import { AureliaProgram, IComponentCompletionsMap } from './AureliaProgram';
 import * as ts from 'typescript';
 import * as Path from 'path';
 import {
@@ -13,7 +13,7 @@ import { getElementNameFromClassDeclaration } from '../common/className';
 import { IProjectOptions } from '../common/common.types';
 import { AureliaClassTypes, AureliaDecorator } from '../common/constants';
 
-export function setAureliaComponentMap(
+export function setAureliaComponentCompletionsMap(
   aureliaProgram: AureliaProgram,
   projectOptions?: IProjectOptions
 ): void {
@@ -26,7 +26,7 @@ export function setAureliaComponentMap(
   let classMembers: CompletionItem[] = [];
   let bindables: CompletionItem[] = [];
   // let classDiagram: any;
-  const componentMap: IComponentMap = {
+  const componentCompletionsMap: IComponentCompletionsMap = {
     classDeclarations: [],
     classMembers: [],
     bindables: [],
@@ -77,9 +77,9 @@ export function setAureliaComponentMap(
         classMembers = result1.classMembers;
         bindables = result1.bindables;
 
-        componentMap.classDeclarations = classDeclarations;
-        componentMap?.classMembers?.push(...classMembers);
-        componentMap?.bindables?.push(...bindables);
+        componentCompletionsMap.classDeclarations = classDeclarations;
+        componentCompletionsMap?.classMembers?.push(...classMembers);
+        componentCompletionsMap?.bindables?.push(...bindables);
         break;
       }
       case '.html': {
@@ -91,7 +91,7 @@ export function setAureliaComponentMap(
     }
   });
 
-  aureliaProgram.setComponentMap(componentMap);
+  aureliaProgram.setComponentCompletionsMap(componentCompletionsMap);
   // aureliaProgram.setClassDiagram(classDiagram);
 }
 

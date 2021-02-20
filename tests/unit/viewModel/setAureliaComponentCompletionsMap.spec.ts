@@ -30,19 +30,19 @@ describe('Aurelia Component Map', () => {
     testAureliaProgram = getAureliaProgramForTesting();
   });
 
-  it('setAureliaComponentMap', () => {
-    const componentMap = testAureliaProgram.getComponentMap();
-    strictEqual(componentMap.bindables?.length, 0);
+  it('setAureliaComponentCompletionsMap', () => {
+    const componentCompletionsMap = testAureliaProgram.getComponentCompletionsMap();
+    strictEqual(componentCompletionsMap.bindables?.length, 0);
 
-    strictEqual(componentMap.classDeclarations?.length, 1);
-    strictEqual(componentMap.classDeclarations[0].kind, CompletionItemKind.Class);
+    strictEqual(componentCompletionsMap.classDeclarations?.length, 1);
+    strictEqual(componentCompletionsMap.classDeclarations[0].kind, CompletionItemKind.Class);
 
-    strictEqual(componentMap.classMembers?.length, 6);
+    strictEqual(componentCompletionsMap.classMembers?.length, 6);
 
-    const variables = componentMap.classMembers.filter(classMember => classMember.kind === CompletionItemKind.Field);
+    const variables = componentCompletionsMap.classMembers.filter(classMember => classMember.kind === CompletionItemKind.Field);
     strictEqual(variables?.length, 2);
 
-    const methods = componentMap.classMembers.filter(classMember => classMember.kind === CompletionItemKind.Method);
+    const methods = componentCompletionsMap.classMembers.filter(classMember => classMember.kind === CompletionItemKind.Method);
     strictEqual(methods?.length, 4);
   });
 });

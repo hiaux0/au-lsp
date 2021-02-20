@@ -15,7 +15,7 @@ import * as ts from 'typescript';
 import { Container } from 'aurelia-dependency-injection';
 import { AureliaProgram } from '../../../server/src/viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from '../../../server/src/viewModel/createAureliaWatchProgram';
-import { setAureliaComponentMap } from '../../../server/src/viewModel/setAureliaComponentMap';
+import { setAureliaComponentCompletionsMap } from '../../../server/src/viewModel/setAureliaComponentCompletionsMap';
 
 export let doc: vscode.TextDocument;
 export let editor: vscode.TextEditor;
@@ -105,6 +105,6 @@ export function getAureliaProgramForTesting() {
   const sourceDirectory = path.resolve(__dirname, '../../../../testFixture');
 
   createAureliaWatchProgram(aureliaProgram, {sourceDirectory});
-  setAureliaComponentMap(aureliaProgram, {sourceDirectory});
+  setAureliaComponentCompletionsMap(aureliaProgram, {sourceDirectory});
   return aureliaProgram;
 }

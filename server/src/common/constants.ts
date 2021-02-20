@@ -22,6 +22,12 @@ export enum AureliaView {
   VALUE_CONVERTER_ARGUMENT = ':',
 }
 
+export enum AureliaDecorator {
+  CUSTOM_ELEMENT = '@customElement',
+  USE_VIEW = '@useView',
+  NO_VIEW = '@noView',
+}
+
 export enum AureliaLSP {
   /** [c]ompletion [i]tem [d]ata [t]ype -> cidt */
   AureliaCompletionItemDataType = 'AURELIA_CIDT',

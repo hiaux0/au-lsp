@@ -11,6 +11,7 @@ import { kebabCase } from 'lodash';
 // import { createDiagram } from "./createDiagram";
 import { getElementNameFromClassDeclaration } from '../common/className';
 import { IProjectOptions } from '../common/common.types';
+import { AureliaClassTypes, AureliaDecorator } from '../common/constants';
 
 export function setAureliaComponentMap(
   aureliaProgram: AureliaProgram,
@@ -54,10 +55,7 @@ export function setAureliaComponentMap(
         }
 
         /* export class MyCustomElement */
-        const result = getAureliaViewModelClassDeclaration(
-          sourceFile,
-          checker
-        );
+        const result = getAureliaViewModelClassDeclaration(sourceFile, checker);
         classDeclaration = result?.classDeclaration;
         targetClassDeclaration = result?.targetClassDeclaration;
 
@@ -113,13 +111,14 @@ function getAureliaViewModelClassDeclaration(
     }
     if (
       ts.isClassDeclaration(node) &&
-      isNodeExported(node)
-      /** && hasTemplate
-       * && classDeclarationHasUseViewOrNoView
-       * && hasCorrectNamingConvention */
+      isNodeExported(node) &&
+      (classDeclarationHasUseViewOrNoView(node) ||
+        hasCorrectNamingConvention(node))
+      /** && hasTemplate */
     ) {
       // Save the class for further processing later on.
       targetClassDeclaration = node;
+      targetClassDeclaration.name?.getText(); /* ? */
 
       const elementName = getElementNameFromClassDeclaration(node);
       // Note the `!` in the argument: `getSymbolAtLocation` expects a `Node` arg, but returns undefined
@@ -163,13 +162,38 @@ function isNodeExported(node: ts.ClassDeclaration): boolean {
  */
 function classDeclarationHasUseViewOrNoView(
   classDeclaration: ts.ClassDeclaration
-): boolean | undefined {
-  return classDeclaration.decorators?.some((decorator) => {
-    return (
+): boolean {
+  if (!classDeclaration.decorators) return false;
+
+  const hasViewDecorator = classDeclaration.decorators.some((decorator) => {
+    const result =
       decorator.getText().includes('@useView') ||
-      decorator.getText().includes('@noView')
-    );
+      decorator.getText().includes('@noView');
+    return result;
   });
+
+  return hasViewDecorator;
+}
+
+/**
+ * MyClassCustomelement
+ *
+ * \@customElement(...)
+ * MyClass
+ */
+function hasCorrectNamingConvention(classDeclaration: ts.ClassDeclaration) {
+  if (!classDeclaration.decorators) return false;
+
+  const hasViewDecorator = classDeclaration.decorators.some((decorator) => {
+    const result = decorator
+      .getText()
+      .includes(AureliaDecorator.CUSTOM_ELEMENT);
+    return result;
+  });
+
+  const hasCustomElementNamingConvention = Boolean(classDeclaration.name?.getText().includes(AureliaClassTypes.CUSTOM_ELEMENT));
+
+  return hasViewDecorator || hasCustomElementNamingConvention;
 }
 
 /**

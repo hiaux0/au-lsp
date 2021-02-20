@@ -1,24 +1,19 @@
-import { ViewRegionInfo ,
-  CustomElementRegionData,
-  parseDocumentRegions,
+import {
+  ViewRegionInfo,
   ViewRegionType,
-, HTMLDocumentRegions } from "../embeddedSupport";
-import * as path from "path";
+} from '../embeddedSupport';
+import * as path from 'path';
 
-import { TextDocumentPositionParams } from "vscode-languageserver";
+import { TextDocumentPositionParams } from 'vscode-languageserver';
 
-import { LanguageModelCache } from "../languageModelCache";
-import { LanguageMode, Position, TextDocument } from "../languageModes";
-import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
-import { getBindablesCompletion } from "../../completions/completions";
-import { aureliaProgram } from "../../../viewModel/AureliaProgram";
-import { DefinitionResult } from "../../definition/getDefinition";
-import { connection } from "../../../server";
-import { camelCase } from "@aurelia/kernel";
-import { getVirtualDefinition } from "../../../virtual/virtualDefinition/virtualDefinition";
+import { LanguageMode, Position, TextDocument } from '../languageModes';
+import { getBindablesCompletion } from '../../completions/completions';
+import { aureliaProgram } from '../../../viewModel/AureliaProgram';
+import { DefinitionResult } from '../../definition/getDefinition';
+import { camelCase } from 'lodash';
+import { getVirtualDefinition } from '../../../virtual/virtualDefinition/virtualDefinition';
 
 export function getCustomElementMode(
-  documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
 ): LanguageMode {
   return {
     getId() {
@@ -29,13 +24,13 @@ export function getCustomElementMode(
       _textDocumentPosition: TextDocumentPositionParams,
       triggerCharacter: string | undefined
     ) {
-      if (triggerCharacter === " ") {
+      if (triggerCharacter === ' ') {
         const bindablesCompletion = await getBindablesCompletion(
           _textDocumentPosition,
           document
         );
         if (bindablesCompletion.length > 0) return bindablesCompletion;
-        console.log("TCL: triggerCharacter", triggerCharacter);
+        console.log('TCL: triggerCharacter', triggerCharacter);
       }
       return [];
     },
@@ -53,7 +48,7 @@ export function getCustomElementMode(
       /**
        * 1. Triggered on <|my-component>
        * */
-      if (targetAureliaFile?.fileName) {
+      if (typeof targetAureliaFile?.fileName === 'string') {
         return {
           lineAndCharacter: {
             line: 1,
@@ -87,7 +82,9 @@ export function getCustomElementMode(
 
       return;
     },
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     onDocumentRemoved(_document: TextDocument) {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     dispose() {},
   };
 }

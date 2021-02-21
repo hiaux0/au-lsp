@@ -4,8 +4,6 @@ import { AsyncReturnType } from './common/global.d';
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import 'reflect-metadata';
-
 import {
   createConnection,
   TextDocuments,
@@ -51,7 +49,7 @@ import {
   DefinitionResult,
   getDefinition,
 } from './feature/definition/getDefinition';
-import { camelCase } from '@aurelia/kernel';
+import { camelCase } from 'lodash';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.

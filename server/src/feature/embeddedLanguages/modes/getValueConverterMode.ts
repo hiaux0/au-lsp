@@ -70,7 +70,6 @@ async function onValueConverterCompletion(
 }
 
 export function getValueConverterMode(
-  documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
 ): LanguageMode {
   return {
     getId() {

@@ -142,7 +142,6 @@ export async function getLanguageModes(): Promise<LanguageModes> {
 
   modes[ViewRegionType.CustomElement] = {};
   modes[ViewRegionType.CustomElement].mode = await getCustomElementMode(
-    documentRegions
   );
 
   modes[ViewRegionType.RepeatFor] = {};
@@ -157,7 +156,6 @@ export async function getLanguageModes(): Promise<LanguageModes> {
 
   modes[ViewRegionType.ValueConverter] = {};
   modes[ViewRegionType.ValueConverter].mode = await getValueConverterMode(
-    documentRegions
   );
 
   return {

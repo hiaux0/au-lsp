@@ -3,7 +3,8 @@ module.exports = function () {
 	  files: [
 		'client/**/*.ts',
 		'server/**/*.ts',
-		'**/tsconfig.json'
+		'**/tsconfig.json',
+		'tests/unit/helpers/**/*.ts'
 	  ],
 
 	  tests: [

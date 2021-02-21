@@ -7,7 +7,7 @@ import { AureliaProgram } from '../../../server/src/viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from '../../../server/src/viewModel/createAureliaWatchProgram';
 import { CompletionItemKind } from 'vscode-html-languageservice';
 
-export function getAureliaProgramForTesting(): AureliaProgram {
+export function getAureliaProgramForTesting(include: string[]): AureliaProgram {
   const container = new Container();
   const aureliaProgram = container.get(AureliaProgram);
   const sourceDirectory = path.resolve(
@@ -17,7 +17,7 @@ export function getAureliaProgramForTesting(): AureliaProgram {
 
   createAureliaWatchProgram(aureliaProgram, {
     sourceDirectory,
-    include: ['src/realdworld-advanced'],
+    include,
   });
   return aureliaProgram;
 }
@@ -25,7 +25,7 @@ export function getAureliaProgramForTesting(): AureliaProgram {
 let testAureliaProgram: AureliaProgram;
 describe('Aurelia Component Map', () => {
   before(() => {
-    testAureliaProgram = getAureliaProgramForTesting();
+    testAureliaProgram = getAureliaProgramForTesting(['src/realdworld-advanced']);
   });
 
   it('setAureliaComponentCompletionsMap', () => {

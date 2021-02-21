@@ -105,6 +105,7 @@ function getAureliaViewModelClassDeclaration(
 ) {
   let result: CompletionItem | undefined;
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
+  let templateImportPath: string | undefined = '';
 
   sourceFile.forEachChild((node) => {
     if (
@@ -118,7 +119,7 @@ function getAureliaViewModelClassDeclaration(
       targetClassDeclaration = node;
       targetClassDeclaration.name?.getText(); /* ? */
 
-      const templateImportPath = getTemplateImportPathFromCustomElementDecorator(
+      templateImportPath = getTemplateImportPathFromCustomElementDecorator(
         targetClassDeclaration,
         sourceFile
       );
@@ -144,6 +145,7 @@ function getAureliaViewModelClassDeclaration(
         insertTextFormat: InsertTextFormat.Snippet,
         kind: CompletionItemKind.Class,
         label: `(Au Class) ${elementName}`,
+        data: { templateImportPath },
       };
     }
   });
@@ -151,6 +153,7 @@ function getAureliaViewModelClassDeclaration(
   return {
     classDeclaration: result,
     targetClassDeclaration,
+    templateImportPath,
   };
 }
 

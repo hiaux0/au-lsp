@@ -9,7 +9,7 @@ import { Position, Range } from './languageModes';
 import { AURELIA_ATTRIBUTES_KEYWORDS } from '../../configuration/DocumentSettings';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { AureliaView } from '../../common/constants';
-import { aureliaProgram } from '../../viewModel/AureliaProgram';
+import { AureliaProgram, aureliaProgram as importedAureliaProgram } from '../../viewModel/AureliaProgram';
 import { DiagnosticMessages } from '../../common/DiagnosticMessages';
 import { AsyncReturnType } from '../../common/global';
 
@@ -42,7 +42,7 @@ export enum ViewRegionType {
   ValueConverter = 'ValueConverter',
 }
 
-export interface ViewRegionInfo<RegionDataType = Record<string, string>> {
+export interface ViewRegionInfo<RegionDataType = any> {
   type?: ViewRegionType;
   languageId: string;
   startOffset?: number;
@@ -93,7 +93,8 @@ export const aureliaLanguageId = 'aurelia';
 
 // eslint-disable-next-line max-lines-per-function
 export function parseDocumentRegions<RegionDataType = any>(
-  document: TextDocument
+  document: TextDocument,
+  aureliaProgram: AureliaProgram = importedAureliaProgram
 ): Promise<ViewRegionInfo<RegionDataType>[]> {
   // eslint-disable-next-line max-lines-per-function
   return new Promise((resolve) => {
@@ -101,10 +102,21 @@ export function parseDocumentRegions<RegionDataType = any>(
     const saxStream = new SaxStream({ sourceCodeLocationInfo: true });
     const viewRegions: ViewRegionInfo[] = [];
     const interpolationRegex = /\$(?:\s*)\{(?!\s*`)(?<interpolationValue>.*?)\}/g;
+    let hasImportTemplateTag = false;
 
     const aureliaCustomElementNames = aureliaProgram
       .getComponentList()
       .map((component) => component.viewModelName);
+
+    // 0. Check if template was imported to ViewModel
+    const fileName = document.uri;
+    const result = aureliaProgram.getComponentCompletionsMap().classDeclarations?.find(classDecl => {
+      const data = classDecl.data as {templateImportPath: string};
+      const {templateImportPath} = data;
+      return templateImportPath === fileName;
+    });
+
+    hasImportTemplateTag = result !== undefined;
 
     // 1. Check if in <template>
     let hasTemplateTag = false;
@@ -127,7 +139,7 @@ export function parseDocumentRegions<RegionDataType = any>(
         hasTemplateTag = true;
       }
 
-      if (!hasTemplateTag) return;
+      if (!hasTemplateTag && !hasImportTemplateTag) return;
 
       // Attributes and Interpolation
       startTag.attrs.forEach((attr) => {
@@ -260,10 +272,11 @@ export function parseDocumentRegions<RegionDataType = any>(
           if (!attrLocation) return;
 
           // 6.1. Split up repeat.for='repo of repos | sort:column.value:direction.value | take:10'
+          // Don't split || ("or")
           const [
             initiatorText,
             ...valueConverterRegionsSplit
-          ] = attr.value.split('|');
+          ] = attr.value.split(/[^|]\|[^|]/g);
 
           // 6.2. For each value converter
           valueConverterRegionsSplit.forEach(
@@ -377,7 +390,7 @@ export function parseDocumentRegions<RegionDataType = any>(
 
     saxStream.on('endTag', (endTag) => {
       const isTemplateTag = endTag.tagName === AureliaView.TEMPLATE_TAG_NAME;
-      if (isTemplateTag) {
+      if (isTemplateTag || hasImportTemplateTag) {
         resolve(viewRegions);
       }
     });

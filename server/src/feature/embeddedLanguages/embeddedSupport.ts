@@ -42,7 +42,7 @@ export enum ViewRegionType {
   ValueConverter = 'ValueConverter',
 }
 
-export interface ViewRegionInfo<RegionDataType = any> {
+export interface ViewRegionInfo<RegionDataType = Record<string, string>> {
   type?: ViewRegionType;
   languageId: string;
   startOffset?: number;
@@ -89,25 +89,22 @@ export interface ValueConverterRegionData {
 
 export type CustomElementRegionData = ViewRegionInfo[];
 
-interface ViewRegions {
-  interpolatedRegions: ViewRegionInfo[];
-  customElementRegions: ViewRegionInfo[];
-}
-
 export const aureliaLanguageId = 'aurelia';
 
-export function parseDocumentRegions<RegionDataType>(
+// eslint-disable-next-line max-lines-per-function
+export function parseDocumentRegions<RegionDataType = any>(
   document: TextDocument
 ): Promise<ViewRegionInfo<RegionDataType>[]> {
+  // eslint-disable-next-line max-lines-per-function
   return new Promise((resolve) => {
     console.log('[eb.ts] Starting document parsing');
     const saxStream = new SaxStream({ sourceCodeLocationInfo: true });
     const viewRegions: ViewRegionInfo[] = [];
     const interpolationRegex = /\$(?:\s*)\{(?!\s*`)(?<interpolationValue>.*?)\}/g;
 
-    const aureliaCustomElementNames = aureliaProgram.componentList.map(
-      (component) => component.viewModelName
-    );
+    const aureliaCustomElementNames = aureliaProgram
+      .getComponentList()
+      .map((component) => component.viewModelName);
 
     // 1. Check if in <template>
     let hasTemplateTag = false;
@@ -120,6 +117,7 @@ export function parseDocumentRegions<RegionDataType>(
      * 5. repeat.for=""
      * 6. Value converter region (value | take:10)
      */
+    // eslint-disable-next-line max-lines-per-function
     saxStream.on('startTag', (startTag) => {
       const customElementAttributeRegions: ViewRegionInfo[] = [];
       const { tagName } = startTag;
@@ -196,6 +194,7 @@ export function parseDocumentRegions<RegionDataType>(
             startCol: startColAdjust,
             endOffset: endInterpolationLength,
           };
+          // eslint-disable-next-line no-inner-declarations
           function getRepeatForData() {
             const splitUpRepeatFor = attr.value.split(' ');
             const repeatForData: RepeatForRegionData = {
@@ -347,7 +346,6 @@ export function parseDocumentRegions<RegionDataType>(
       let interpolationMatch;
       while ((interpolationMatch = interpolationRegex.exec(text.text))) {
         if (interpolationMatch !== null) {
-          text;
           const attrLocation = text.sourceCodeLocation;
           if (!attrLocation) return;
 
@@ -458,9 +456,13 @@ function getLanguageRanges(
   range: Range
 ): LanguageRange[] {
   const result: LanguageRange[] = [];
-  let currentPos = range ? range.start : Position.create(0, 0);
-  let currentOffset = range ? document.offsetAt(range.start) : 0;
-  const endOffset = range
+  let currentPos = Object.keys(range).length
+    ? range.start
+    : Position.create(0, 0);
+  let currentOffset = Object.keys(range).length
+    ? document.offsetAt(range.start)
+    : 0;
+  const endOffset = Object.keys(range).length
     ? document.offsetAt(range.end)
     : document.getText().length;
   for (const region of regions) {
@@ -489,7 +491,9 @@ function getLanguageRanges(
     }
   }
   if (currentOffset < endOffset) {
-    const endPos = range ? range.end : document.positionAt(endOffset);
+    const endPos = Object.keys(range).length
+      ? range.end
+      : document.positionAt(endOffset);
     result.push({
       start: currentPos,
       end: endPos,
@@ -503,7 +507,7 @@ function getLanguagesInDocument(
   _document: TextDocument,
   regions: ViewRegionInfo[]
 ): string[] {
-  const result = [];
+  const result: string[] = [];
   for (const region of regions) {
     if (region.languageId && !result.includes(region.languageId)) {
       result.push(region.languageId);
@@ -527,12 +531,13 @@ function getLanguageAtPosition(
   const potentialRegions = regions.filter((region) => {
     if (region.startOffset! <= offset) {
       if (offset <= region.endOffset!) {
-        return region;
+        return Object.keys(region).length;
       }
     }
+    return false;
   });
 
-  if (!potentialRegions) {
+  if (!Object.keys(potentialRegions).length) {
     console.error('embeddedSupport -> getRegionAtPosition -> No Region found');
     return undefined;
   }
@@ -543,7 +548,7 @@ function getLanguageAtPosition(
 
   const targetRegion = getSmallestRegion(potentialRegions);
 
-  if (targetRegion) {
+  if (Object.keys(targetRegion).length) {
     return targetRegion.languageId;
   }
 
@@ -553,17 +558,17 @@ function getLanguageAtPosition(
 export function getRegionFromLineAndCharacter(
   regions: ViewRegionInfo[],
   position: Position
-) {
+): ViewRegionInfo | undefined {
   const { line, character } = position;
 
   const targetRegion = regions.find((region) => {
     const { startLine, endLine } = region;
-    if (!startLine || !endLine) return false;
+    if (startLine === undefined || endLine === undefined) return false;
 
     const isSameLine = startLine === endLine;
     if (isSameLine) {
       const { startCol, endCol } = region;
-      if (!startCol || !endCol) return false;
+      if (startCol === undefined || endCol === undefined) return false;
 
       const inBetweenColumns = startCol <= character && character <= endCol;
       return inBetweenColumns;
@@ -584,8 +589,10 @@ export function getRegionFromLineAndCharacter(
  */
 function getSmallestRegion(regions: ViewRegionInfo[]): ViewRegionInfo {
   const sortedRegions = regions.sort((regionA, regionB) => {
-    if (!regionA.startOffset || !regionA.endOffset) return 0;
-    if (!regionB.startOffset || !regionB.endOffset) return 0;
+    if (regionA.startOffset === undefined || regionA.endOffset === undefined)
+      return 0;
+    if (regionB.startOffset === undefined || regionB.endOffset === undefined)
+      return 0;
 
     const regionAWidth = regionA.startOffset - regionA.endOffset;
     const regionBWidth = regionB.startOffset - regionB.endOffset;
@@ -606,12 +613,13 @@ export function getRegionAtPosition(
   const potentialRegions = regions.filter((region) => {
     if (region.startOffset! <= offset) {
       if (offset <= region.endOffset!) {
-        return region;
+        return Object.keys(region).length;
       }
     }
+    return false;
   });
 
-  if (!potentialRegions) {
+  if (!Object.keys(potentialRegions).length) {
     console.error('embeddedSupport -> getRegionAtPosition -> No Region found');
     return undefined;
   }
@@ -637,7 +645,7 @@ function getEmbeddedDocument(
   for (const c of contents) {
     if (
       c.languageId === languageId &&
-      (!ignoreAttributeValues || !c.attributeName)
+      (!ignoreAttributeValues || c.attributeName !== undefined)
     ) {
       result = substituteWithWhitespace(
         result,
@@ -669,16 +677,16 @@ function getEmbeddedDocument(
 }
 
 function getPrefix(c: ViewRegionInfo) {
-  if (c.attributeName) {
+  if (c.attributeName === undefined) {
     switch (c.languageId) {
       case 'css':
-        return `${CSS_STYLE_RULE  }{`;
+        return `${CSS_STYLE_RULE}{`;
     }
   }
   return '';
 }
 function getSuffix(c: ViewRegionInfo) {
-  if (c.attributeName) {
+  if (c.attributeName === undefined) {
     switch (c.languageId) {
       case 'css':
         return '}';
@@ -725,10 +733,10 @@ function append(result: string, str: string, n: number): string {
   return result;
 }
 
-function getAttributeLanguage(attributeName: string): string | null {
-  const match = attributeName.match(/^(style)$|^(on\w+)$/i);
-  if (!match) {
-    return null;
-  }
-  return match[1] ? 'css' : 'javascript';
-}
+// function getAttributeLanguage(attributeName: string): string | null {
+//   const match = attributeName.match(/^(style)$|^(on\w+)$/i);
+//   if (!match) {
+//     return null;
+//   }
+//   return match[1] ? 'css' : 'javascript';
+// }

@@ -12,6 +12,7 @@ export enum AureliaClassTypes {
 
 export enum AureliaViewModel {
   TO_VIEW = 'toView',
+  TEMPLATE = 'template'
 }
 
 export enum AureliaView {

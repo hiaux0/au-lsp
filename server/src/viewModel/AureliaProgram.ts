@@ -3,14 +3,28 @@ import * as ts from 'typescript';
 import { CompletionItem } from 'vscode-languageserver';
 import { defaultProjectOptions, IProjectOptions } from '../common/common.types';
 import { AureliaClassTypes } from '../common/constants';
+import { ViewRegionInfo } from '../feature/embeddedLanguages/embeddedSupport';
 const globalContainer = new Container();
 
 interface IWebcomponent {}
 
 export interface IComponentCompletionsMap {
   classDeclarations: CompletionItem[] | undefined;
-  classMembers: CompletionItem[] | undefined;
-  bindables: CompletionItem[] | undefined;
+
+  /** in kebab-case */
+  componentName?: string;
+
+  // View Model
+  viewModelFilePath?: string;
+  sourceFile?: ts.SourceFile;
+  /** Used for Completions in own View */
+  classMembers?: CompletionItem[] | undefined;
+  /** Used for Completions in other View */
+  bindables?: CompletionItem[] | undefined;
+
+  // View
+  viewFilePath?: string;
+  regions?: ViewRegionInfo[];
 }
 
 export interface IComponentList {
@@ -49,7 +63,9 @@ export class AureliaProgram {
   public aureliaSourceFiles?: ts.SourceFile[];
   private componentList: IComponentList[];
 
-  public setComponentCompletionsMap(componentCompletionsMap: IComponentCompletionsMap): void {
+  public setComponentCompletionsMap(
+    componentCompletionsMap: IComponentCompletionsMap
+  ): void {
     this.componentCompletionsMap = componentCompletionsMap;
   }
 
@@ -73,7 +89,9 @@ export class AureliaProgram {
   //   return this.classDiagram;
   // }
 
-  public getProjectFiles(options: IProjectOptions = defaultProjectOptions): string[] {
+  public getProjectFiles(
+    options: IProjectOptions = defaultProjectOptions
+  ): string[] {
     const { sourceDirectory, exclude, include } = options;
     const targetSourceDirectory =
       sourceDirectory ?? ts.sys.getCurrentDirectory();

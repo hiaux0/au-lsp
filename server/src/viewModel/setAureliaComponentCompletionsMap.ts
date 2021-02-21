@@ -11,7 +11,11 @@ import { kebabCase } from 'lodash';
 // import { createDiagram } from "./createDiagram";
 import { getElementNameFromClassDeclaration } from '../common/className';
 import { IProjectOptions } from '../common/common.types';
-import { AureliaClassTypes, AureliaDecorator } from '../common/constants';
+import {
+  AureliaClassTypes,
+  AureliaDecorator,
+  AureliaViewModel,
+} from '../common/constants';
 
 export function setAureliaComponentCompletionsMap(
   aureliaProgram: AureliaProgram,
@@ -114,6 +118,11 @@ function getAureliaViewModelClassDeclaration(
       targetClassDeclaration = node;
       targetClassDeclaration.name?.getText(); /* ? */
 
+      const templateImportPath = getTemplateImportPathFromCustomElementDecorator(
+        targetClassDeclaration,
+        sourceFile
+      );
+
       const elementName = getElementNameFromClassDeclaration(node);
       // Note the `!` in the argument: `getSymbolAtLocation` expects a `Node` arg, but returns undefined
       const symbol = checker.getSymbolAtLocation(node.name!);
@@ -185,9 +194,66 @@ function hasCorrectNamingConvention(classDeclaration: ts.ClassDeclaration) {
     return result;
   });
 
-  const hasCustomElementNamingConvention = Boolean(classDeclaration.name?.getText().includes(AureliaClassTypes.CUSTOM_ELEMENT));
+  const hasCustomElementNamingConvention = Boolean(
+    classDeclaration.name?.getText().includes(AureliaClassTypes.CUSTOM_ELEMENT)
+  );
 
   return hasViewDecorator || hasCustomElementNamingConvention;
+}
+
+function getTemplateImportPathFromCustomElementDecorator(
+  classDeclaration: ts.ClassDeclaration,
+  sourceFile: ts.SourceFile
+): string | undefined {
+  if (!classDeclaration.decorators) return;
+
+  const customElementDecorator = classDeclaration.decorators.find(
+    (decorator) => {
+      const result = decorator
+        .getText()
+        .includes(AureliaDecorator.CUSTOM_ELEMENT);
+      return result;
+    }
+  );
+
+  if (!customElementDecorator) return;
+
+  const hasTemplateProp = customElementDecorator
+    .getText()
+    .includes(AureliaViewModel.TEMPLATE);
+  if (!hasTemplateProp) return;
+
+  let templateImportPath = '';
+  const templateImport = sourceFile.statements.find((statement) => {
+    const isImport = statement.kind === ts.SyntaxKind.ImportDeclaration;
+    if (!isImport) {
+      return false;
+    }
+
+    let foundTemplateImport = false;
+    statement.getChildren().forEach((child) => {
+      if (child.kind === ts.SyntaxKind.ImportClause) {
+        if (child.getText().includes(AureliaViewModel.TEMPLATE)) {
+          foundTemplateImport = true;
+        }
+      }
+    });
+
+    return foundTemplateImport;
+  });
+
+  templateImport?.getChildren().forEach((child) => {
+    if (child.kind === ts.SyntaxKind.StringLiteral) {
+      templateImportPath = child.getText().replace(/['"]/g, '');
+    }
+  });
+
+  templateImportPath = Path.resolve(
+    Path.dirname(sourceFile.fileName),
+    templateImportPath
+  );
+
+  return templateImportPath;
 }
 
 /**
@@ -241,7 +307,7 @@ function getAureliaViewModelClassMembers(
 
       // const quote = this.settings.quote;
       const quote = '"';
-      const varAsKebabCase = kebabCase(classMemberName) as string;
+      const varAsKebabCase = kebabCase(classMemberName);
       const result: CompletionItem = {
         documentation: {
           kind: MarkupKind.Markdown,

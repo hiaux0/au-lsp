@@ -207,7 +207,7 @@ export function hasCorrectNamingConvention(
   return hasViewDecorator || hasCustomElementNamingConvention;
 }
 
-function getTemplateImportPathFromCustomElementDecorator(
+export function getTemplateImportPathFromCustomElementDecorator(
   classDeclaration: ts.ClassDeclaration,
   sourceFile: ts.SourceFile
 ): string | undefined {

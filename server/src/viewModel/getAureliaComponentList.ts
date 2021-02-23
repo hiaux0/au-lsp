@@ -20,6 +20,11 @@ import * as ts from 'typescript';
 import * as Path from 'path';
 import { getElementNameFromClassDeclaration } from '../common/className';
 import { AureliaClassTypes, VALUE_CONVERTER_SUFFIX } from '../common/constants';
+import {
+  classDeclarationHasUseViewOrNoView,
+  getTemplateImportPathFromCustomElementDecorator,
+  hasCorrectNamingConvention,
+} from './setAureliaComponentCompletionsMap';
 
 export function getAureliaComponentList(
   aureliaProgram: AureliaProgram
@@ -83,10 +88,9 @@ export function getAureliaComponentInfoFromClassDeclaration(
   sourceFile.forEachChild((node) => {
     if (
       ts.isClassDeclaration(node) &&
-      isNodeExported(node)
-      /** && hasTemplate
-       * && classDeclarationHasUseViewOrNoView
-       * && hasCorrectNamingConvention */
+      isNodeExported(node) &&
+      (classDeclarationHasUseViewOrNoView(node) ||
+        hasCorrectNamingConvention(node))
     ) {
       targetClassDeclaration = node;
 
@@ -118,12 +122,17 @@ export function getAureliaComponentInfoFromClassDeclaration(
         return;
       }
 
+      const templateImportPath = getTemplateImportPathFromCustomElementDecorator(
+        targetClassDeclaration,
+        sourceFile
+      );
+
       result = {
         className: targetClassDeclaration.name?.getText() ?? '',
         viewModelName,
         baseFileName: Path.parse(sourceFile.fileName).name,
         filePath: sourceFile.fileName,
-        viewFileName: 'TODO',
+        viewFileName: templateImportPath,
         type: AureliaClassTypes.CUSTOM_ELEMENT,
         sourceFile,
       };

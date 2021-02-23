@@ -67,7 +67,7 @@ export function setAureliaComponentCompletionsMap(
           classDeclaration === undefined ||
           targetClassDeclaration === undefined
         ) {
-          console.log('[acm.ts] No Class statement found for file: ', path);
+          console.log('[acm.ts] No Aurelia Class Statement found for file: ', path);
           break;
         }
         classDeclarations.push(classDeclaration);
@@ -166,7 +166,7 @@ function isNodeExported(node: ts.ClassDeclaration): boolean {
  *
  * @param classDeclaration - ClassDeclaration to check
  */
-function classDeclarationHasUseViewOrNoView(
+export function classDeclarationHasUseViewOrNoView(
   classDeclaration: ts.ClassDeclaration
 ): boolean {
   if (!classDeclaration.decorators) return false;
@@ -187,7 +187,7 @@ function classDeclarationHasUseViewOrNoView(
  * \@customElement(...)
  * MyClass
  */
-function hasCorrectNamingConvention(classDeclaration: ts.ClassDeclaration) {
+export function hasCorrectNamingConvention(classDeclaration: ts.ClassDeclaration) {
   if (!classDeclaration.decorators) return false;
 
   const hasViewDecorator = classDeclaration.decorators.some((decorator) => {

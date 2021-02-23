@@ -5,14 +5,17 @@ import * as fs from 'fs';
 import { AureliaProgram } from '../../../../server/src/viewModel/AureliaProgram';
 import { CompletionItemKind, TextDocument } from 'vscode-html-languageservice';
 import { getAureliaProgramForTesting } from '../../helpers/test-setup';
-import { parseDocumentRegions, ViewRegionType } from '../../../../server/src/feature/embeddedLanguages/embeddedSupport';
+import {
+  parseDocumentRegions,
+  ViewRegionType,
+} from '../../../../server/src/feature/embeddedLanguages/embeddedSupport';
 
 let testAureliaProgram: AureliaProgram;
 describe('embeddedSupport.ts', () => {
   before(() => {
-    testAureliaProgram = getAureliaProgramForTesting([
-      'src/realdworld-advanced',
-    ]);
+    testAureliaProgram = getAureliaProgramForTesting({
+      include: ['src/realdworld-advanced'],
+    });
   });
 
   it('parseDocumentRegions', async () => {
@@ -33,9 +36,11 @@ describe('embeddedSupport.ts', () => {
     const document = TextDocument.create(uri, 'html', 99, content);
     const regions = await parseDocumentRegions(document, testAureliaProgram);
 
-    strictEqual(regions.length, 6)
+    strictEqual(regions.length, 6);
 
-    const attributeRegions = regions.filter(region => region.type === ViewRegionType.Attribute);
-    strictEqual(attributeRegions.length, 6)
+    const attributeRegions = regions.filter(
+      (region) => region.type === ViewRegionType.Attribute
+    );
+    strictEqual(attributeRegions.length, 6);
   });
 });

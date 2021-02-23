@@ -8,9 +8,9 @@ import { getAureliaProgramForTesting } from '../helpers/test-setup';
 let testAureliaProgram: AureliaProgram;
 describe('Aurelia Component Map', () => {
   before(() => {
-    testAureliaProgram = getAureliaProgramForTesting([
-      'src/realdworld-advanced',
-    ]);
+    testAureliaProgram = getAureliaProgramForTesting({
+      include: ['src/realdworld-advanced'],
+    });
   });
 
   it('setAureliaComponentCompletionsMap', () => {

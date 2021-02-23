@@ -22,6 +22,7 @@ describe('Aurelia Component Map', () => {
     strictEqual(componentList.length, 1);
     strictEqual(componentList[0].className, 'SettingsViewCustomElement');
     strictEqual(componentList[0].componentName, 'settings-view');
+    strictEqual(componentList[0].baseViewModelFileName, 'index');
     strictEqual(componentList[0].type, AureliaClassTypes.CUSTOM_ELEMENT);
   });
 });

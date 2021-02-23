@@ -113,7 +113,9 @@ export function parseDocumentRegions<RegionDataType = any>(
     const result = aureliaProgram.getComponentCompletionsMap().classDeclarations?.find(classDecl => {
       const data = classDecl.data as {templateImportPath: string};
       const {templateImportPath} = data;
-      return templateImportPath === fileName;
+      /** Account for "file://" */
+      const isSameFilePath = fileName.includes(templateImportPath);
+      return isSameFilePath;
     });
 
     hasImportTemplateTag = result !== undefined;

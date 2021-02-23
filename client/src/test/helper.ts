@@ -99,12 +99,12 @@ export function getTestApplicationFiles() {
 /**
  * Get the same aurelia program, as used in the acutal extension.
  */
-export function getAureliaProgramForTesting() {
+export function getAureliaProgramForTesting(): AureliaProgram {
   const container = new Container();
   const aureliaProgram = container.get(AureliaProgram);
   const sourceDirectory = path.resolve(__dirname, '../../../../testFixture');
 
   createAureliaWatchProgram(aureliaProgram, {sourceDirectory});
-  setAureliaComponentCompletionsMap(aureliaProgram, {sourceDirectory});
+  setAureliaComponentCompletionsMap(aureliaProgram);
   return aureliaProgram;
 }

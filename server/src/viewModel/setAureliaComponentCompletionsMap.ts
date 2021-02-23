@@ -10,7 +10,6 @@ import {
 import { kebabCase } from 'lodash';
 // import { createDiagram } from "./createDiagram";
 import { getElementNameFromClassDeclaration } from '../common/className';
-import { IProjectOptions } from '../common/common.types';
 import {
   AureliaClassTypes,
   AureliaDecorator,
@@ -18,12 +17,11 @@ import {
 } from '../common/constants';
 
 export function setAureliaComponentCompletionsMap(
-  aureliaProgram: AureliaProgram,
-  projectOptions?: IProjectOptions
+  aureliaProgram: AureliaProgram
 ): void {
   console.log('[acm.ts] Starting Component Map collection');
 
-  const paths = aureliaProgram.setProjectFilePaths(projectOptions);
+  const paths = aureliaProgram.getProjectFilePaths();
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
   let classDeclaration: CompletionItem | undefined;
   const classDeclarations: CompletionItem[] = [];
@@ -67,7 +65,10 @@ export function setAureliaComponentCompletionsMap(
           classDeclaration === undefined ||
           targetClassDeclaration === undefined
         ) {
-          console.log('[acm.ts] No Aurelia Class Statement found for file: ', path);
+          console.log(
+            '[acm.ts] No Aurelia Class Statement found for file: ',
+            path
+          );
           break;
         }
         classDeclarations.push(classDeclaration);
@@ -187,7 +188,9 @@ export function classDeclarationHasUseViewOrNoView(
  * \@customElement(...)
  * MyClass
  */
-export function hasCorrectNamingConvention(classDeclaration: ts.ClassDeclaration) {
+export function hasCorrectNamingConvention(
+  classDeclaration: ts.ClassDeclaration
+): boolean {
   if (!classDeclaration.decorators) return false;
 
   const hasViewDecorator = classDeclaration.decorators.some((decorator) => {

@@ -8,10 +8,10 @@ const updateAureliaComponents = (
   aureliaProgram: AureliaProgram,
   projectOptions?: IProjectOptions
 ): void => {
-  /** Think this is not obsolete */
-  setAureliaComponentCompletionsMap(aureliaProgram, projectOptions);
+  aureliaProgram.setProjectFilePaths(projectOptions);
+  setAureliaComponentCompletionsMap(aureliaProgram);
 
-  const componentList = getAureliaComponentList(aureliaProgram, projectOptions);
+  const componentList = getAureliaComponentList(aureliaProgram);
 
   if (componentList) {
     aureliaProgram.setComponentList(componentList);

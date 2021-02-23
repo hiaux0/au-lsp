@@ -15,21 +15,16 @@ interface DecoratorInfo {
   decoratorArgument: string;
 }
 
-import {
-  AureliaProgram,
-  IComponentList,
-} from './AureliaProgram';
+import { AureliaProgram, IComponentList } from './AureliaProgram';
 import * as ts from 'typescript';
 import * as Path from 'path';
 import { getElementNameFromClassDeclaration } from '../common/className';
 import { AureliaClassTypes, VALUE_CONVERTER_SUFFIX } from '../common/constants';
-import { IProjectOptions } from '../common/common.types';
 
 export function getAureliaComponentList(
-  aureliaProgram: AureliaProgram,
-  projectOptions?: IProjectOptions
+  aureliaProgram: AureliaProgram
 ): IComponentList[] | undefined {
-  const paths = aureliaProgram.setProjectFilePaths(projectOptions);
+  const paths = aureliaProgram.getProjectFilePaths();
   const componentList: IComponentList[] = [];
 
   const program = aureliaProgram.getProgram();
@@ -78,7 +73,7 @@ export function getAureliaComponentList(
   return componentList;
 }
 
-function getAureliaComponentInfoFromClassDeclaration(
+export function getAureliaComponentInfoFromClassDeclaration(
   sourceFile: ts.SourceFile,
   checker: ts.TypeChecker
 ): IComponentList | undefined {

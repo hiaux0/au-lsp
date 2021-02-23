@@ -56,7 +56,6 @@ export interface IComponentList {
  */
 @singleton()
 export class AureliaProgram {
-  public components: IWebcomponent[] = [];
   public builderProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
   public componentCompletionsMap: IComponentCompletionsMap;
   // public classDiagram: IClassDiagram;

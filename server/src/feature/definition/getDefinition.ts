@@ -67,7 +67,7 @@ export async function getDefinition(
         line: 1,
         character: 1,
       } /** TODO: Find toView() method */,
-      viewModelFilePath: targetValueConverterComponent?.filePath,
+      viewModelFilePath: targetValueConverterComponent?.viewModelFilePath,
     };
   }
 

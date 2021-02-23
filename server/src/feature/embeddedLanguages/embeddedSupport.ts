@@ -106,7 +106,7 @@ export function parseDocumentRegions<RegionDataType = any>(
 
     const aureliaCustomElementNames = aureliaProgram
       .getComponentList()
-      .map((component) => component.viewModelName);
+      .map((component) => component.componentName);
 
     // 0. Check if template was imported to ViewModel
     const fileName = document.uri;

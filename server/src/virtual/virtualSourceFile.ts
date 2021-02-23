@@ -347,7 +347,7 @@ export function createVirtualFileWithContent(
   const componentList = aureliaProgram.getComponentList();
   const customElementClassName = componentList.find(
     (component) =>
-      component.baseFileName === path.parse(targetSourceFile.fileName).name
+      component.baseViewModelFileName === path.parse(targetSourceFile.fileName).name
   )?.className;
 
   if (!customElementClassName) return;

@@ -33,10 +33,10 @@ export interface IComponentList {
   sourceFile?: ts.SourceFile;
   /** export class >ComponentName< {} */
   className: string;
-  /** component-name.ts */
-  baseFileName: string;
+  /** component-name */
+  baseViewModelFileName: string;
   /** path/to/component-name.ts */
-  filePath: string;
+  viewModelFilePath: string;
   /**
    * export class >Sort<ValueConverter {} --> sort
    * */
@@ -45,8 +45,8 @@ export interface IComponentList {
    * \@customElement(">component-name<")
    * export class >ComponentName< {} --> component-name
    * */
-  viewModelName?: string;
-  viewFileName?: string;
+  componentName?: string;
+  viewFilePath?: string;
   type: AureliaClassTypes;
 }
 

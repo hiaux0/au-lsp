@@ -22,7 +22,7 @@ const updateAureliaComponents = (
       console.log('List: ');
 
       componentList.forEach((component, index) => {
-        console.log(`${index} - ${component.filePath}`);
+        console.log(`${index} - ${component.viewModelFilePath}`);
       });
     }
   } else {

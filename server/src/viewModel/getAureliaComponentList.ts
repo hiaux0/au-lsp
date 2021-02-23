@@ -103,8 +103,8 @@ export function getAureliaComponentInfoFromClassDeclaration(
         result = {
           className: targetClassDeclaration.name?.getText() ?? '',
           valueConverterName,
-          baseFileName: Path.parse(sourceFile.fileName).name,
-          filePath: sourceFile.fileName,
+          baseViewModelFileName: Path.parse(sourceFile.fileName).name,
+          viewModelFilePath: sourceFile.fileName,
           type: AureliaClassTypes.VALUE_CONVERTER,
           sourceFile,
         };
@@ -129,10 +129,10 @@ export function getAureliaComponentInfoFromClassDeclaration(
 
       result = {
         className: targetClassDeclaration.name?.getText() ?? '',
-        viewModelName,
-        baseFileName: Path.parse(sourceFile.fileName).name,
-        filePath: sourceFile.fileName,
-        viewFileName: templateImportPath,
+        componentName: viewModelName,
+        baseViewModelFileName: Path.parse(sourceFile.fileName).name,
+        viewModelFilePath: sourceFile.fileName,
+        viewFilePath: templateImportPath,
         type: AureliaClassTypes.CUSTOM_ELEMENT,
         sourceFile,
       };

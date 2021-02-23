@@ -60,6 +60,7 @@ export class AureliaProgram {
   public componentCompletionsMap: IComponentCompletionsMap;
   // public classDiagram: IClassDiagram;
   public aureliaSourceFiles?: ts.SourceFile[];
+  public projectFilePaths: string[];
   private componentList: IComponentList[];
 
   public setComponentCompletionsMap(
@@ -114,6 +115,8 @@ export class AureliaProgram {
       finalExcludes,
       finalIncludes
     );
+
+    this.projectFilePaths = paths;
     return paths;
   }
 

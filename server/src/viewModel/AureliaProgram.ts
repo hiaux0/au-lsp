@@ -96,7 +96,13 @@ export class AureliaProgram {
     const targetSourceDirectory =
       sourceDirectory ?? ts.sys.getCurrentDirectory();
 
-    const finalExcludes = ['node_modules', 'aurelia_project'];
+    const finalExcludes = [
+      '**/node_modules',
+      'aurelia_project',
+      '**/out',
+      '**/build',
+      '**/dist',
+    ];
     if (exclude !== undefined) {
       finalExcludes.push(...exclude);
     }

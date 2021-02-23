@@ -29,7 +29,7 @@ export function getAureliaComponentList(
   aureliaProgram: AureliaProgram,
   projectOptions?: IProjectOptions
 ): IComponentList[] | undefined {
-  const paths = aureliaProgram.getProjectFiles(projectOptions);
+  const paths = aureliaProgram.setProjectFilePaths(projectOptions);
   const componentList: IComponentList[] = [];
 
   const program = aureliaProgram.getProgram();

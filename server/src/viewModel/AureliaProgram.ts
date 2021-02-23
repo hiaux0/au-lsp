@@ -89,7 +89,7 @@ export class AureliaProgram {
   //   return this.classDiagram;
   // }
 
-  public getProjectFiles(
+  public setProjectFilePaths(
     options: IProjectOptions = defaultProjectOptions
   ): string[] {
     const { sourceDirectory, exclude, include } = options;

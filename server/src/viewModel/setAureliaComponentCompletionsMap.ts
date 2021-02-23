@@ -23,7 +23,7 @@ export function setAureliaComponentCompletionsMap(
 ): void {
   console.log('[acm.ts] Starting Component Map collection');
 
-  const paths = aureliaProgram.getProjectFiles(projectOptions);
+  const paths = aureliaProgram.setProjectFilePaths(projectOptions);
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
   let classDeclaration: CompletionItem | undefined;
   const classDeclarations: CompletionItem[] = [];

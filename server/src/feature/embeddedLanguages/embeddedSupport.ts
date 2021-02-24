@@ -36,6 +36,7 @@ export const CSS_STYLE_RULE = '__';
 export enum ViewRegionType {
   Attribute = 'Attribute',
   AttributeInterpolation = 'AttributeInterpolation',
+  Html = 'html',
   RepeatFor = 'RepeatFor',
   TextInterpolation = 'TextInterpolation',
   CustomElement = 'CustomElement',

@@ -112,11 +112,11 @@ export interface LanguageModeWithRegion {
   mode: LanguageMode;
   region: ViewRegionInfo;
 }
-export async function getLanguageModes(): Promise<LanguageModes> {
-  const htmlLanguageService = getHTMLLanguageService();
-  const cssLanguageService = getCSSLanguageService();
 
-  const documentRegions = await getLanguageModelCache<HTMLDocumentRegions>(
+type LanguageModeWithRegionMap = Record<ViewRegionType, LanguageModeWithRegion>;
+
+export async function getLanguageModes(): Promise<LanguageModes> {
+  const documentRegions = getLanguageModelCache<HTMLDocumentRegions>(
     10,
     60,
     (document) => getDocumentRegions(document)
@@ -125,38 +125,32 @@ export async function getLanguageModes(): Promise<LanguageModes> {
   let modelCaches: LanguageModelCache<any>[] = [];
   modelCaches.push(documentRegions);
 
-  let modes = Object.create(null);
+  let modes = Object.create(null) as LanguageModeWithRegionMap;
 
-  modes['html'] = {};
-  modes['html'].mode = await getAureliaHtmlMode(documentRegions);
+  modes[ViewRegionType.Html] = {};
+  modes[ViewRegionType.Html].mode = getAureliaHtmlMode(documentRegions);
 
   modes[ViewRegionType.Attribute] = {};
-  modes[ViewRegionType.Attribute].mode = await getAttributeMode(
-    documentRegions
-  );
+  modes[ViewRegionType.Attribute].mode = getAttributeMode(documentRegions);
 
   modes[ViewRegionType.AttributeInterpolation] = {};
   modes[
     ViewRegionType.AttributeInterpolation
-  ].mode = await getAttributeInterpolationMode(documentRegions);
+  ].mode = getAttributeInterpolationMode(documentRegions);
 
   modes[ViewRegionType.CustomElement] = {};
-  modes[ViewRegionType.CustomElement].mode = await getCustomElementMode(
-  );
+  modes[ViewRegionType.CustomElement].mode = getCustomElementMode();
 
   modes[ViewRegionType.RepeatFor] = {};
-  modes[ViewRegionType.RepeatFor].mode = await getRepeatForMode(
-    documentRegions
-  );
+  modes[ViewRegionType.RepeatFor].mode = getRepeatForMode(documentRegions);
 
   modes[ViewRegionType.TextInterpolation] = {};
-  modes[ViewRegionType.TextInterpolation].mode = await getTextInterpolationMode(
+  modes[ViewRegionType.TextInterpolation].mode = getTextInterpolationMode(
     documentRegions
   );
 
   modes[ViewRegionType.ValueConverter] = {};
-  modes[ViewRegionType.ValueConverter].mode = await getValueConverterMode(
-  );
+  modes[ViewRegionType.ValueConverter].mode = getValueConverterMode();
 
   return {
     async getModeAndRegionAtPosition(
@@ -165,7 +159,7 @@ export async function getLanguageModes(): Promise<LanguageModes> {
     ): Promise<LanguageModeWithRegion | undefined> {
       const documentRegion = await documentRegions.get(document);
       const regionAtPosition = documentRegion.getRegionAtPosition(position);
-      const languageId = regionAtPosition?.languageId ?? 'html';
+      const languageId = regionAtPosition?.languageId ?? ViewRegionType.Html;
 
       if (languageId) {
         modes[languageId].region = regionAtPosition;
@@ -211,7 +205,7 @@ export async function getLanguageModes(): Promise<LanguageModes> {
     //   return result;
     // },
     getAllModes(): LanguageMode[] {
-      const result = [];
+      const result: LanguageMode[] = [];
       for (const languageId in modes) {
         const mode = modes[languageId];
         if (mode) {

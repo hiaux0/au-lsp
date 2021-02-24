@@ -383,6 +383,7 @@ export function parseDocumentRegions<RegionDataType = any>(
           };
 
           const viewRegion = createRegion({
+            regionValue: interpolationValue,
             sourceCodeLocation: updatedLocation,
             type: ViewRegionType.TextInterpolation,
           });

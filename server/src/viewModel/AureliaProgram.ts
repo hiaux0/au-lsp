@@ -56,7 +56,7 @@ export interface IComponentList {
   viewFilePath?: string;
   type: AureliaClassTypes;
   /** ******** Class Members */
-  classMembers: IAureliaClassMember[];
+  classMembers?: IAureliaClassMember[];
 }
 
 // interface IClassDiagram {}

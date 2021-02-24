@@ -157,8 +157,8 @@ export async function getLanguageModes(): Promise<LanguageModes> {
       document: TextDocument,
       position: Position
     ): Promise<LanguageModeWithRegion | undefined> {
-      const documentRegion = await documentRegions.get(document);
-      const regionAtPosition = documentRegion.getRegionAtPosition(position);
+      const documentOfRegion = await documentRegions.get(document);
+      const regionAtPosition = documentOfRegion.getRegionAtPosition(position);
       const languageId = regionAtPosition?.languageId ?? ViewRegionType.Html;
 
       if (languageId) {

@@ -50,7 +50,7 @@
       "args": [
         "--require",
         "ts-node/register",
-        "${workspaceRoot}/tests/unit/**/*.spec.ts"
+        "'${workspaceRoot}/tests/unit/**/*.spec.ts'"
       ],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector"

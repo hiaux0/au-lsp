@@ -11,8 +11,8 @@ module.exports = function () {
 	  tests: [
 		// 'tests/unit/**/*.spec.ts',
 		// 'tests/unit/**/*Map.spec.ts',
-		// 'tests/unit/**/*Support.spec.ts',
-		'tests/unit/**/AureliaProgram.spec.ts',
+		'tests/unit/**/*embeddedSupport.spec.ts',
+		// 'tests/unit/**/AureliaProgram.spec.ts',
 	  ],
 
 	  testFramework: 'mocha',

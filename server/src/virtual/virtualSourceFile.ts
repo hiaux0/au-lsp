@@ -3,10 +3,7 @@ import * as path from 'path';
 import { ViewRegionInfo } from '../feature/embeddedLanguages/embeddedSupport';
 import { aureliaProgram, AureliaProgram } from '../viewModel/AureliaProgram';
 import { Position, TextDocument } from 'vscode-html-languageservice';
-import {
-  Hover,
-  MarkupKind,
-} from 'vscode-languageserver';
+import { MarkupKind } from 'vscode-languageserver';
 import { getDocumentRegionAtPosition } from '../feature/embeddedLanguages/languageModes';
 
 export const VIRTUAL_SOURCE_FILENAME = 'virtual.ts';
@@ -135,7 +132,11 @@ function getDefinitionAtPosition(
   return defintion;
 }
 
-interface CustomHover extends Hover {
+interface CustomHover {
+  contents: {
+    kind: MarkupKind;
+    value: string;
+  };
   documentation: string;
 }
 
@@ -209,7 +210,7 @@ function getQuickInfoAtPosition(
 
 export function getVirtualLangagueService(
   sourceFile: ts.SourceFile,
-  watchProgram?: ts.Program,
+  watchProgram?: ts.Program
 ): ts.LanguageService {
   const compilerSettings = watchProgram?.getCompilerOptions();
   const watcherProgram = watchProgram;
@@ -347,7 +348,8 @@ export function createVirtualFileWithContent(
   const componentList = aureliaProgram.getComponentList();
   const customElementClassName = componentList.find(
     (component) =>
-      component.baseViewModelFileName === path.parse(targetSourceFile.fileName).name
+      component.baseViewModelFileName ===
+      path.parse(targetSourceFile.fileName).name
   )?.className;
 
   if (!customElementClassName) return;

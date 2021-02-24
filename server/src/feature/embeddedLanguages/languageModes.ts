@@ -34,6 +34,7 @@ import {
   getLanguageModelCache,
   LanguageModelCache,
 } from './languageModelCache';
+import { CustomHover } from '../../../out/server/src/virtual/virtualSourceFile.d';
 
 export * from 'vscode-html-languageservice';
 
@@ -49,15 +50,14 @@ export interface LanguageMode {
     document: TextDocument,
     position: Position,
     goToSourceWord: string,
-    region: ViewRegionInfo
+    region?: ViewRegionInfo
   ) => Promise<DefinitionResult | undefined>;
   doHover?: (
     document: TextDocument,
     position: Position,
     goToSourceWord: string,
     region: ViewRegionInfo
-  ) => void;
-  // ) => Promise<DefinitionResult | undefined>;
+  ) => Promise<CustomHover | undefined>;
   onDocumentRemoved(document: TextDocument): void;
   dispose(): void;
 }

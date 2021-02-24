@@ -101,7 +101,7 @@ export function parseDocumentRegions<RegionDataType = any>(
     console.log('[eb.ts] Starting document parsing');
     const saxStream = new SaxStream({ sourceCodeLocationInfo: true });
     const viewRegions: ViewRegionInfo[] = [];
-    const interpolationRegex = /\$(?:\s*)\{(?!\s*`)(?<interpolationValue>.*?)\}/g;
+    const interpolationRegex = /\$(?:\s*)\{(?!\s*`)(.*?)\}/g;
     let hasImportTemplateTag = false;
 
     const aureliaCustomElementNames = aureliaProgram
@@ -371,9 +371,10 @@ export function parseDocumentRegions<RegionDataType = any>(
             2; // ${
 
           /** Eg. >css="width: ${message}<px;" */
+          const interpolationValue = interpolationMatch[1];
           const endInterpolationLength =
             startInterpolationLength +
-            Number(interpolationMatch.groups?.interpolationValue.length); // message
+            Number(interpolationValue.length); // message
 
           const updatedLocation: parse5.Location = {
             ...attrLocation,

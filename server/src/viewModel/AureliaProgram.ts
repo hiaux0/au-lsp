@@ -29,6 +29,13 @@ export interface IComponentCompletionsMap {
   regions?: ViewRegionInfo[];
 }
 
+export interface IAureliaClassMember {
+  name: string;
+  documentation: string;
+  isBindable: boolean;
+  syntaxKind: ts.SyntaxKind;
+}
+
 export interface IComponentList {
   sourceFile?: ts.SourceFile;
   /** export class >ComponentName< {} */
@@ -48,6 +55,8 @@ export interface IComponentList {
   componentName?: string;
   viewFilePath?: string;
   type: AureliaClassTypes;
+  /** ******** Class Members */
+  classMembers: IAureliaClassMember[];
 }
 
 // interface IClassDiagram {}

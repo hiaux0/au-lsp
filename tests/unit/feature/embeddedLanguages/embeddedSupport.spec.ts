@@ -53,4 +53,25 @@ describe('embeddedSupport.ts', () => {
     );
     strictEqual(textInterpolationRegions.length, 1);
   });
+
+  it('parseDocumentRegions - set viewRegions to ComponentList', async () => {
+    testAureliaProgram.initComponentList();
+    const componentList = testAureliaProgram.getComponentList();
+
+    if (componentList.length > 1) return;
+
+    const targetComponent = componentList[0];
+
+    const uri = targetComponent.viewFilePath ?? '';
+    const content = fs.readFileSync(uri, 'utf-8');
+    const document = TextDocument.create(uri, 'html', 99, content);
+    const regions = await parseDocumentRegions(document, testAureliaProgram);
+
+    testAureliaProgram.setViewRegions(
+      targetComponent.componentName ?? '',
+      regions
+    );
+
+    strictEqual(targetComponent.viewRegions?.length, 8);
+  });
 });

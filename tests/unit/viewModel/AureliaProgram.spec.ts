@@ -7,7 +7,7 @@ import { AureliaClassTypes } from '../../../server/src/common/constants';
 import { SyntaxKind } from 'typescript';
 
 let testAureliaProgram: AureliaProgram;
-describe('Aurelia Component Map', () => {
+describe('Aurelia Component List', () => {
   before(() => {
     testAureliaProgram = getAureliaProgramForTesting({
       include: ['src/realdworld-advanced'],
@@ -26,7 +26,10 @@ describe('Aurelia Component Map', () => {
     strictEqual(componentList[0].type, AureliaClassTypes.CUSTOM_ELEMENT);
     //
     const { classMembers } = componentList[0];
-    strictEqual(componentList[0].classMembers.length, 7);
+
+    if (!classMembers) return;
+
+    strictEqual(classMembers.length, 7);
     const bindables = classMembers.filter(member => member.isBindable);
     strictEqual(bindables.length, 0);
     const variables = classMembers.filter(member => member.syntaxKind === SyntaxKind.VariableDeclaration);

@@ -57,6 +57,8 @@ export interface IComponentList {
   type: AureliaClassTypes;
   /** ******** Class Members */
   classMembers?: IAureliaClassMember[];
+  /** ******** View */
+  viewRegions?: ViewRegionInfo[];
 }
 
 // interface IClassDiagram {}
@@ -139,6 +141,17 @@ export class AureliaProgram {
 
   public getComponentList(): IComponentList[] {
     return this.componentList;
+  }
+
+  public setViewRegions(componentName: string, newRegions: ViewRegionInfo[]): void {
+    const componentList = this.getComponentList();
+    const targetComponent = componentList.find(
+      (component) => component.componentName === componentName
+    );
+
+    if (!targetComponent) return;
+
+    targetComponent.viewRegions = newRegions;
   }
 
   // public setClassDiagram(classDiagram: IClassDiagram) {

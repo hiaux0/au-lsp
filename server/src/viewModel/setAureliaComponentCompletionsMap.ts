@@ -75,7 +75,7 @@ export function setAureliaComponentCompletionsMap(
 
         // classDiagram = createDiagram(targetClassDeclaration!, checker);
         /* public myVariables: string; */
-        const result1 = getAureliaViewModelClassMembers(
+        const result1 = getCompletionsAureliaViewModelClassMembers(
           targetClassDeclaration,
           checker
         );
@@ -265,7 +265,7 @@ export function getTemplateImportPathFromCustomElementDecorator(
 /**
  *
  */
-function getAureliaViewModelClassMembers(
+function getCompletionsAureliaViewModelClassMembers(
   classDeclaration: ts.ClassDeclaration,
   checker: ts.TypeChecker
 ) {

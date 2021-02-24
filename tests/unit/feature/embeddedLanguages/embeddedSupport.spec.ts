@@ -36,11 +36,21 @@ describe('embeddedSupport.ts', () => {
     const document = TextDocument.create(uri, 'html', 99, content);
     const regions = await parseDocumentRegions(document, testAureliaProgram);
 
-    strictEqual(regions.length, 6);
+    strictEqual(regions.length, 8);
 
     const attributeRegions = regions.filter(
       (region) => region.type === ViewRegionType.Attribute
     );
     strictEqual(attributeRegions.length, 6);
+
+    const attributeInterpolationRegions = regions.filter(
+      (region) => region.type === ViewRegionType.AttributeInterpolation
+    );
+    strictEqual(attributeInterpolationRegions.length, 1);
+
+    const textInterpolationRegions = regions.filter(
+      (region) => region.type === ViewRegionType.TextInterpolation
+    );
+    strictEqual(textInterpolationRegions.length, 1);
   });
 });

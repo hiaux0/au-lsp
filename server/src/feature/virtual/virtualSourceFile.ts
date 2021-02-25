@@ -34,9 +34,8 @@ interface VirtualLanguageServiceOptions {
   virtualContent?: string;
   /**
    * Offset for language service
-   * TODO: RENAME: virtualCursorOffset
    */
-  virtualCursorIndex?: number;
+  virtualCursorOffset?: number;
   /**
    * In the virtual file put the cursor at the start of the method name.
    * Used when eg. you want to get definition info.

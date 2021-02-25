@@ -12,8 +12,8 @@ import {
   createTextDocumentForTesting,
   getAureliaProgramForTesting,
 } from '../../helpers/test-setup';
-import { isAureliaCompletionItem } from '../../../../server/src/virtual/virtualCompletion/virtualCompletion';
-import { VIRTUAL_METHOD_NAME } from '../../../../server/src/virtual/virtualSourceFile';
+import { isAureliaCompletionItem } from '../../../../server/src/feature/completions/virtualCompletion';
+import { VIRTUAL_METHOD_NAME } from '../../../../server/src/feature/virtual/virtualSourceFile';
 
 describe('embeddedSupport.ts', () => {
   let languageModes: AsyncReturnType<typeof getLanguageModes>;

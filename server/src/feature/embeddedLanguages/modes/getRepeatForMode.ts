@@ -2,7 +2,7 @@ import { ViewRegionType } from '../embeddedSupport';
 import { TextDocumentPositionParams } from 'vscode-languageserver';
 
 import { LanguageMode, Position, TextDocument } from '../languageModes';
-import { getAureliaVirtualCompletions } from '../../../virtual/virtualCompletion/virtualCompletion';
+import { getAureliaVirtualCompletions } from '../../completions/virtualCompletion';
 import { getAccessScopeViewModelDefinition } from '../../definition/accessScopeDefinition';
 import { DefinitionResult } from '../../definition/getDefinition';
 

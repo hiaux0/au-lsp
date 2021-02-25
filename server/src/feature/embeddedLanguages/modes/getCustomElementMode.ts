@@ -11,7 +11,7 @@ import { getBindablesCompletion } from '../../completions/completions';
 import { aureliaProgram } from '../../../viewModel/AureliaProgram';
 import { DefinitionResult } from '../../definition/getDefinition';
 import { camelCase } from 'lodash';
-import { getVirtualDefinition } from '../../../virtual/virtualDefinition/virtualDefinition';
+import { getVirtualDefinition } from '../../definition/virtualDefinition';
 
 export function getCustomElementMode(
 ): LanguageMode {

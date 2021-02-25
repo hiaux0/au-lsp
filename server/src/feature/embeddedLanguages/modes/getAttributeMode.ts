@@ -3,10 +3,10 @@ import { TextDocumentPositionParams } from 'vscode-languageserver';
 
 import { LanguageModelCache } from '../languageModelCache';
 import { LanguageMode, Position, TextDocument } from '../languageModes';
-import { getAureliaVirtualCompletions } from '../../../virtual/virtualCompletion/virtualCompletion';
+import { getAureliaVirtualCompletions } from '../../completions/virtualCompletion';
 import { DefinitionResult } from '../../definition/getDefinition';
 import { getAccessScopeDefinition } from '../../definition/accessScopeDefinition';
-import { VirtualLanguageService } from '../../../virtual/virtualSourceFile';
+import { VirtualLanguageService } from '../../virtual/virtualSourceFile';
 import { getAccessScopeHover } from '../../hover/accessScopeHover';
 
 export function getAttributeMode(

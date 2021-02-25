@@ -19,7 +19,6 @@ import {
 import { Position } from '../embeddedLanguages/languageModes';
 
 import { aureliaProgram } from '../../viewModel/AureliaProgram';
-import { getAureliaVirtualCompletions } from '../../virtual/virtualCompletion/virtualCompletion';
 
 export async function getBindablesCompletion(
   _textDocumentPosition: TextDocumentPositionParams,

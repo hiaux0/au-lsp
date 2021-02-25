@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as ts from 'typescript';
-import { DefinitionResult } from '../../feature/definition/getDefinition';
+import { DefinitionResult } from './getDefinition';
 import { AureliaProgram } from '../../viewModel/AureliaProgram';
 import {
   createVirtualFileWithContent,
@@ -8,7 +8,7 @@ import {
   getVirtualLangagueService,
   VirtualSourceFileInfo,
   VIRTUAL_SOURCE_FILENAME,
-} from '../virtualSourceFile';
+} from '../virtual/virtualSourceFile';
 
 /**
  * 1. Create virtual file

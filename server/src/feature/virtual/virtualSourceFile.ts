@@ -1,10 +1,10 @@
 import * as ts from 'typescript';
 import * as path from 'path';
-import { ViewRegionInfo } from '../feature/embeddedLanguages/embeddedSupport';
-import { aureliaProgram, AureliaProgram } from '../viewModel/AureliaProgram';
+import { ViewRegionInfo } from '../embeddedLanguages/embeddedSupport';
+import { aureliaProgram, AureliaProgram } from '../../viewModel/AureliaProgram';
 import { Position, TextDocument } from 'vscode-html-languageservice';
 import { MarkupKind } from 'vscode-languageserver';
-import { getDocumentRegionAtPosition } from '../feature/embeddedLanguages/languageModes';
+import { getDocumentRegionAtPosition } from '../embeddedLanguages/languageModes';
 
 export const VIRTUAL_SOURCE_FILENAME = 'virtual.ts';
 export const VIRTUAL_METHOD_NAME = '__vir';

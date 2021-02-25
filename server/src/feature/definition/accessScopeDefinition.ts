@@ -9,7 +9,7 @@ import {
 } from '../embeddedLanguages/embeddedSupport';
 import { TextDocument } from 'vscode-languageserver';
 import { aureliaProgram } from '../../viewModel/AureliaProgram';
-import { getVirtualDefinition } from '../../virtual/virtualDefinition/virtualDefinition';
+import { getVirtualDefinition } from './virtualDefinition';
 import { DefinitionResult } from './getDefinition';
 import { Position } from '../embeddedLanguages/languageModes';
 

@@ -12,7 +12,7 @@ import { LanguageMode, Position, TextDocument } from '../languageModes';
 import {
   getAureliaVirtualCompletions,
   getVirtualViewModelCompletionSupplyContent,
-} from '../../../virtual/virtualCompletion/virtualCompletion';
+} from '../../completions/virtualCompletion';
 import { createValueConverterCompletion } from '../../completions/completions';
 import { aureliaProgram } from '../../../viewModel/AureliaProgram';
 import { AureliaClassTypes, AureliaViewModel } from '../../../common/constants';

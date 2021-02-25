@@ -38,14 +38,14 @@ import {
   MarkupKind,
   TextDocumentPositionParams,
 } from 'vscode-languageserver';
-import { getDocumentRegionAtPosition } from '../../feature/embeddedLanguages/languageModes';
+import { getDocumentRegionAtPosition } from '../embeddedLanguages/languageModes';
 import { aureliaProgram, AureliaProgram } from '../../viewModel/AureliaProgram';
 import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from '../../common/constants';
 import {
   createVirtualFileWithContent,
   createVirtualViewModelSourceFile,
   getVirtualLangagueService,
-} from '../virtualSourceFile';
+} from '../virtual/virtualSourceFile';
 import { AsyncReturnType } from '../../common/global';
 
 const PARAMETER_NAME = 'parameterName';

@@ -44,13 +44,13 @@ import {
 import * as path from 'path';
 import * as ts from 'typescript';
 import { createDiagram } from './viewModel/createDiagram';
-import { getVirtualDefinition } from './virtual/virtualDefinition/virtualDefinition';
+import { getVirtualDefinition } from './feature/definition/virtualDefinition';
 import {
   DefinitionResult,
   getDefinition,
 } from './feature/definition/getDefinition';
 import { camelCase } from 'lodash';
-import { CustomHover } from './virtual/virtualSourceFile';
+import { CustomHover } from './feature/virtual/virtualSourceFile';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.

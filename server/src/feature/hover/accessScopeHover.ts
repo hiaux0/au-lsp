@@ -1,4 +1,4 @@
-import { createVirtualLanguageService } from '../../virtual/virtualSourceFile';
+import { createVirtualLanguageService } from '../virtual/virtualSourceFile';
 import { ViewRegionInfo } from '../embeddedLanguages/embeddedSupport';
 import { Position, TextDocument } from '../embeddedLanguages/languageModes';
 

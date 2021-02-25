@@ -21,7 +21,7 @@ import { getCustomElementMode } from './modes/getCustomElementMode';
 import { getRepeatForMode } from './modes/getRepeatForMode';
 import { getTextInterpolationMode } from './modes/getTextInterpolationMode';
 import { getValueConverterMode } from './modes/getValueConverterMode';
-import { AureliaCompletionItem } from '../../virtual/virtualCompletion/virtualCompletion';
+import { AureliaCompletionItem } from '../completions/virtualCompletion';
 import {
   HTMLDocumentRegions,
   parseDocumentRegions,
@@ -34,7 +34,7 @@ import {
   getLanguageModelCache,
   LanguageModelCache,
 } from './languageModelCache';
-import { CustomHover } from '../../virtual/virtualSourceFile';
+import { CustomHover } from '../virtual/virtualSourceFile';
 
 export * from 'vscode-html-languageservice';
 

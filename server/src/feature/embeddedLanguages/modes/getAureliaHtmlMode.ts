@@ -3,7 +3,6 @@ import { TextDocumentPositionParams } from 'vscode-languageserver';
 
 import { LanguageModelCache } from '../languageModelCache';
 import { LanguageMode, Position, TextDocument } from '../languageModes';
-import { getAureliaVirtualCompletions } from '../../../virtual/virtualCompletion/virtualCompletion';
 import { aureliaProgram } from '../../../viewModel/AureliaProgram';
 
 export function getAureliaHtmlMode(

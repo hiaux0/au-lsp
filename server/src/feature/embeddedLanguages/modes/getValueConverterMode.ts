@@ -4,19 +4,14 @@ import {
   ValueConverterRegionData,
   ViewRegionInfo,
   ViewRegionType,
- HTMLDocumentRegions } from '../embeddedSupport';
+} from '../embeddedSupport';
 import { TextDocumentPositionParams } from 'vscode-languageserver';
 
-import { LanguageModelCache } from '../languageModelCache';
 import { LanguageMode, Position, TextDocument } from '../languageModes';
-import {
-  getAureliaVirtualCompletions,
-  getVirtualViewModelCompletionSupplyContent,
-} from '../../completions/virtualCompletion';
+import { getVirtualViewModelCompletionSupplyContent } from '../../completions/virtualCompletion';
 import { createValueConverterCompletion } from '../../completions/completions';
 import { aureliaProgram } from '../../../viewModel/AureliaProgram';
 import { AureliaClassTypes, AureliaViewModel } from '../../../common/constants';
-import { getAccessScopeDefinition } from '../../definition/accessScopeDefinition';
 import { DefinitionResult } from '../../definition/getDefinition';
 
 async function onValueConverterCompletion(
@@ -34,9 +29,7 @@ async function onValueConverterCompletion(
 
   /** TODO: Infer type via isValueConverterRegion (see ts.isNodeDeclaration) */
   // Find value converter sourcefile
-  const valueConverterRegion = targetRegion as ViewRegionInfo<
-    ValueConverterRegionData
-  >;
+  const valueConverterRegion = targetRegion as ViewRegionInfo<ValueConverterRegionData>;
 
   const targetValueConverterComponent = aureliaProgram
     .getComponentList()
@@ -69,8 +62,7 @@ async function onValueConverterCompletion(
   return valueConverterCompletion;
 }
 
-export function getValueConverterMode(
-): LanguageMode {
+export function getValueConverterMode(): LanguageMode {
   return {
     getId() {
       return ViewRegionType.ValueConverter;
@@ -88,18 +80,7 @@ export function getValueConverterMode(
         return completions;
       }
 
-      const regions = await parseDocumentRegions(document);
-      const targetRegion = await getRegionAtPosition(
-        document,
-        regions,
-        _textDocumentPosition.position
-      );
-
-      if (!targetRegion) return [];
-
-      const valueConverterCompletion = createValueConverterCompletion(
-        targetRegion
-      );
+      const valueConverterCompletion = createValueConverterCompletion();
       return valueConverterCompletion;
     },
     async doDefinition(
@@ -108,9 +89,7 @@ export function getValueConverterMode(
       goToSourceWord: string,
       valueConverterRegion: ViewRegionInfo | undefined
     ): Promise<DefinitionResult | undefined> {
-      const targetRegion = valueConverterRegion as ViewRegionInfo<
-        ValueConverterRegionData
-      >;
+      const targetRegion = valueConverterRegion as ViewRegionInfo<ValueConverterRegionData>;
       const targetValueConverterComponent = aureliaProgram
         .getComponentList()
         .filter(

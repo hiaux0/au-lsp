@@ -12,8 +12,6 @@ import {
   CustomElementRegionData,
   parseDocumentRegions,
   getRegionFromLineAndCharacter,
-  ValueConverterRegionData,
-  ViewRegionInfo,
   ViewRegionType,
 } from '../embeddedLanguages/embeddedSupport';
 import { Position } from '../embeddedLanguages/languageModes';
@@ -23,7 +21,7 @@ import { aureliaProgram } from '../../viewModel/AureliaProgram';
 export async function getBindablesCompletion(
   _textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument
-) {
+): Promise<CompletionItem[]> {
   const { position } = _textDocumentPosition;
   const adjustedPosition: Position = {
     character: position.character + 1,
@@ -46,18 +44,12 @@ export async function getBindablesCompletion(
   );
 }
 
-export function createValueConverterCompletion(
-  targetRegion: ViewRegionInfo
-): CompletionItem[] {
-  const valueConverterRegion = targetRegion as ViewRegionInfo<
-    ValueConverterRegionData
-  >;
-
+export function createValueConverterCompletion(): CompletionItem[] {
   const valueConverterCompletionList = aureliaProgram
     .getComponentList()
     .filter((component) => component.type === AureliaClassTypes.VALUE_CONVERTER)
     .map((valueConverterComponent) => {
-      const elementName = valueConverterComponent.valueConverterName;
+      const elementName = valueConverterComponent.valueConverterName ?? '';
       const result: CompletionItem = {
         documentation: {
           kind: MarkupKind.Markdown,

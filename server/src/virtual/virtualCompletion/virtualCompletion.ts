@@ -34,6 +34,7 @@ import {
 } from 'vscode-css-languageservice';
 import {
   CompletionItemKind,
+  CompletionList,
   MarkupKind,
   TextDocumentPositionParams,
 } from 'vscode-languageserver';
@@ -143,6 +144,18 @@ export interface AureliaCompletionItem extends CompletionItem {
   data?: AureliaLSP.AureliaCompletionItemDataType;
 }
 
+export function isAureliaCompletionItem(
+  completion: CompletionList | AureliaCompletionItem[]
+): completion is AureliaCompletionItem[] {
+  if (!Array.isArray(completion)) return false;
+
+  if (completion[0].label) {
+    return true;
+  }
+
+  return false;
+}
+
 async function getVirtualViewModelCompletion(
   textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument,
@@ -195,7 +208,7 @@ async function getVirtualViewModelCompletion(
     virtualCompletions
   );
 
-  return result ;
+  return result;
 }
 
 interface CustomizeEnhanceDocumentation {
@@ -313,8 +326,9 @@ function enhanceCompletionItemDocumentation(
       if (customizeEnhanceDocumentation?.omitMethodNameAndBrackets) {
         insertMethodTextWithArguments = createArgCompletion(entryDetail);
       } else {
-        insertMethodTextWithArguments =
-          `${tsCompletion.name  }(${  createArgCompletion(entryDetail)  })`;
+        insertMethodTextWithArguments = `${
+          tsCompletion.name
+        }(${createArgCompletion(entryDetail)})`;
       }
     }
 

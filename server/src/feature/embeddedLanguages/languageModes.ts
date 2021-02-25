@@ -34,7 +34,7 @@ import {
   getLanguageModelCache,
   LanguageModelCache,
 } from './languageModelCache';
-import { CustomHover } from '../../../out/server/src/virtual/virtualSourceFile.d';
+import { CustomHover } from '../../virtual/virtualSourceFile';
 
 export * from 'vscode-html-languageservice';
 
@@ -109,8 +109,8 @@ export function getDocumentRegionAtPosition(position: Position) {
 }
 
 export interface LanguageModeWithRegion {
-  mode: LanguageMode;
-  region: ViewRegionInfo;
+  mode?: LanguageMode;
+  region?: ViewRegionInfo;
 }
 
 type LanguageModeWithRegionMap = Record<ViewRegionType, LanguageModeWithRegion>;
@@ -142,7 +142,7 @@ export async function getLanguageModes(): Promise<LanguageModes> {
   modes[ViewRegionType.CustomElement].mode = getCustomElementMode();
 
   modes[ViewRegionType.RepeatFor] = {};
-  modes[ViewRegionType.RepeatFor].mode = getRepeatForMode(documentRegions);
+  modes[ViewRegionType.RepeatFor].mode = getRepeatForMode();
 
   modes[ViewRegionType.TextInterpolation] = {};
   modes[ViewRegionType.TextInterpolation].mode = getTextInterpolationMode(
@@ -168,15 +168,15 @@ export async function getLanguageModes(): Promise<LanguageModes> {
       return undefined;
     },
     async getModeAtPosition(
-      document: TextDocument,
-      position: Position
+      // document: TextDocument,
+      // position: Position
     ): Promise<LanguageMode | undefined> {
-      const documentRegion = await documentRegions.get(document);
-      const languageId = documentRegion.getLanguageAtPosition(position);
+      // const documentRegion = await documentRegions.get(document);
+      // const languageId = documentRegion.getLanguageAtPosition(position);
 
-      if (languageId) {
-        return modes[languageId];
-      }
+      // if (languageId) {
+      //   return modes[languageId];
+      // }
       return undefined;
     },
     // getModesInRange(document: TextDocument, range: Range): LanguageModeRange[] {
@@ -206,30 +206,42 @@ export async function getLanguageModes(): Promise<LanguageModes> {
     // },
     getAllModes(): LanguageMode[] {
       const result: LanguageMode[] = [];
-      for (const languageId in modes) {
-        const mode = modes[languageId];
-        if (mode) {
-          result.push(mode);
-        }
-      }
+      // for (const languageId in modes) {
+      //   const mode = modes[languageId];
+      //   if (mode) {
+      //     result.push(mode);
+      //   }
+      // }
       return result;
     },
-    getMode(languageId: string): LanguageMode {
-      return modes[languageId];
+    getMode(languageId: string): LanguageMode | undefined{
+      const viewRegionMode = languageId as ViewRegionType;
+
+      return modes[viewRegionMode].mode;
     },
     onDocumentRemoved(document: TextDocument) {
       modelCaches.forEach((mc) => mc.onDocumentRemoved(document));
       for (const mode in modes) {
-        modes[mode].onDocumentRemoved(document);
+        const viewRegionMode = mode as ViewRegionType;
+        modes[viewRegionMode].mode?.onDocumentRemoved(document);
       }
     },
     dispose(): void {
       modelCaches.forEach((mc) => mc.dispose());
       modelCaches = [];
       for (const mode in modes) {
-        modes[mode].dispose();
+        const viewRegionMode = mode as ViewRegionType;
+        modes[viewRegionMode].mode?.dispose();
       }
-      modes = {};
+      modes = {
+        Attribute: { mode: undefined, region: undefined },
+        AttributeInterpolation: { mode: undefined, region: undefined },
+        html: { mode: undefined, region: undefined },
+        RepeatFor: { mode: undefined, region: undefined },
+        TextInterpolation: { mode: undefined, region: undefined },
+        CustomElement: { mode: undefined, region: undefined },
+        ValueConverter: { mode: undefined, region: undefined },
+      };
     },
   };
 }

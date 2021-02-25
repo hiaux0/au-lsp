@@ -106,7 +106,7 @@ export function getValueConverterMode(
       document: TextDocument,
       position: Position,
       goToSourceWord: string,
-      valueConverterRegion: ViewRegionInfo
+      valueConverterRegion: ViewRegionInfo | undefined
     ): Promise<DefinitionResult | undefined> {
       const targetRegion = valueConverterRegion as ViewRegionInfo<
         ValueConverterRegionData

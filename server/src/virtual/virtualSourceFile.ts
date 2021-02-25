@@ -132,7 +132,7 @@ function getDefinitionAtPosition(
   return defintion;
 }
 
-interface CustomHover {
+export interface CustomHover {
   contents: {
     kind: MarkupKind;
     value: string;

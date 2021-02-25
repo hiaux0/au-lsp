@@ -45,7 +45,7 @@ export enum ViewRegionType {
 
 export interface ViewRegionInfo<RegionDataType = any> {
   type?: ViewRegionType;
-  languageId: string;
+  languageId: ViewRegionType;
   startOffset?: number;
   startCol?: number;
   startLine?: number;
@@ -659,7 +659,7 @@ function getEmbeddedDocument(
   let currentPos = 0;
   const oldContent = document.getText();
   let result = '';
-  let lastSuffix = '';
+  const lastSuffix = '';
   for (const c of contents) {
     if (
       c.languageId === languageId &&
@@ -671,11 +671,12 @@ function getEmbeddedDocument(
         c.startOffset!,
         oldContent,
         lastSuffix,
-        getPrefix(c)
+        ''
+        // getPrefix(c)
       );
       result += oldContent.substring(c.startOffset!, c.endOffset);
       currentPos = c.endOffset!;
-      lastSuffix = getSuffix(c);
+      // lastSuffix = getSuffix(c);
     }
   }
   result = substituteWithWhitespace(
@@ -694,26 +695,26 @@ function getEmbeddedDocument(
   );
 }
 
-function getPrefix(c: ViewRegionInfo) {
-  if (c.attributeName === undefined) {
-    switch (c.languageId) {
-      case 'css':
-        return `${CSS_STYLE_RULE}{`;
-    }
-  }
-  return '';
-}
-function getSuffix(c: ViewRegionInfo) {
-  if (c.attributeName === undefined) {
-    switch (c.languageId) {
-      case 'css':
-        return '}';
-      case 'javascript':
-        return ';';
-    }
-  }
-  return '';
-}
+// function getPrefix(c: ViewRegionInfo) {
+//   if (c.attributeName === undefined) {
+//     switch (c.languageId) {
+//       case 'css':
+//         return `${CSS_STYLE_RULE}{`;
+//     }
+//   }
+//   return '';
+// }
+// function getSuffix(c: ViewRegionInfo) {
+//   if (c.attributeName === undefined) {
+//     switch (c.languageId) {
+//       case 'css':
+//         return '}';
+//       case 'javascript':
+//         return ';';
+//     }
+//   }
+//   return '';
+// }
 
 function substituteWithWhitespace(
   result: string,

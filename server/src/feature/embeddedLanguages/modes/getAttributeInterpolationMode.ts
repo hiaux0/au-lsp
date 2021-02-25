@@ -1,15 +1,15 @@
-import { ViewRegionInfo, ViewRegionType , HTMLDocumentRegions } from "../embeddedSupport";
-import { TextDocumentPositionParams } from "vscode-languageserver";
+import { ViewRegionInfo, ViewRegionType , HTMLDocumentRegions } from '../embeddedSupport';
+import { TextDocumentPositionParams } from 'vscode-languageserver';
 
-import { LanguageModelCache } from "../languageModelCache";
-import { LanguageMode, Position, TextDocument } from "../languageModes";
-import { getAureliaVirtualCompletions } from "../../../virtual/virtualCompletion/virtualCompletion";
-import { DefinitionResult } from "../../definition/getDefinition";
-import { aureliaProgram } from "../../../viewModel/AureliaProgram";
-import { getVirtualDefinition } from "../../../virtual/virtualDefinition/virtualDefinition";
-import { getAccessScopeDefinition } from "../../definition/accessScopeDefinition";
-import { VirtualLanguageService } from "../../../virtual/virtualSourceFile";
-import { getAccessScopeHover } from "../../hover/accessScopeHover";
+import { LanguageModelCache } from '../languageModelCache';
+import { LanguageMode, Position, TextDocument } from '../languageModes';
+import { getAureliaVirtualCompletions } from '../../../virtual/virtualCompletion/virtualCompletion';
+import { DefinitionResult } from '../../definition/getDefinition';
+import { aureliaProgram } from '../../../viewModel/AureliaProgram';
+import { getVirtualDefinition } from '../../../virtual/virtualDefinition/virtualDefinition';
+import { getAccessScopeDefinition } from '../../definition/accessScopeDefinition';
+import { VirtualLanguageService } from '../../../virtual/virtualSourceFile';
+import { getAccessScopeHover } from '../../hover/accessScopeHover';
 
 export function getAttributeInterpolationMode(
   documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
@@ -36,7 +36,6 @@ export function getAttributeInterpolationMode(
       document: TextDocument,
       position: Position,
       goToSourceWord: string,
-      attributeRegion: ViewRegionInfo
     ): Promise<DefinitionResult | undefined> {
       const regions = (await documentRegions.get(document)).getRegions();
       return getAccessScopeDefinition(
@@ -51,7 +50,7 @@ export function getAttributeInterpolationMode(
       position: Position,
       goToSourceWord: string,
       attributeRegion: ViewRegionInfo
-    ): Promise<ReturnType<VirtualLanguageService["getQuickInfoAtPosition"]>> {
+    ): Promise<ReturnType<VirtualLanguageService['getQuickInfoAtPosition']>> {
       return getAccessScopeHover(
         document,
         position,

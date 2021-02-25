@@ -36,7 +36,6 @@ export function getTextInterpolationMode(
       document: TextDocument,
       position: Position,
       goToSourceWord: string,
-      attributeRegion: ViewRegionInfo
     ): Promise<DefinitionResult | undefined> {
       const regions = (await documentRegions.get(document)).getRegions();
       return getAccessScopeDefinition(

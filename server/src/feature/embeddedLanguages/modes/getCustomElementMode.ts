@@ -38,7 +38,7 @@ export function getCustomElementMode(
       document: TextDocument,
       position: Position,
       goToSourceWord: string,
-      customElementRegion: ViewRegionInfo
+      customElementRegion: ViewRegionInfo | undefined
     ): Promise<DefinitionResult | undefined> {
       const aureliaSourceFiles = aureliaProgram.getAureliaSourceFiles();
       const targetAureliaFile = aureliaSourceFiles?.find((sourceFile) => {
@@ -65,7 +65,7 @@ export function getCustomElementMode(
       const targetAureliaFileDifferentViewModel = aureliaSourceFiles?.find(
         (sourceFile) => {
           return (
-            path.parse(sourceFile.fileName).name === customElementRegion.tagName
+            path.parse(sourceFile.fileName).name === customElementRegion?.tagName
           );
         }
       );

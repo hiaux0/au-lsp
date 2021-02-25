@@ -1,18 +1,12 @@
-import { ViewRegionInfo, ViewRegionType , HTMLDocumentRegions } from '../embeddedSupport';
+import { ViewRegionType } from '../embeddedSupport';
 import { TextDocumentPositionParams } from 'vscode-languageserver';
 
-import { LanguageModelCache } from '../languageModelCache';
 import { LanguageMode, Position, TextDocument } from '../languageModes';
 import { getAureliaVirtualCompletions } from '../../../virtual/virtualCompletion/virtualCompletion';
-import {
-  getAccessScopeDefinition,
-  getAccessScopeViewModelDefinition,
-} from '../../definition/accessScopeDefinition';
+import { getAccessScopeViewModelDefinition } from '../../definition/accessScopeDefinition';
 import { DefinitionResult } from '../../definition/getDefinition';
 
-export function getRepeatForMode(
-  documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
-): LanguageMode {
+export function getRepeatForMode(): LanguageMode {
   return {
     getId() {
       return ViewRegionType.RepeatFor;
@@ -34,10 +28,8 @@ export function getRepeatForMode(
     async doDefinition(
       document: TextDocument,
       position: Position,
-      goToSourceWord: string,
-      attributeRegion: ViewRegionInfo
+      goToSourceWord: string
     ): Promise<DefinitionResult | undefined> {
-      const regions = (await documentRegions.get(document)).getRegions();
       return getAccessScopeViewModelDefinition(
         document,
         position,

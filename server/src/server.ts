@@ -50,6 +50,7 @@ import {
   getDefinition,
 } from './feature/definition/getDefinition';
 import { camelCase } from 'lodash';
+import { CustomHover } from './virtual/virtualSourceFile';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -409,7 +410,7 @@ connection.onRequest<any, any>(
     position,
     goToSourceWord,
     filePath,
-  }): Promise<void> => {
+  }): Promise<CustomHover | undefined> => {
     const documentUri = filePath;
     const document = TextDocument.create(filePath, 'html', 0, documentContent);
 
@@ -427,6 +428,7 @@ connection.onRequest<any, any>(
     const { mode, region } = modeAndRegion;
 
     if (!mode) return;
+    if (!region) return;
 
     const doHover = mode.doHover;
 

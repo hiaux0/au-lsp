@@ -7,7 +7,7 @@ import { MarkupKind } from 'vscode-languageserver';
 import { getDocumentRegionAtPosition } from '../feature/embeddedLanguages/languageModes';
 
 export const VIRTUAL_SOURCE_FILENAME = 'virtual.ts';
-const VIRTUAL_METHOD_NAME = '__vir';
+export const VIRTUAL_METHOD_NAME = '__vir';
 
 export interface VirtualSourceFileInfo {
   virtualSourcefile: ts.SourceFile;

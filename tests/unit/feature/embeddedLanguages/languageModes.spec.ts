@@ -12,6 +12,8 @@ import {
   createTextDocumentForTesting,
   getAureliaProgramForTesting,
 } from '../../helpers/test-setup';
+import { isAureliaCompletionItem } from '../../../../server/src/virtual/virtualCompletion/virtualCompletion';
+import { VIRTUAL_METHOD_NAME } from '../../../../server/src/virtual/virtualSourceFile';
 
 describe('embeddedSupport.ts', () => {
   let languageModes: AsyncReturnType<typeof getLanguageModes>;
@@ -96,5 +98,32 @@ describe('embeddedSupport.ts - Modes', () => {
       'SettingsViewCustomElement.dirty'
     );
     strictEqual(correctDocs, true);
+  });
+  it('Complete', async () => {
+    if (!mode?.doComplete) return;
+
+    const region = modeAndRegion?.region;
+    if (region === undefined) return;
+
+    const textDocument = {
+      textDocument: {
+        uri: document.uri,
+      },
+      position: Position.create(4, 13),
+    };
+    const complete = await mode.doComplete(document, textDocument, 'dirty');
+
+    if (!isAureliaCompletionItem(complete)) return;
+
+    const hasInternalVirMethod =
+      complete.find((completeItem) =>
+        completeItem.insertText?.includes(VIRTUAL_METHOD_NAME)
+      ) !== undefined;
+    strictEqual(hasInternalVirMethod, true);
+
+    const numOfClassMembers = 10;
+    /** 1: __vir */
+    const completionsResults = numOfClassMembers + 1;
+    strictEqual(complete?.length, completionsResults);
   });
 });

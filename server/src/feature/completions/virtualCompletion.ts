@@ -28,13 +28,11 @@ interface EntryDetailsMap {
 import * as ts from 'typescript';
 import {
   CompletionItem,
-  InsertTextFormat,
-  TextDocument,
-} from 'vscode-css-languageservice';
-import {
   CompletionItemKind,
   CompletionList,
+  InsertTextFormat,
   MarkupKind,
+  TextDocument,
   TextDocumentPositionParams,
 } from 'vscode-languageserver';
 import { getDocumentRegionAtPosition } from '../embeddedLanguages/languageModes';
@@ -118,7 +116,7 @@ export function createProgram(
   }
   const compilerHost = ts.createCompilerHost(options);
   compilerHost.getSourceFile = function (
-    fileName: string,
+    fileName: string
   ): ts.SourceFile | undefined {
     const file = files.find((f) => f.fileName === fileName);
     if (!file) return undefined;
@@ -294,7 +292,9 @@ function enhanceCompletionItemDocumentation(
     /** Default value is just the method name */
     let insertMethodTextWithArguments = tsCompletion.name;
     if (isMethod) {
-      if (customizeEnhanceDocumentation?.omitMethodNameAndBrackets !== undefined) {
+      if (
+        customizeEnhanceDocumentation?.omitMethodNameAndBrackets !== undefined
+      ) {
         insertMethodTextWithArguments = createArgCompletion(entryDetail);
       } else {
         insertMethodTextWithArguments = `${

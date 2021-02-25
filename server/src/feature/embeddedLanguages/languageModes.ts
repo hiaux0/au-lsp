@@ -128,7 +128,7 @@ export async function getLanguageModes(): Promise<LanguageModes> {
   let modes = Object.create(null) as LanguageModeWithRegionMap;
 
   modes[ViewRegionType.Html] = {};
-  modes[ViewRegionType.Html].mode = getAureliaHtmlMode(documentRegions);
+  modes[ViewRegionType.Html].mode = getAureliaHtmlMode();
 
   modes[ViewRegionType.Attribute] = {};
   modes[ViewRegionType.Attribute].mode = getAttributeMode(documentRegions);

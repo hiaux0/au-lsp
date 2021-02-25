@@ -1,13 +1,9 @@
-import * as path from 'path';
-import * as ts from 'typescript';
 import { DefinitionResult } from './getDefinition';
 import { AureliaProgram } from '../../viewModel/AureliaProgram';
 import {
   createVirtualFileWithContent,
-  createVirtualViewModelSourceFile,
   getVirtualLangagueService,
   VirtualSourceFileInfo,
-  VIRTUAL_SOURCE_FILENAME,
 } from '../virtual/virtualSourceFile';
 
 /**
@@ -21,7 +17,7 @@ export function getVirtualDefinition(
   goToSourceWord: string
 ): DefinitionResult | undefined {
   const { virtualSourcefile, virtualCursorIndex, viewModelFilePath } =
-    createVirtualFileWithContent(aureliaProgram, filePath, goToSourceWord) ||
+    createVirtualFileWithContent(aureliaProgram, filePath, goToSourceWord) ??
     ({} as VirtualSourceFileInfo);
 
   const virtualCls = getVirtualLangagueService(virtualSourcefile);
@@ -35,7 +31,7 @@ export function getVirtualDefinition(
 
   return {
     lineAndCharacter: virtualSourcefile.getLineAndCharacterOfPosition(
-      result![0].contextSpan?.start || 0
+      result![0].contextSpan?.start ?? 0
     ),
     viewModelFilePath,
   };

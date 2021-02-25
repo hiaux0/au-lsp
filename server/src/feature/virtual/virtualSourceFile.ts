@@ -73,7 +73,7 @@ export async function createVirtualLanguageService(
     virtualContent = document
       .getText()
       .slice(region.startOffset, region.endOffset);
-  } else if (options.virtualContent) {
+  } else if (options.virtualContent !== undefined) {
     virtualContent = options.virtualContent;
   }
 
@@ -88,15 +88,15 @@ export async function createVirtualLanguageService(
     virtualContent
   )!;
 
-  if (options.startAtBeginningOfMethodInVirtualFile) {
+  if (options.startAtBeginningOfMethodInVirtualFile !== undefined) {
     virtualCursorIndex -= virtualContent.length - 1; // -1 to start at beginning of method name;
   }
 
   const languageService = getVirtualLangagueService(virtualSourcefile);
 
   return {
-    getCompletionsAtPosition: () => getCompletionsAtPosition(languageService),
-    getCompletionEntryDetails: () => getCompletionEntryDetails(languageService),
+    getCompletionsAtPosition: () => getCompletionsAtPosition(),
+    getCompletionEntryDetails: () => getCompletionEntryDetails(),
     getDefinitionAtPosition: () =>
       getDefinitionAtPosition(
         languageService,
@@ -112,11 +112,11 @@ export async function createVirtualLanguageService(
   };
 }
 
-function getCompletionsAtPosition(languageService: ts.LanguageService) {
+function getCompletionsAtPosition() {
   // cls.getCompletionsAtPosition(fileName, 132, undefined); /*?*/
 }
 
-function getCompletionEntryDetails(languageService: ts.LanguageService) {
+function getCompletionEntryDetails() {
   // cls.getCompletionEntryDetails( fileName, 190, "toView", undefined, undefined, undefined); /*?*/
 }
 
@@ -186,7 +186,7 @@ function getQuickInfoAtPosition(
   );
   let documentation = '';
 
-  if (quickInfo?.documentation?.length) {
+  if (quickInfo?.documentation?.length !== undefined) {
     documentation = quickInfo.documentation[0].text;
   }
 
@@ -217,10 +217,6 @@ export function getVirtualLangagueService(
   const lSHost: ts.LanguageServiceHost = {
     getCompilationSettings: () => compilerSettings!,
     getScriptFileNames: () => {
-      const realFileNames = watcherProgram
-        ?.getSourceFiles()
-        .map((sf) => sf.fileName);
-      // const finalScriptFileName = [virtualSourcefile.fileName, ...realFileNames];
       const finalScriptFileName = [sourceFile.fileName];
       return finalScriptFileName;
     },
@@ -232,7 +228,7 @@ export function getVirtualLangagueService(
       } else {
         const sourceFile = watcherProgram?.getSourceFile(fileName);
 
-        sourceFileText = sourceFile?.getText() || '';
+        sourceFileText = sourceFile?.getText() ?? '';
       }
 
       return ts.ScriptSnapshot.fromString(sourceFileText);
@@ -246,10 +242,6 @@ export function getVirtualLangagueService(
   };
   const cls = ts.createLanguageService(lSHost, ts.createDocumentRegistry());
 
-  if (!cls) {
-    throw new Error('No cls');
-  }
-
   return cls;
 }
 
@@ -261,8 +253,8 @@ export function getVirtualLangagueService(
  *   2.1 Need to visit each node
  *   2.2 (or are we regexing it?)
  *
- * @param originalSourceFile
- * @param virtualContent
+ * @param originalSourceFile -
+ * @param virtualContent -
  * @param targetClassName - Name of the class associated to your view
  */
 export function createVirtualViewModelSourceFile(
@@ -352,7 +344,7 @@ export function createVirtualFileWithContent(
       path.parse(targetSourceFile.fileName).name
   )?.className;
 
-  if (!customElementClassName) return;
+  if (customElementClassName === undefined) return;
 
   // 2. Create virtual source file
   const virtualViewModelSourceFile = ts.createSourceFile(

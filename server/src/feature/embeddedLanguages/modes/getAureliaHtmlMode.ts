@@ -1,13 +1,9 @@
-import { ViewRegionType , HTMLDocumentRegions } from '../embeddedSupport';
 import { TextDocumentPositionParams } from 'vscode-languageserver';
 
-import { LanguageModelCache } from '../languageModelCache';
-import { LanguageMode, Position, TextDocument } from '../languageModes';
+import { LanguageMode, TextDocument } from '../languageModes';
 import { aureliaProgram } from '../../../viewModel/AureliaProgram';
 
-export function getAureliaHtmlMode(
-  documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
-): LanguageMode {
+export function getAureliaHtmlMode(): LanguageMode {
   return {
     getId() {
       return 'html';
@@ -18,7 +14,9 @@ export function getAureliaHtmlMode(
       triggerCharacter: string | undefined
     ) {
       if (triggerCharacter === '<') {
-        return [...aureliaProgram.getComponentCompletionsMap().classDeclarations!];
+        return [
+          ...aureliaProgram.getComponentCompletionsMap().classDeclarations!,
+        ];
       }
       return [];
     },

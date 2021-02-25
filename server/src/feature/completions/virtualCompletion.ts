@@ -26,7 +26,6 @@ interface EntryDetailsMap {
 }
 
 import * as ts from 'typescript';
-import * as path from 'path';
 import {
   CompletionItem,
   InsertTextFormat,
@@ -49,8 +48,6 @@ import {
 import { AsyncReturnType } from '../../common/global';
 
 const PARAMETER_NAME = 'parameterName';
-const PROPERTY_NAME = 'propertyName';
-const METHOD_NAME = 'methodName';
 
 /**
  * Returns the virtual competion. (to be used as real completions)
@@ -122,14 +119,11 @@ export function createProgram(
   const compilerHost = ts.createCompilerHost(options);
   compilerHost.getSourceFile = function (
     fileName: string,
-    languageVersion: ts.ScriptTarget,
-    onError?: (message: string) => void,
-    shouldCreateNewSourceFile?: boolean
   ): ts.SourceFile | undefined {
     const file = files.find((f) => f.fileName === fileName);
     if (!file) return undefined;
     file.sourceFile =
-      file.sourceFile ||
+      file.sourceFile ??
       ts.createSourceFile(fileName, file.content, ts.ScriptTarget.ES2015, true);
     return file.sourceFile;
   };
@@ -187,18 +181,6 @@ async function getVirtualViewModelCompletion(
     virtualCompletions,
     virtualCompletionEntryDetails,
   } = getVirtualCompletion(virtualSourcefile, virtualCursorIndex);
-
-  if (!virtualCompletions) {
-    console.log(`
-      We were trying to find completions for: ${virtualContent},
-      but couldn't find anything in the view model: ${documentUri}
-    `);
-    return [];
-  }
-
-  if (!virtualCompletionEntryDetails) {
-    return [];
-  }
 
   const entryDetailsMap: EntryDetailsMap = {};
 
@@ -258,17 +240,6 @@ export function getVirtualViewModelCompletionSupplyContent(
     virtualCompletionEntryDetails,
   } = getVirtualCompletion(virtualSourcefile, virtualCursorIndex);
 
-  if (!virtualCompletions) {
-    console.log(`
-      We were trying to find completions for: ${virtualContent},
-    `);
-    return [];
-  }
-
-  if (!virtualCompletionEntryDetails) {
-    return [];
-  }
-
   const entryDetailsMap: EntryDetailsMap = {};
 
   const result = enhanceCompletionItemDocumentation(
@@ -323,7 +294,7 @@ function enhanceCompletionItemDocumentation(
     /** Default value is just the method name */
     let insertMethodTextWithArguments = tsCompletion.name;
     if (isMethod) {
-      if (customizeEnhanceDocumentation?.omitMethodNameAndBrackets) {
+      if (customizeEnhanceDocumentation?.omitMethodNameAndBrackets !== undefined) {
         insertMethodTextWithArguments = createArgCompletion(entryDetail);
       } else {
         insertMethodTextWithArguments = `${
@@ -335,9 +306,9 @@ function enhanceCompletionItemDocumentation(
     const completionItem: AureliaCompletionItem = {
       documentation: {
         kind: MarkupKind.Markdown,
-        value: entryDetail.documentation || '',
+        value: entryDetail.documentation ?? '',
       },
-      detail: entryDetail.displayParts || '',
+      detail: entryDetail.displayParts ?? '',
       insertText: isMethod ? insertMethodTextWithArguments : tsCompletion.name,
       insertTextFormat: InsertTextFormat.Snippet,
       kind: entryDetail.kind,
@@ -371,7 +342,7 @@ function enhanceMethodArguments(methodArguments: string[]): string {
 export async function getAureliaVirtualCompletions(
   _textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument
-) {
+): Promise<AureliaCompletionItem[]> {
   // Virtual file
   let virtualCompletions: AsyncReturnType<
     typeof getVirtualViewModelCompletion

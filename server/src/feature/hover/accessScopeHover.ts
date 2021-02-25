@@ -1,4 +1,4 @@
-import { createVirtualLanguageService } from '../virtual/virtualSourceFile';
+import { createVirtualLanguageService, CustomHover } from '../virtual/virtualSourceFile';
 import { ViewRegionInfo } from '../embeddedLanguages/embeddedSupport';
 import { Position, TextDocument } from '../embeddedLanguages/languageModes';
 
@@ -7,7 +7,7 @@ export async function getAccessScopeHover(
   position: Position,
   goToSourceWord: string,
   attributeRegion: ViewRegionInfo
-) {
+): Promise<CustomHover | undefined> {
   const virtualLanguageService = await createVirtualLanguageService(
     position,
     document,

@@ -5,7 +5,6 @@ import { LanguageModelCache } from '../languageModelCache';
 import { LanguageMode, Position, TextDocument } from '../languageModes';
 import { getAureliaVirtualCompletions } from '../../completions/virtualCompletion';
 import { DefinitionResult } from '../../definition/getDefinition';
-import { aureliaProgram } from '../../../viewModel/AureliaProgram';
 import { getAccessScopeDefinition } from '../../definition/accessScopeDefinition';
 import { VirtualLanguageService } from '../../virtual/virtualSourceFile';
 import { getAccessScopeHover } from '../../hover/accessScopeHover';

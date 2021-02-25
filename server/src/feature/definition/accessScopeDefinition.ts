@@ -42,9 +42,9 @@ export function getAccessScopeDefinition(
     /** repeat.for="" */
 
     if (
-      !targetRepeatForRegion?.startLine ||
-      !targetRepeatForRegion.startOffset ||
-      !targetRepeatForRegion.startCol
+      targetRepeatForRegion?.startLine === undefined ||
+      targetRepeatForRegion.startOffset === undefined ||
+      targetRepeatForRegion.startCol === undefined
     ) {
       console.error(
         `RepeatFor-Region does not have a start (line). cSearched for ${goToSourceWord}`

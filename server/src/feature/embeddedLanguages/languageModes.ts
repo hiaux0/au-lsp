@@ -38,6 +38,20 @@ import { CustomHover } from '../virtual/virtualSourceFile';
 
 export * from 'vscode-html-languageservice';
 
+export function createTextDocument(
+  document: TextDocument,
+  position: Position
+): TextDocumentPositionParams {
+  const textDocument: TextDocumentPositionParams = {
+    textDocument: {
+      uri: document.uri,
+    },
+    position,
+  };
+
+  return textDocument;
+}
+
 export interface LanguageMode {
   getId(): string;
   doValidation?: (document: TextDocument) => Diagnostic[];
@@ -167,10 +181,9 @@ export async function getLanguageModes(): Promise<LanguageModes> {
       }
       return undefined;
     },
-    async getModeAtPosition(
-      // document: TextDocument,
-      // position: Position
-    ): Promise<LanguageMode | undefined> {
+    async getModeAtPosition(): // document: TextDocument,
+    // position: Position
+    Promise<LanguageMode | undefined> {
       // const documentRegion = await documentRegions.get(document);
       // const languageId = documentRegion.getLanguageAtPosition(position);
 
@@ -214,7 +227,7 @@ export async function getLanguageModes(): Promise<LanguageModes> {
       // }
       return result;
     },
-    getMode(languageId: string): LanguageMode | undefined{
+    getMode(languageId: string): LanguageMode | undefined {
       const viewRegionMode = languageId as ViewRegionType;
 
       return modes[viewRegionMode].mode;

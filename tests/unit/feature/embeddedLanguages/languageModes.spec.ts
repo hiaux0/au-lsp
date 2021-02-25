@@ -4,6 +4,7 @@ import * as path from 'path';
 
 import { AsyncReturnType } from '../../../../server/src/common/global.d';
 import {
+  createTextDocument,
   getLanguageModes,
   LanguageModes,
   LanguageModeWithRegion,
@@ -37,7 +38,7 @@ describe('embeddedSupport.ts', () => {
     );
 
     //
-    strictEqual(modeAndRegion?.region.regionValue, 'dirty');
+    strictEqual(modeAndRegion?.region?.regionValue, 'dirty');
   });
 });
 
@@ -105,19 +106,17 @@ describe('embeddedSupport.ts - Modes', () => {
     const region = modeAndRegion?.region;
     if (region === undefined) return;
 
-    const textDocument = {
-      textDocument: {
-        uri: document.uri,
-      },
-      position: Position.create(4, 13),
-    };
+    const textDocument = createTextDocument(document, {
+      line: 4,
+      character: 13,
+    });
     const complete = await mode.doComplete(document, textDocument, 'dirty');
 
     if (!isAureliaCompletionItem(complete)) return;
 
     const hasInternalVirMethod =
       complete.find((completeItem) =>
-        completeItem.insertText?.includes(VIRTUAL_METHOD_NAME)
+        completeItem.label?.includes(VIRTUAL_METHOD_NAME)
       ) !== undefined;
     strictEqual(hasInternalVirMethod, true);
 

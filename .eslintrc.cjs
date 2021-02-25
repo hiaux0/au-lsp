@@ -105,16 +105,16 @@ module.exports = {
     'import/extensions': ['error', 'never', { css: 'always', html: 'always', scss: 'always' }],
     'import/no-absolute-path': 'error',
     'import/no-duplicates': 'error',
-    'import/no-extraneous-dependencies': ['error', {
-      devDependencies: [
-        'examples/**',
-        'scripts/**',
-        'test/**',
-        'gulpfile.js'
-      ],
-      optionalDependencies: false,
-      peerDependencies: false
-    }],
+    // 'import/no-extraneous-dependencies': ['error', {
+    //   devDependencies: [
+    //     'examples/**',
+    //     'scripts/**',
+    //     'test/**',
+    //     'gulpfile.js'
+    //   ],
+    //   optionalDependencies: false,
+    //   peerDependencies: false
+    // }],
     'import/no-mutable-exports': 'error',
     'import/no-self-import': 'error',
     'import/no-useless-path-segments': ['error'],

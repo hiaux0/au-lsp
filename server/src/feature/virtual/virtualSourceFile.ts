@@ -183,10 +183,13 @@ function getQuickInfoAtPosition(
     virtualSourcefile.fileName,
     virtualCursorIndex
   );
-  let documentation = '';
+  let finalDocumentation = '';
 
-  if (quickInfo?.documentation?.length !== undefined) {
-    documentation = quickInfo.documentation[0].text;
+  if (quickInfo === undefined) return;
+
+  const { documentation } = quickInfo;
+  if (Array.isArray(documentation) && documentation.length > 1) {
+    finalDocumentation = documentation[0].text;
   }
 
   /**
@@ -203,7 +206,7 @@ function getQuickInfoAtPosition(
       kind: MarkupKind.Markdown,
       value: result,
     },
-    documentation,
+    documentation: finalDocumentation,
   };
 }
 

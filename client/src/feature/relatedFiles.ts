@@ -2,8 +2,8 @@ import {
   commands,
   Disposable,
   TextEditor,
-  TextEditorEdit,
   Uri,
+  ViewColumn,
   workspace,
 } from 'vscode';
 import * as path from 'path';
@@ -12,7 +12,7 @@ import * as fs from 'fs';
 export class RelatedFiles implements Disposable {
   private readonly disposables: Disposable[] = [];
 
-  constructor() {
+  public constructor() {
     this.disposables.push(
       commands.registerTextEditorCommand(
         'extension.auOpenRelated',
@@ -59,7 +59,7 @@ export class RelatedFiles implements Disposable {
     );
   }
 
-  public dispose() {
+  public dispose(): void {
     if (this.disposables.length) {
       this.disposables.forEach((disposable) => {
         disposable.dispose();
@@ -70,9 +70,9 @@ export class RelatedFiles implements Disposable {
   /**
    * Provide file extensions for navigating between Aurelia files.
    */
-  private getRelatedFilePathExtensions(): any {
+  private getRelatedFilePathExtensions() {
     const settings = workspace.getConfiguration('aurelia.relatedFiles');
-    if (settings) {
+    if (settings !== undefined) {
       return {
         scriptExtensions: settings.script,
         styleExtensions: settings.style,
@@ -89,8 +89,8 @@ export class RelatedFiles implements Disposable {
     };
   }
 
-  private onOpenRelated(editor: TextEditor, edit: TextEditorEdit) {
-    if (!editor || !editor.document || editor.document.isUntitled) {
+  private onOpenRelated(editor: TextEditor) {
+    if (editor.document === undefined || editor.document.isUntitled) {
       return;
     }
 
@@ -107,10 +107,10 @@ export class RelatedFiles implements Disposable {
     }
 
     if (relatedFile) {
-      commands.executeCommand(
+      void commands.executeCommand(
         'vscode.open',
         Uri.file(relatedFile),
-        editor.viewColumn
+        ViewColumn.Active
       );
     }
   }
@@ -122,8 +122,8 @@ export class RelatedFiles implements Disposable {
    * @param switchToExtensions - Possible extensions, for target file
    */
   private openRelatedFactory(switchToExtensions: string[]) {
-    return (editor, edit) => {
-      if (!editor || !editor.document || editor.document.isUntitled) {
+    return (editor: TextEditor) => {
+      if (editor.document === undefined || editor.document.isUntitled) {
         return;
       }
 
@@ -132,13 +132,12 @@ export class RelatedFiles implements Disposable {
        * Thus, `replace`, so we are able to switch from, eg. 'unit' to 'style'.
        * */
       const fileName = editor.document.fileName.replace('.spec', '');
-      const extension = path.extname(fileName).toLowerCase();
       const relatedFile = this.getRelatedFilePath(fileName, switchToExtensions);
       if (relatedFile) {
-        commands.executeCommand(
+        void commands.executeCommand(
           'vscode.open',
           Uri.file(relatedFile),
-          editor.viewColumn
+          ViewColumn.Active
         );
       }
     };

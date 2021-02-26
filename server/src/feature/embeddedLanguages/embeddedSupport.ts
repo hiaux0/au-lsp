@@ -242,11 +242,12 @@ export function parseDocumentRegions<RegionDataType = any>(
                 interpolationMatch.index + // width:_
                 2; // ${
 
+              const interpolationValue = interpolationMatch[1];
               /** Eg. >css="width: ${message}<px;" */
               const endInterpolationLength =
                 attrLocation.startOffset +
                 startInterpolationLength +
-                Number(interpolationMatch.groups?.interpolationValue.length); // message
+                Number(interpolationValue.length); // message
 
               const updatedLocation: parse5.Location = {
                 ...attrLocation,

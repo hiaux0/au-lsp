@@ -23,7 +23,7 @@ import { AureliaClassTypes, VALUE_CONVERTER_SUFFIX } from '../common/constants';
 import {
   classDeclarationHasUseViewOrNoView,
   getTemplateImportPathFromCustomElementDecorator,
-  hasCorrectNamingConvention,
+  hasCustomElementNamingConvention,
 } from './setAureliaComponentCompletionsMap';
 
 export function getAureliaComponentInfoFromClassDeclaration(
@@ -38,7 +38,7 @@ export function getAureliaComponentInfoFromClassDeclaration(
       ts.isClassDeclaration(node) &&
       isNodeExported(node) &&
       (classDeclarationHasUseViewOrNoView(node) ||
-        hasCorrectNamingConvention(node))
+        hasCustomElementNamingConvention(node))
     ) {
       targetClassDeclaration = node;
 

@@ -113,7 +113,7 @@ function getAureliaViewModelClassDeclaration(
       ts.isClassDeclaration(node) &&
       isNodeExported(node) &&
       (classDeclarationHasUseViewOrNoView(node) ||
-        hasCorrectNamingConvention(node))
+        hasCustomElementNamingConvention(node))
       /** && hasTemplate */
     ) {
       // Save the class for further processing later on.
@@ -188,10 +188,10 @@ export function classDeclarationHasUseViewOrNoView(
  * \@customElement(...)
  * MyClass
  */
-export function hasCorrectNamingConvention(
+export function hasCustomElementNamingConvention(
   classDeclaration: ts.ClassDeclaration
 ): boolean {
-  const hasViewDecorator = classDeclaration.decorators?.some((decorator) => {
+  const hasCustomElementDecorator = classDeclaration.decorators?.some((decorator) => {
     const result = decorator
       .getText()
       .includes(AureliaDecorator.CUSTOM_ELEMENT);
@@ -202,7 +202,7 @@ export function hasCorrectNamingConvention(
     classDeclaration.name?.getText().includes(AureliaClassTypes.CUSTOM_ELEMENT)
   );
 
-  return hasViewDecorator || hasCustomElementNamingConvention;
+  return hasCustomElementDecorator || hasCustomElementNamingConvention;
 }
 
 export function getTemplateImportPathFromCustomElementDecorator(

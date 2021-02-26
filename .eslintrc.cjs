@@ -136,7 +136,7 @@ module.exports = {
     'func-call-spacing': 'off', // See @typescript-eslint/func-call-spacing
     'function-call-argument-newline': ['error', 'consistent'],
     'grouped-accessor-pairs': ['error', 'getBeforeSet'],
-    'max-lines-per-function': ['error', 200],
+    // 'max-lines-per-function': ['error', 200],
     'new-parens': ['error', 'always'],
     'no-caller': 'error',
     'no-case-declarations': 'error',

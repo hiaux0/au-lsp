@@ -205,6 +205,29 @@ export function hasCustomElementNamingConvention(
   return hasCustomElementDecorator || hasCustomElementNamingConvention;
 }
 
+/**
+ * MyClassValueConverter
+ *
+ * \@valueConverter(...)
+ * MyClass
+ */
+export function hasValueConverterNamingConvention(
+  classDeclaration: ts.ClassDeclaration
+): boolean {
+  const hasValueConverterDecorator = classDeclaration.decorators?.some((decorator) => {
+    const result = decorator
+      .getText()
+      .includes(AureliaDecorator.VALUE_CONVERTER);
+    return result;
+  }) ?? false;
+
+  const hasValueConverterNamingConvention = Boolean(
+    classDeclaration.name?.getText().includes(AureliaClassTypes.VALUE_CONVERTER)
+  );
+
+  return hasValueConverterDecorator || hasValueConverterNamingConvention;
+}
+
 export function getTemplateImportPathFromCustomElementDecorator(
   classDeclaration: ts.ClassDeclaration,
   sourceFile: ts.SourceFile

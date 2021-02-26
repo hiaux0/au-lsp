@@ -24,6 +24,7 @@ import {
   classDeclarationHasUseViewOrNoView,
   getTemplateImportPathFromCustomElementDecorator,
   hasCustomElementNamingConvention,
+  hasValueConverterNamingConvention,
 } from './setAureliaComponentCompletionsMap';
 
 export function getAureliaComponentInfoFromClassDeclaration(
@@ -38,7 +39,8 @@ export function getAureliaComponentInfoFromClassDeclaration(
       ts.isClassDeclaration(node) &&
       isNodeExported(node) &&
       (classDeclarationHasUseViewOrNoView(node) ||
-        hasCustomElementNamingConvention(node))
+        hasCustomElementNamingConvention(node) ||
+        hasValueConverterNamingConvention(node))
     ) {
       targetClassDeclaration = node;
 

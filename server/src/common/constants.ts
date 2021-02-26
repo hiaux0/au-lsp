@@ -25,6 +25,7 @@ export enum AureliaView {
 
 export enum AureliaDecorator {
   CUSTOM_ELEMENT = '@customElement',
+  VALUE_CONVERTER = '@valueConverter',
   USE_VIEW = '@useView',
   NO_VIEW = '@noView',
 }

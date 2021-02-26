@@ -1,15 +1,13 @@
-/* ---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *-------------------------------------------------------------------------------------------- */
-
 import * as parse5 from 'parse5';
 import * as SaxStream from 'parse5-sax-parser';
 import { Position, Range } from './languageModes';
 import { AURELIA_ATTRIBUTES_KEYWORDS } from '../../configuration/DocumentSettings';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { AureliaView } from '../../common/constants';
-import { AureliaProgram, aureliaProgram as importedAureliaProgram } from '../../viewModel/AureliaProgram';
+import {
+  AureliaProgram,
+  aureliaProgram as importedAureliaProgram,
+} from '../../viewModel/AureliaProgram';
 import { DiagnosticMessages } from '../../common/DiagnosticMessages';
 import { AsyncReturnType } from '../../common/global';
 
@@ -111,13 +109,15 @@ export function parseDocumentRegions<RegionDataType = any>(
 
     // 0. Check if template was imported to ViewModel
     const fileName = document.uri;
-    const result = aureliaProgram.getComponentCompletionsMap().classDeclarations?.find(classDecl => {
-      const data = classDecl.data as {templateImportPath: string};
-      const {templateImportPath} = data;
-      /** Account for "file://" */
-      const isSameFilePath = fileName.includes(templateImportPath);
-      return isSameFilePath;
-    });
+    const result = aureliaProgram
+      .getComponentCompletionsMap()
+      .classDeclarations?.find((classDecl) => {
+        const data = classDecl.data as { templateImportPath: string };
+        const { templateImportPath } = data;
+        /** Account for "file://" */
+        const isSameFilePath = fileName.includes(templateImportPath);
+        return isSameFilePath;
+      });
 
     hasImportTemplateTag = result !== undefined;
 
@@ -375,8 +375,7 @@ export function parseDocumentRegions<RegionDataType = any>(
           /** Eg. >css="width: ${message}<px;" */
           const interpolationValue = interpolationMatch[1];
           const endInterpolationLength =
-            startInterpolationLength +
-            Number(interpolationValue.length); // message
+            startInterpolationLength + Number(interpolationValue.length); // message
 
           const updatedLocation: parse5.Location = {
             ...attrLocation,

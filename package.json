@@ -4,16 +4,16 @@
 	"author": "AureliaEffect",
 	"license": "MIT",
 	"version": "2.0.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aurelia/vscode-extension"
-  },
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/aurelia/vscode-extension"
+	},
 	"publisher": "AureliaEffect",
 	"categories": [],
 	"keywords": [
-    "aurelia",
-    "vscode",
-    "extension"
+		"aurelia",
+		"vscode",
+		"extension"
 	],
 	"engines": {
 		"vscode": "^1.51.1"
@@ -104,15 +104,17 @@
 			}
 		},
 		"grammars": [
-      {
-        "language": "html",
-        "scopeName": "au.html",
-        "path": "./syntaxes/html.json"
-      }
-    ]
+			{
+				"language": "html",
+				"scopeName": "au.html",
+				"path": "./syntaxes/html.json"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
+		"build": "tsc -p ./",
+		"changelog": "node ./node_modules/conventional-changelog-cli/cli.js -p angular -i CHANGELOG.md -s",
 		"compile": "npm run compile:client && npm run compile:server",
 		"compile:client": "tsc -p ./client/tsconfig.json",
 		"compile:server": "tsc -p ./server/tsconfig.json",
@@ -131,6 +133,7 @@
 		"@types/node": "^14.14.30",
 		"@typescript-eslint/eslint-plugin": "^4.15.1",
 		"@typescript-eslint/parser": "^4.15.1",
+		"conventional-changelog-cli": "^2.1.1",
 		"core-js": "^3.6.5",
 		"eslint": "^7.20.0",
 		"eslint-plugin-compat": "^3.8.0",

@@ -18,7 +18,6 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
   getLanguageModes,
   LanguageModes,
-  Position,
 } from './feature/embeddedLanguages/languageModes';
 
 // We need to import this to include reflect functionality
@@ -107,18 +106,18 @@ connection.onInitialize(async (params: InitializeParams) => {
   return result;
 });
 
-connection.onInitialized(async () => {
+connection.onInitialized(() => {
   console.log('[server.ts] 2. onInitialized');
 
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
-    connection.client.register(
+    void connection.client.register(
       DidChangeConfigurationNotification.type,
       undefined
     );
 
     console.log('[server.ts] 3. Create Aurelia Watch Program');
-    await createAureliaWatchProgram(aureliaProgram);
+    createAureliaWatchProgram(aureliaProgram);
   }
   if (hasWorkspaceFolderCapability) {
     connection.workspace.onDidChangeWorkspaceFolders((_event) => {
@@ -134,9 +133,8 @@ connection.onDidChangeConfiguration((change) => {
     // Reset all cached document settings
     documentSettings.settingsMap.clear();
   } else {
-    documentSettings.globalSettings = <ExtensionSettings>(
-      (change.settings[settingsName] || documentSettings.defaultSettings)
-    );
+    documentSettings.globalSettings = (change.settings[settingsName] ||
+      documentSettings.defaultSettings) as ExtensionSettings;
   }
 });
 
@@ -148,6 +146,7 @@ documents.onDidClose((e) => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(async (change) => {
+  console.log('TCL: change', change);
   console.log('[server.ts] (re-)get Language Modes');
   languageModes = await getLanguageModes();
 });
@@ -174,7 +173,7 @@ connection.onCompletion(
     );
 
     if (!modeAndRegion) return [];
-    const { mode, region } = modeAndRegion;
+    const { mode } = modeAndRegion;
 
     if (!mode) return [];
 
@@ -183,7 +182,7 @@ connection.onCompletion(
     const offset = document.offsetAt(_textDocumentPosition.position);
     const triggerCharacter = text.substring(offset - 1, offset);
 
-    if (doComplete) {
+    if (doComplete !== undefined) {
       let completions: CompletionItem[] = [CompletionItem.create('')];
       try {
         completions = ((await doComplete(
@@ -219,7 +218,7 @@ connection.onDefinition((_: TextDocumentPositionParams): Definition | null => {
   return null;
 });
 
-connection.onHover((hoverParams) => {
+connection.onHover(() => {
   return null;
 });
 
@@ -238,9 +237,9 @@ connection.onRequest('aurelia-class-diagram', async (filePath: string) => {
   });
   if (!targetSourceFile) {
     console.log(
-      `No target file for: ${filePath} in all your ${aureliaSourceFiles?.map(
-        (sf) => sf.fileName
-      )}`
+      `No target file for: ${filePath} in all your ${
+        aureliaSourceFiles?.map((sf) => sf.fileName).join(' -- ') ?? ''
+      }`
     );
   }
 
@@ -276,14 +275,8 @@ connection.onRequest<any, any>(
     goToSourceWord,
     filePath,
   }): Promise<DefinitionResult | undefined> => {
-    const documentUri = filePath;
     const document = TextDocument.create(filePath, 'html', 0, documentContent);
     const isRefactor = true;
-
-    if (!document) {
-      throw new Error('No document found');
-      return;
-    }
 
     let modeAndRegion: AsyncReturnType<
       LanguageModes['getModeAndRegionAtPosition']
@@ -304,7 +297,7 @@ connection.onRequest<any, any>(
 
     const doDefinition = mode.doDefinition!;
 
-    if (doDefinition && isRefactor) {
+    if (doDefinition !== undefined && isRefactor) {
       let definitions: AsyncReturnType<typeof doDefinition>;
 
       try {
@@ -360,11 +353,6 @@ connection.onRequest<any, any>(
        * 2. >inter-bindable<.bind="increaseCounter()"
        */
 
-      /** Region from FE starts at index 0, BE region starts at 1 */
-      const adjustedPosition: Position = {
-        character: position.character + 1,
-        line: position.line + 1,
-      };
       const regions = await parseDocumentRegions<CustomElementRegionData>(
         document
       );
@@ -394,8 +382,6 @@ connection.onRequest<any, any>(
         aureliaProgram,
         sourceWordCamelCase
       );
-
-      console.log(err);
     }
   }
 );
@@ -407,14 +393,7 @@ connection.onRequest<any, any>(
     goToSourceWord,
     filePath,
   }): Promise<CustomHover | undefined> => {
-    const documentUri = filePath;
     const document = TextDocument.create(filePath, 'html', 0, documentContent);
-
-    if (!document) {
-      throw new Error('No document found');
-      return;
-    }
-
     const modeAndRegion = await languageModes.getModeAndRegionAtPosition(
       document,
       position

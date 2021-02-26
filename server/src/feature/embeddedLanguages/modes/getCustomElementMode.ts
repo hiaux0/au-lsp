@@ -64,13 +64,14 @@ export function getCustomElementMode(
       /** Source file different from view */
       const targetAureliaFileDifferentViewModel = aureliaSourceFiles?.find(
         (sourceFile) => {
+          const filePathName = path.parse(sourceFile.fileName).name;
           return (
-            path.parse(sourceFile.fileName).name === customElementRegion?.tagName
+            filePathName === customElementRegion?.tagName
           );
         }
       );
 
-      if (!targetAureliaFileDifferentViewModel) return;
+      if (targetAureliaFileDifferentViewModel === undefined) return;
 
       const sourceWordCamelCase = camelCase(goToSourceWord);
 

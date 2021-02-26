@@ -3,11 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *-------------------------------------------------------------------------------------------- */
 
-import { getCSSLanguageService } from 'vscode-css-languageservice';
 import {
   CompletionList,
   Diagnostic,
-  getLanguageService as getHTMLLanguageService,
   Position,
   Range,
   TextDocument,
@@ -98,10 +96,9 @@ export interface LanguageModeRange extends Range {
   attributeValue?: boolean;
 }
 
-export function getDocumentRegionAtPosition(position: Position) {
-  const htmlLanguageService = getHTMLLanguageService();
-  const cssLanguageService = getCSSLanguageService();
-
+export function getDocumentRegionAtPosition(
+  position: Position
+): LanguageModelCache<Promise<ViewRegionInfo | undefined>> {
   const documentRegion = getLanguageModelCache<ViewRegionInfo | undefined>(
     10,
     60,

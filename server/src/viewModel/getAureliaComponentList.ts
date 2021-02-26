@@ -15,11 +15,7 @@ interface DecoratorInfo {
   decoratorArgument: string;
 }
 
-import {
-  AureliaProgram,
-  IAureliaClassMember,
-  IComponentList,
-} from './AureliaProgram';
+import { IAureliaClassMember, IComponentList } from './AureliaProgram';
 import * as ts from 'typescript';
 import * as Path from 'path';
 import { getElementNameFromClassDeclaration } from '../common/className';
@@ -29,59 +25,6 @@ import {
   getTemplateImportPathFromCustomElementDecorator,
   hasCorrectNamingConvention,
 } from './setAureliaComponentCompletionsMap';
-import { CompletionItemKind } from 'vscode-html-languageservice';
-
-export function getAureliaComponentList(
-  aureliaProgram: AureliaProgram
-): IComponentList[] | undefined {
-  const paths = aureliaProgram.getProjectFilePaths();
-  const componentList: IComponentList[] = [];
-
-  const program = aureliaProgram.getProgram();
-  if (program === undefined) {
-    console.log('No Program associated with your Aurelia project.');
-    return;
-  }
-  const checker = program.getTypeChecker();
-
-  paths.forEach((path) => {
-    const ext = Path.extname(path);
-    switch (ext) {
-      case '.js':
-      case '.ts': {
-        const sourceFile = program.getSourceFile(path);
-        if (sourceFile === undefined) {
-          console.log('Watcher program did not find file: ', path);
-          return;
-        }
-
-        /* export class MyCustomElement */
-        const componentInfo = getAureliaComponentInfoFromClassDeclaration(
-          sourceFile,
-          checker
-        );
-
-        if (componentInfo) {
-          componentList.push(componentInfo);
-        }
-
-        break;
-      }
-      case '.html': {
-        break;
-      }
-      default: {
-        console.log('Unsupported extension');
-      }
-    }
-  });
-
-  if (componentList.length === 0) {
-    console.log('Error: No Aurelia class found');
-  }
-
-  return componentList;
-}
 
 export function getAureliaComponentInfoFromClassDeclaration(
   sourceFile: ts.SourceFile,
@@ -118,7 +61,7 @@ export function getAureliaComponentInfoFromClassDeclaration(
 
       const viewModelName = getElementNameFromClassDeclaration(
         targetClassDeclaration
-      );
+      ); /* ? */
 
       // Note the `!` in the argument: `getSymbolAtLocation` expects a `Node` arg, but returns undefined
       const symbol = checker.getSymbolAtLocation(node.name!);

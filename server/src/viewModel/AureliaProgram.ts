@@ -97,6 +97,9 @@ export class AureliaProgram {
     const checker = program.getTypeChecker();
 
     this.projectFilePaths.forEach((path) => {
+      const isDTs = Path.basename(path).endsWith('.d.ts');
+      if (isDTs) return;
+
       const ext = Path.extname(path);
       switch (ext) {
         case '.js':

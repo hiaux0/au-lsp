@@ -1,9 +1,4 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
-import { TextDocument } from "vscode-html-languageservice";
+import { TextDocument } from 'vscode-html-languageservice';
 
 export interface LanguageModelCache<T> {
   get(document: TextDocument): T;
@@ -26,7 +21,7 @@ export function getLanguageModelCache<T>(
   } = {};
   let nModels = 0;
 
-  let cleanupInterval: NodeJS.Timer | undefined = undefined;
+  let cleanupInterval: NodeJS.Timer | undefined;
   if (cleanupIntervalTimeInSec > 0) {
     cleanupInterval = setInterval(() => {
       const cutoffTime = Date.now() - cleanupIntervalTimeInSec * 1000;
@@ -90,7 +85,7 @@ export function getLanguageModelCache<T>(
       }
     },
     dispose() {
-      if (typeof cleanupInterval !== "undefined") {
+      if (typeof cleanupInterval !== 'undefined') {
         clearInterval(cleanupInterval);
         cleanupInterval = undefined;
         languageModels = {};

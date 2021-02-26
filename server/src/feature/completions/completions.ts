@@ -1,4 +1,4 @@
-import { kebabCase } from "@aurelia/kernel";
+import { kebabCase } from 'lodash';
 import {
   CompletionItem,
   CompletionItemKind,
@@ -6,25 +6,22 @@ import {
   MarkupKind,
   TextDocument,
   TextDocumentPositionParams,
-} from "vscode-languageserver";
-import { AureliaClassTypes } from "../../common/constants";
+} from 'vscode-languageserver';
+import { AureliaClassTypes } from '../../common/constants';
 import {
   CustomElementRegionData,
   parseDocumentRegions,
   getRegionFromLineAndCharacter,
-  ValueConverterRegionData,
-  ViewRegionInfo,
   ViewRegionType,
-} from "../embeddedLanguages/embeddedSupport";
-import { Position } from "../embeddedLanguages/languageModes";
+} from '../embeddedLanguages/embeddedSupport';
+import { Position } from '../embeddedLanguages/languageModes';
 
-import { aureliaProgram } from "../../viewModel/AureliaProgram";
-import { getAureliaVirtualCompletions } from "../../virtual/virtualCompletion/virtualCompletion";
+import { aureliaProgram } from '../../viewModel/AureliaProgram';
 
 export async function getBindablesCompletion(
   _textDocumentPosition: TextDocumentPositionParams,
   document: TextDocument
-) {
+): Promise<CompletionItem[]> {
   const { position } = _textDocumentPosition;
   const adjustedPosition: Position = {
     character: position.character + 1,
@@ -41,28 +38,22 @@ export async function getBindablesCompletion(
 
   if (!targetCustomElementRegion) return [];
 
-  return [...aureliaProgram.getComponentMap().bindables!].filter(
+  return [...aureliaProgram.getComponentCompletionsMap().bindables!].filter(
     (bindable) =>
       kebabCase(bindable.data.elementName) === targetCustomElementRegion.tagName
   );
 }
 
-export function createValueConverterCompletion(
-  targetRegion: ViewRegionInfo
-): CompletionItem[] {
-  const valueConverterRegion = targetRegion as ViewRegionInfo<
-    ValueConverterRegionData
-  >;
-
+export function createValueConverterCompletion(): CompletionItem[] {
   const valueConverterCompletionList = aureliaProgram
     .getComponentList()
     .filter((component) => component.type === AureliaClassTypes.VALUE_CONVERTER)
     .map((valueConverterComponent) => {
-      const elementName = valueConverterComponent.valueConverterName;
+      const elementName = valueConverterComponent.valueConverterName ?? '';
       const result: CompletionItem = {
         documentation: {
           kind: MarkupKind.Markdown,
-          value: "doc todod",
+          value: 'doc todod',
         },
         detail: `${elementName}`,
         insertText: `${elementName}`,

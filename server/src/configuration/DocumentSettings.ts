@@ -1,21 +1,22 @@
-import { Connection } from "vscode-languageserver";
-import { Container, singleton } from "aurelia-dependency-injection";
+import 'reflect-metadata';
+import { Connection } from 'vscode-languageserver';
+import { Container, singleton } from 'aurelia-dependency-injection';
 const globalContainer = new Container();
 
-export const settingsName = "aurelia";
+export const settingsName = 'aurelia';
 
 export const AURELIA_ATTRIBUTES_KEYWORDS = [
-  "bind",
-  "one-way",
-  "two-way",
-  "one-time",
-  "from-view",
-  "to-view",
-  "delegate",
-  "trigger",
-  "call",
-  "capture",
-  "ref",
+  'bind',
+  'one-way',
+  'two-way',
+  'one-time',
+  'from-view',
+  'to-view',
+  'delegate',
+  'trigger',
+  'call',
+  'capture',
+  'ref',
 ];
 
 interface IAureliaProject {
@@ -29,10 +30,10 @@ export interface ExtensionSettings {
   aureliaProject?: IAureliaProject;
   featureToggles?: Features;
   relatedFiles?: {
-    script: [".js", ".ts"];
-    style: [".less", ".sass", ".scss", ".styl", ".css"];
-    unit: [".spec.js", ".spec.ts"];
-    view: [".html"];
+    script: ['.js', '.ts'];
+    style: ['.less', '.sass', '.scss', '.styl', '.css'];
+    unit: ['.spec.js', '.spec.ts'];
+    view: ['.html'];
   };
 }
 
@@ -43,10 +44,10 @@ export class DocumentSettings {
   // but could happen with other clients.
   public defaultSettings: ExtensionSettings = {
     relatedFiles: {
-      script: [".js", ".ts"],
-      style: [".less", ".sass", ".scss", ".styl", ".css"],
-      unit: [".spec.js", ".spec.ts"],
-      view: [".html"],
+      script: ['.js', '.ts'],
+      style: ['.less', '.sass', '.scss', '.styl', '.css'],
+      unit: ['.spec.js', '.spec.ts'],
+      view: ['.html'],
     },
   };
   public globalSettings: ExtensionSettings;
@@ -68,7 +69,7 @@ export class DocumentSettings {
   }
 
   /**
-   * @param resource Allow not to provide a resource, will then return global settings
+   * @param resource - Allow not to provide a resource, will then return global settings
    * @example
    *   ```ts
    *   const settings = await documentSettingsClass.getDocumentSettings(textDocument.uri);
@@ -76,7 +77,7 @@ export class DocumentSettings {
    *   ```
    */
   async getDocumentSettings(
-    resource: string = ""
+    resource: string = ''
   ): Promise<ExtensionSettings | undefined> {
     if (!this.hasConfigurationCapability) {
       return Promise.resolve(this.globalSettings);

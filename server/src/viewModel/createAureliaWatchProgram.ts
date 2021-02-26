@@ -1,45 +1,57 @@
-import ts = require("typescript");
-import { AureliaProgram } from "./AureliaProgram";
-import { getAureliaComponentList } from "./getAureliaComponentList";
-import { setAureliaComponentMap } from "./setAureliaComponentMap";
+import * as ts from 'typescript';
+import { AureliaProgram } from './AureliaProgram';
+import { setAureliaComponentCompletionsMap } from './setAureliaComponentCompletionsMap';
+import { IProjectOptions } from '../common/common.types';
 
-const updateAureliaComponents = (aureliaProgram: AureliaProgram): void => {
-  console.log("TCL: updateAureliaComponents");
-  /** Think this is not obsolete */
-  setAureliaComponentMap(aureliaProgram);
+const updateAureliaComponents = (
+  aureliaProgram: AureliaProgram,
+  projectOptions?: IProjectOptions
+): void => {
+  aureliaProgram.setProjectFilePaths(projectOptions);
+  setAureliaComponentCompletionsMap(aureliaProgram);
 
-  const componentList = getAureliaComponentList(aureliaProgram);
+  aureliaProgram.initComponentList();
+  const componentList = aureliaProgram.getComponentList();
 
   if (componentList) {
     aureliaProgram.setComponentList(componentList);
-    console.log(">>> The extension found this many components:");
-    console.log(componentList.length);
+    console.log(
+      `>>> The extension found this many components: ${componentList.length}`
+    );
+    if (componentList.length < 10) {
+      console.log('List: ');
+
+      componentList.forEach((component, index) => {
+        console.log(`${index} - ${component.viewModelFilePath}`);
+      });
+    }
   } else {
-    console.log("[WARNING]: No components found");
+    console.log('[WARNING]: No components found');
   }
 };
 
-export async function createAureliaWatchProgram(
+export function createAureliaWatchProgram(
   aureliaProgram: AureliaProgram,
-  sourceDirectory?: string
-) {
+  projectOptions?: IProjectOptions
+): void {
   // 1. Define/default path/to/tsconfig.json
-  sourceDirectory = sourceDirectory || ts.sys.getCurrentDirectory();
+  const targetSourceDirectory =
+    projectOptions?.sourceDirectory ?? ts.sys.getCurrentDirectory();
   let configPath = ts.findConfigFile(
     // /* searchPath */ "./",
-    /* searchPath */ sourceDirectory,
+    /* searchPath */ targetSourceDirectory,
     ts.sys.fileExists,
-    "tsconfig.json"
+    'tsconfig.json'
   );
   if (configPath === undefined) {
-    configPath = "../../tsconfig.json"; // use config file from the extension as default
+    configPath = '../../tsconfig.json'; // use config file from the extension as default
   }
 
   // 2. Skip watcher if no tsconfig found
   const isCreateWatchProgram = configPath !== undefined;
   if (isCreateWatchProgram) {
     console.log(
-      ">>> 1.4 Initiating a watcher for documentation and fetching changes in custom components"
+      '[carw.ts] 3.4 Initiating a watcher for documentation and fetching changes in custom components'
     );
     const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
 
@@ -59,28 +71,28 @@ export async function createAureliaWatchProgram(
       programHost,
       oldProgram
     ) => {
-      console.log("-------------- Custom Action ---------------------");
+      console.log('-------------- Custom Action ---------------------');
       return origCreateProgram(rootNames, options, programHost, oldProgram);
     };
     // 2.2 We also overwrite afterProgramCreate to avoid actually running a compile towards the file system
     host.afterProgramCreate = (builderProgram) => {
       aureliaProgram.setBuilderProgram(builderProgram);
-      updateAureliaComponents(aureliaProgram);
+      updateAureliaComponents(aureliaProgram, projectOptions);
     };
 
     // 2.3 Create initial watch program with our specially crafted host for aurelia component handling
     ts.createWatchProgram(host);
   } else {
     console.log(
-      "Not tsconfig file found. The watcher needs a working tsconfig file to"
+      'Not tsconfig file found. The watcher needs a working tsconfig file to'
     );
   }
 
   /** init call */
-  updateAureliaComponents(aureliaProgram);
+  // updateAureliaComponents(aureliaProgram);
 
   // 3 .To avoid an extra call to the AureliaComponents mapping we check whether the host has been created
   if (!isCreateWatchProgram) {
-    await updateAureliaComponents(aureliaProgram);
+    updateAureliaComponents(aureliaProgram);
   }
 }

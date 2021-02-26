@@ -8,10 +8,11 @@
 		"strictPropertyInitialization": false,
 		"declaration": true,
 		"resolveJsonModule": true,
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"experimentalDecorators": true
 	},
 	"include": [
-		"src",
+		"src"
 	],
 	"exclude": [
 		"node_modules",

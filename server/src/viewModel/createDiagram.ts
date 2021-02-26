@@ -1,5 +1,5 @@
-import * as ts from "typescript";
-import { CompletionItemKind } from "vscode-languageserver";
+import * as ts from 'typescript';
+import { CompletionItemKind } from 'vscode-languageserver';
 
 interface ClassInfoData {
   node: ts.Node;
@@ -17,7 +17,7 @@ export function createDiagram(
   classDeclaration: ts.ClassDeclaration,
   checker: ts.TypeChecker
 ) {
-  let classMembers: string[] = [];
+  const classMembers: string[] = [];
   const classMethods: ClassInfo = {};
   const classVariables: ClassInfo = {};
 
@@ -34,16 +34,16 @@ export function createDiagram(
       const memberType =
         classMember.type?.getText() !== undefined
           ? classMember.type?.getText()
-          : "";
+          : '';
 
       // Add comment documentation if available
       const symbol = checker.getSymbolAtLocation(classMember.name);
       const commentDoc = ts
         .displayPartsToString(symbol?.getDocumentationComment(checker))
         // Replace, else diagram breaks (evaluates new comment line as class member)
-        .replace("\n", " ");
+        .replace('\n', ' ');
 
-      let defaultValueText: string = "";
+      let defaultValueText: string = '';
       if (ts.isPropertyDeclaration(classMember)) {
         // Add default values. The value can be undefined, but that is correct in most cases.
         const defaultValue = classMember.initializer?.getText();
@@ -109,10 +109,10 @@ function assembleUmlString({
 }) {
   const classMethodsData = Object.values(classMethods);
   const classVariablesData = Object.values(classVariables);
-  const mermaidMdStringStart = "    classDiagram";
+  const mermaidMdStringStart = '    classDiagram';
   const classNameStringStart = `class ${className} {`;
-  const classNameStringEnd = "}\n";
-  const mermaidMdStringEnd = "";
+  const classNameStringEnd = '}\n';
+  const mermaidMdStringEnd = '';
 
   // 1. Class variables
   const classVariablesString = classVariablesData.reduce(
@@ -121,7 +121,7 @@ function assembleUmlString({
       return `${acc}
 	${name}: ${types} // ${documentation} [${index}]`;
     },
-    "------------------------------ Class variables\n--------"
+    '------------------------------ Class variables\n--------'
   );
 
   // 2. Class methods
@@ -129,13 +129,13 @@ function assembleUmlString({
     (acc, classInfo, index) => {
       const { node, name, types, documentation } = classInfo;
       // 1. Call hierarchy
-      let classMemberStatements: any = {};
+      const classMemberStatements: any = {};
       node.forEachChild((methodBodyStatement) => {
         const children = methodBodyStatement.getChildren();
         // 1.1 Find references within class
         children.forEach((child) => {
           const childText = child.getText();
-          if (!childText.includes("this.")) return;
+          if (!childText.includes('this.')) return;
           // 1.1.1 Iterate over all class members to find reference
           [...classMethodsData, ...classVariablesData].forEach(
             (classMember) => {
@@ -157,7 +157,7 @@ function assembleUmlString({
       return `${acc}
 	${name}(): ${types} // ${documentation} [${methodIndex}]`;
     },
-    "------------------------------ Class methods\n--------"
+    '------------------------------ Class methods\n--------'
   );
 
   // 3. Class methods call hierarchy
@@ -166,7 +166,7 @@ function assembleUmlString({
 
   const callHierarchyDiagram = classMethodsData.reduce((acc, method) => {
     // 3.1 Create classes for (called) methods and their dependencies
-    let callHierarchyOfMethod = "";
+    let callHierarchyOfMethod = '';
     if (!method.outGoingCalls) return acc;
 
     // class $className_$methodName_$index { }
@@ -181,7 +181,7 @@ function assembleUmlString({
     method
   )} --|> ${produceParentClassNameWithMemberIndex(outGoingCall)}`;
       },
-      ""
+      ''
     );
     return `${acc}
 
@@ -200,7 +200,7 @@ ${callHierarchyOfMethod}`;
       const methodIndex = classMethodNames.findIndex(
         (classMethodName) => classMethodName === name
       );
-      let variableIndex = classVariableNames.findIndex(
+      const variableIndex = classVariableNames.findIndex(
         (classVariableName) => classVariableName === name
       );
 
@@ -214,22 +214,22 @@ ${callHierarchyOfMethod}`;
       const result = `${className}_${name}_${index}`;
       return result;
     }
-  }, "");
+  }, '');
 
   const result =
-    "\n" +
-    mermaidMdStringStart +
-    "\n    " +
-    classNameStringStart +
-    "\n" +
-    classVariablesString +
-    "\n\n" +
-    classMethodsString +
-    "\n" +
-    classNameStringEnd +
-    callHierarchyDiagram +
-    "\n" +
-    mermaidMdStringEnd;
+    `\n${
+    mermaidMdStringStart
+    }\n    ${
+    classNameStringStart
+    }\n${
+    classVariablesString
+    }\n\n${
+    classMethodsString
+    }\n${
+    classNameStringEnd
+    }${callHierarchyDiagram
+    }\n${
+    mermaidMdStringEnd}`;
 
   return result;
 }

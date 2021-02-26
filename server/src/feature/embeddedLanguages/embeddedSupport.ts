@@ -1,23 +1,15 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
-import * as fs from "fs";
-import * as parse5 from "parse5";
-import * as SaxStream from "parse5-sax-parser";
+import * as parse5 from 'parse5';
+import * as SaxStream from 'parse5-sax-parser';
+import { Position, Range } from './languageModes';
+import { AURELIA_ATTRIBUTES_KEYWORDS } from '../../configuration/DocumentSettings';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { AureliaView } from '../../common/constants';
 import {
-  Position,
-  LanguageService,
-  TokenType,
-  Range,
-  Scanner,
-} from "./languageModes";
-import { AURELIA_ATTRIBUTES_KEYWORDS } from "../../configuration/DocumentSettings";
-import { TextDocument } from "vscode-languageserver-textdocument";
-import { AureliaView } from "../../common/constants";
-import { aureliaProgram } from "../../viewModel/AureliaProgram";
-import { DiagnosticMessages } from "../../common/DiagnosticMessages";
+  AureliaProgram,
+  aureliaProgram as importedAureliaProgram,
+} from '../../viewModel/AureliaProgram';
+import { DiagnosticMessages } from '../../common/DiagnosticMessages';
+import { AsyncReturnType } from '../../common/global';
 
 export interface LanguageRange extends Range {
   languageId: string | undefined;
@@ -37,20 +29,21 @@ export interface HTMLDocumentRegions {
   getRegions(): ViewRegionInfo[];
 }
 
-export const CSS_STYLE_RULE = "__";
+export const CSS_STYLE_RULE = '__';
 
 export enum ViewRegionType {
-  Attribute = "Attribute",
-  AttributeInterpolation = "AttributeInterpolation",
-  RepeatFor = "RepeatFor",
-  TextInterpolation = "TextInterpolation",
-  CustomElement = "CustomElement",
-  ValueConverter = "ValueConverter",
+  Attribute = 'Attribute',
+  AttributeInterpolation = 'AttributeInterpolation',
+  Html = 'html',
+  RepeatFor = 'RepeatFor',
+  TextInterpolation = 'TextInterpolation',
+  CustomElement = 'CustomElement',
+  ValueConverter = 'ValueConverter',
 }
 
 export interface ViewRegionInfo<RegionDataType = any> {
   type?: ViewRegionType;
-  languageId: string;
+  languageId: ViewRegionType;
   startOffset?: number;
   startCol?: number;
   startLine?: number;
@@ -95,24 +88,38 @@ export interface ValueConverterRegionData {
 
 export type CustomElementRegionData = ViewRegionInfo[];
 
-interface ViewRegions {
-  interpolatedRegions: ViewRegionInfo[];
-  customElementRegions: ViewRegionInfo[];
-}
+export const aureliaLanguageId = 'aurelia';
 
-export const aureliaLanguageId = "aurelia";
-
-export function parseDocumentRegions<RegionDataType>(
-  document: TextDocument
+// eslint-disable-next-line max-lines-per-function
+export function parseDocumentRegions<RegionDataType = any>(
+  document: TextDocument,
+  aureliaProgram: AureliaProgram = importedAureliaProgram
 ): Promise<ViewRegionInfo<RegionDataType>[]> {
+  // eslint-disable-next-line max-lines-per-function
   return new Promise((resolve) => {
+    console.log('[eb.ts] Starting document parsing');
     const saxStream = new SaxStream({ sourceCodeLocationInfo: true });
     const viewRegions: ViewRegionInfo[] = [];
-    const interpolationRegex = /\$(?:\s*)\{(?!\s*`)(?<interpolationValue>.*?)\}/g;
+    const interpolationRegex = /\$(?:\s*)\{(?!\s*`)(.*?)\}/g;
+    let hasImportTemplateTag = false;
 
-    const aureliaCustomElementNames = aureliaProgram.componentList.map(
-      (component) => component.viewModelName
-    );
+    const aureliaCustomElementNames = aureliaProgram
+      .getComponentList()
+      .map((component) => component.componentName);
+
+    // 0. Check if template was imported to ViewModel
+    const fileName = document.uri;
+    const result = aureliaProgram
+      .getComponentCompletionsMap()
+      .classDeclarations?.find((classDecl) => {
+        const data = classDecl.data as { templateImportPath: string };
+        const { templateImportPath } = data;
+        /** Account for "file://" */
+        const isSameFilePath = fileName.includes(templateImportPath);
+        return isSameFilePath;
+      });
+
+    hasImportTemplateTag = result !== undefined;
 
     // 1. Check if in <template>
     let hasTemplateTag = false;
@@ -125,7 +132,8 @@ export function parseDocumentRegions<RegionDataType>(
      * 5. repeat.for=""
      * 6. Value converter region (value | take:10)
      */
-    saxStream.on("startTag", (startTag) => {
+    // eslint-disable-next-line max-lines-per-function
+    saxStream.on('startTag', (startTag) => {
       const customElementAttributeRegions: ViewRegionInfo[] = [];
       const { tagName } = startTag;
       const isTemplateTag = tagName === AureliaView.TEMPLATE_TAG_NAME;
@@ -134,7 +142,7 @@ export function parseDocumentRegions<RegionDataType>(
         hasTemplateTag = true;
       }
 
-      if (!hasTemplateTag) return;
+      if (!hasTemplateTag && !hasImportTemplateTag) return;
 
       // Attributes and Interpolation
       startTag.attrs.forEach((attr) => {
@@ -201,8 +209,9 @@ export function parseDocumentRegions<RegionDataType>(
             startCol: startColAdjust,
             endOffset: endInterpolationLength,
           };
+          // eslint-disable-next-line no-inner-declarations
           function getRepeatForData() {
-            const splitUpRepeatFor = attr.value.split(" ");
+            const splitUpRepeatFor = attr.value.split(' ');
             const repeatForData: RepeatForRegionData = {
               iterator: splitUpRepeatFor[0],
               iterableName: splitUpRepeatFor[2],
@@ -233,11 +242,12 @@ export function parseDocumentRegions<RegionDataType>(
                 interpolationMatch.index + // width:_
                 2; // ${
 
+              const interpolationValue = interpolationMatch[1];
               /** Eg. >css="width: ${message}<px;" */
               const endInterpolationLength =
                 attrLocation.startOffset +
                 startInterpolationLength +
-                Number(interpolationMatch.groups?.interpolationValue.length); // message
+                Number(interpolationValue.length); // message
 
               const updatedLocation: parse5.Location = {
                 ...attrLocation,
@@ -266,10 +276,11 @@ export function parseDocumentRegions<RegionDataType>(
           if (!attrLocation) return;
 
           // 6.1. Split up repeat.for='repo of repos | sort:column.value:direction.value | take:10'
+          // Don't split || ("or")
           const [
             initiatorText,
             ...valueConverterRegionsSplit
-          ] = attr.value.split("|");
+          ] = attr.value.split(/[^|]\|[^|]/g);
 
           // 6.2. For each value converter
           valueConverterRegionsSplit.forEach(
@@ -278,14 +289,14 @@ export function parseDocumentRegions<RegionDataType>(
               const [
                 valueConverterName,
                 ...valueConverterArguments
-              ] = valueConverterViewText.split(":");
+              ] = valueConverterViewText.split(':');
 
               if (valueConverterRegionsSplit.length >= 2 && index >= 1) {
                 const dm = new DiagnosticMessages(
-                  "Chained value converters not supported yet."
+                  'Chained value converters not supported yet.'
                 );
                 dm.log();
-                dm.additionalLog("No infos for", valueConverterViewText);
+                dm.additionalLog('No infos for', valueConverterViewText);
                 return;
               }
 
@@ -296,7 +307,7 @@ export function parseDocumentRegions<RegionDataType>(
                 1; /** | */
 
               const startColAdjust =
-                attrLocation.startCol /** indentation and to length attribute*/ +
+                attrLocation.startCol /** indentation and to length attribute */ +
                 startValueConverterLength;
 
               const endValueConverterLength =
@@ -316,19 +327,19 @@ export function parseDocumentRegions<RegionDataType>(
               };
 
               // 6.5. Create region with useful info
-              const valueConverterRegion = createRegion<
-                ValueConverterRegionData
-              >({
-                attributeName: attr.name,
-                sourceCodeLocation: updatedLocation,
-                type: ViewRegionType.ValueConverter,
-                regionValue: attr.value,
-                data: {
-                  initiatorText,
-                  valueConverterName: valueConverterName.trim(),
-                  valueConverterText: valueConverterArguments.join(":"),
-                },
-              });
+              const valueConverterRegion = createRegion<ValueConverterRegionData>(
+                {
+                  attributeName: attr.name,
+                  sourceCodeLocation: updatedLocation,
+                  type: ViewRegionType.ValueConverter,
+                  regionValue: attr.value,
+                  data: {
+                    initiatorText,
+                    valueConverterName: valueConverterName.trim(),
+                    valueConverterText: valueConverterArguments.join(':'),
+                  },
+                }
+              );
               viewRegions.push(valueConverterRegion);
             }
           );
@@ -348,11 +359,10 @@ export function parseDocumentRegions<RegionDataType>(
       }
     });
 
-    saxStream.on("text", (text) => {
+    saxStream.on('text', (text) => {
       let interpolationMatch;
       while ((interpolationMatch = interpolationRegex.exec(text.text))) {
         if (interpolationMatch !== null) {
-          text;
           const attrLocation = text.sourceCodeLocation;
           if (!attrLocation) return;
 
@@ -363,9 +373,9 @@ export function parseDocumentRegions<RegionDataType>(
             2; // ${
 
           /** Eg. >css="width: ${message}<px;" */
+          const interpolationValue = interpolationMatch[1];
           const endInterpolationLength =
-            startInterpolationLength +
-            Number(interpolationMatch.groups?.interpolationValue.length); // message
+            startInterpolationLength + Number(interpolationValue.length); // message
 
           const updatedLocation: parse5.Location = {
             ...attrLocation,
@@ -374,6 +384,7 @@ export function parseDocumentRegions<RegionDataType>(
           };
 
           const viewRegion = createRegion({
+            regionValue: interpolationValue,
             sourceCodeLocation: updatedLocation,
             type: ViewRegionType.TextInterpolation,
           });
@@ -382,9 +393,9 @@ export function parseDocumentRegions<RegionDataType>(
       }
     });
 
-    saxStream.on("endTag", (endTag) => {
+    saxStream.on('endTag', (endTag) => {
       const isTemplateTag = endTag.tagName === AureliaView.TEMPLATE_TAG_NAME;
-      if (isTemplateTag) {
+      if (isTemplateTag || hasImportTemplateTag) {
         resolve(viewRegions);
       }
     });
@@ -396,7 +407,12 @@ export function parseDocumentRegions<RegionDataType>(
 export async function getDocumentRegions(
   document: TextDocument
 ): Promise<HTMLDocumentRegions> {
-  const regions = await parseDocumentRegions(document);
+  let regions: AsyncReturnType<typeof parseDocumentRegions>;
+  try {
+    regions = await parseDocumentRegions(document);
+  } catch (error) {
+    console.log('TCL: error', error);
+  }
 
   return {
     getLanguageRanges: (range: Range) =>
@@ -409,7 +425,7 @@ export async function getDocumentRegions(
       getRegionAtPosition(document, regions, position),
     getRegions: () => regions,
     getLanguagesInDocument: () => getLanguagesInDocument(document, regions),
-    getImportedScripts: () => [""], // TODO: figure out if actually wanted/needed
+    getImportedScripts: () => [''], // TODO: figure out if actually wanted/needed
   };
 }
 
@@ -423,7 +439,7 @@ function createRegion<RegionDataType = any>({
   regionValue,
 }: {
   sourceCodeLocation:
-    | SaxStream.StartTagToken["sourceCodeLocation"]
+    | SaxStream.StartTagToken['sourceCodeLocation']
     | parse5.AttributesLocation[string];
   type: ViewRegionType;
   regionValue?: string;
@@ -432,8 +448,8 @@ function createRegion<RegionDataType = any>({
   tagName?: string;
   data?: RegionDataType;
 }): ViewRegionInfo {
-  let calculatedStart = sourceCodeLocation?.startOffset;
-  let calculatedEnd = sourceCodeLocation?.endOffset;
+  const calculatedStart = sourceCodeLocation?.startOffset;
+  const calculatedEnd = sourceCodeLocation?.endOffset;
 
   return {
     type,
@@ -457,25 +473,29 @@ function getLanguageRanges(
   regions: ViewRegionInfo[],
   range: Range
 ): LanguageRange[] {
-  let result: LanguageRange[] = [];
-  let currentPos = range ? range.start : Position.create(0, 0);
-  let currentOffset = range ? document.offsetAt(range.start) : 0;
-  let endOffset = range
+  const result: LanguageRange[] = [];
+  let currentPos = Object.keys(range).length
+    ? range.start
+    : Position.create(0, 0);
+  let currentOffset = Object.keys(range).length
+    ? document.offsetAt(range.start)
+    : 0;
+  const endOffset = Object.keys(range).length
     ? document.offsetAt(range.end)
     : document.getText().length;
-  for (let region of regions) {
+  for (const region of regions) {
     if (region.endOffset! > currentOffset && region.startOffset! < endOffset) {
-      let start = Math.max(region.startOffset!, currentOffset);
-      let startPos = document.positionAt(start);
+      const start = Math.max(region.startOffset!, currentOffset);
+      const startPos = document.positionAt(start);
       if (currentOffset < region.startOffset!) {
         result.push({
           start: currentPos,
           end: startPos,
-          languageId: "html",
+          languageId: 'html',
         });
       }
-      let end = Math.min(region.endOffset!, endOffset);
-      let endPos = document.positionAt(end);
+      const end = Math.min(region.endOffset!, endOffset);
+      const endPos = document.positionAt(end);
       if (end > region.startOffset!) {
         result.push({
           start: startPos,
@@ -489,11 +509,13 @@ function getLanguageRanges(
     }
   }
   if (currentOffset < endOffset) {
-    let endPos = range ? range.end : document.positionAt(endOffset);
+    const endPos = Object.keys(range).length
+      ? range.end
+      : document.positionAt(endOffset);
     result.push({
       start: currentPos,
       end: endPos,
-      languageId: "html",
+      languageId: 'html',
     });
   }
   return result;
@@ -503,16 +525,16 @@ function getLanguagesInDocument(
   _document: TextDocument,
   regions: ViewRegionInfo[]
 ): string[] {
-  let result = [];
-  for (let region of regions) {
-    if (region.languageId && result.indexOf(region.languageId) === -1) {
+  const result: string[] = [];
+  for (const region of regions) {
+    if (region.languageId && !result.includes(region.languageId)) {
       result.push(region.languageId);
       if (result.length === 3) {
         return result;
       }
     }
   }
-  result.push("html");
+  result.push('html');
   return result;
 }
 
@@ -522,18 +544,19 @@ function getLanguageAtPosition(
   regions: ViewRegionInfo[],
   position: Position
 ): string | undefined {
-  let offset = document.offsetAt(position);
+  const offset = document.offsetAt(position);
 
   const potentialRegions = regions.filter((region) => {
     if (region.startOffset! <= offset) {
       if (offset <= region.endOffset!) {
-        return region;
+        return Object.keys(region).length;
       }
     }
+    return false;
   });
 
-  if (!potentialRegions) {
-    console.error("embeddedSupport -> getRegionAtPosition -> No Region found");
+  if (!Object.keys(potentialRegions).length) {
+    console.error('embeddedSupport -> getRegionAtPosition -> No Region found');
     return undefined;
   }
 
@@ -543,27 +566,27 @@ function getLanguageAtPosition(
 
   const targetRegion = getSmallestRegion(potentialRegions);
 
-  if (targetRegion) {
+  if (Object.keys(targetRegion).length) {
     return targetRegion.languageId;
   }
 
-  return "html";
+  return 'html';
 }
 
 export function getRegionFromLineAndCharacter(
   regions: ViewRegionInfo[],
   position: Position
-) {
+): ViewRegionInfo | undefined {
   const { line, character } = position;
 
   const targetRegion = regions.find((region) => {
     const { startLine, endLine } = region;
-    if (!startLine || !endLine) return false;
+    if (startLine === undefined || endLine === undefined) return false;
 
     const isSameLine = startLine === endLine;
     if (isSameLine) {
       const { startCol, endCol } = region;
-      if (!startCol || !endCol) return false;
+      if (startCol === undefined || endCol === undefined) return false;
 
       const inBetweenColumns = startCol <= character && character <= endCol;
       return inBetweenColumns;
@@ -584,8 +607,10 @@ export function getRegionFromLineAndCharacter(
  */
 function getSmallestRegion(regions: ViewRegionInfo[]): ViewRegionInfo {
   const sortedRegions = regions.sort((regionA, regionB) => {
-    if (!regionA.startOffset || !regionA.endOffset) return 0;
-    if (!regionB.startOffset || !regionB.endOffset) return 0;
+    if (regionA.startOffset === undefined || regionA.endOffset === undefined)
+      return 0;
+    if (regionB.startOffset === undefined || regionB.endOffset === undefined)
+      return 0;
 
     const regionAWidth = regionA.startOffset - regionA.endOffset;
     const regionBWidth = regionB.startOffset - regionB.endOffset;
@@ -601,18 +626,19 @@ export function getRegionAtPosition(
   regions: ViewRegionInfo[],
   position: Position
 ): ViewRegionInfo | undefined {
-  let offset = document.offsetAt(position);
+  const offset = document.offsetAt(position);
 
   const potentialRegions = regions.filter((region) => {
     if (region.startOffset! <= offset) {
       if (offset <= region.endOffset!) {
-        return region;
+        return Object.keys(region).length;
       }
     }
+    return false;
   });
 
-  if (!potentialRegions) {
-    console.error("embeddedSupport -> getRegionAtPosition -> No Region found");
+  if (!Object.keys(potentialRegions).length) {
+    console.error('embeddedSupport -> getRegionAtPosition -> No Region found');
     return undefined;
   }
 
@@ -631,13 +657,13 @@ function getEmbeddedDocument(
   ignoreAttributeValues: boolean
 ): TextDocument {
   let currentPos = 0;
-  let oldContent = document.getText();
-  let result = "";
-  let lastSuffix = "";
-  for (let c of contents) {
+  const oldContent = document.getText();
+  let result = '';
+  const lastSuffix = '';
+  for (const c of contents) {
     if (
       c.languageId === languageId &&
-      (!ignoreAttributeValues || !c.attributeName)
+      (!ignoreAttributeValues || c.attributeName !== undefined)
     ) {
       result = substituteWithWhitespace(
         result,
@@ -645,11 +671,12 @@ function getEmbeddedDocument(
         c.startOffset!,
         oldContent,
         lastSuffix,
-        getPrefix(c)
+        ''
+        // getPrefix(c)
       );
-      result += oldContent.substring(c.startOffset!, c.endOffset!);
+      result += oldContent.substring(c.startOffset!, c.endOffset);
       currentPos = c.endOffset!;
-      lastSuffix = getSuffix(c);
+      // lastSuffix = getSuffix(c);
     }
   }
   result = substituteWithWhitespace(
@@ -658,7 +685,7 @@ function getEmbeddedDocument(
     oldContent.length,
     oldContent,
     lastSuffix,
-    ""
+    ''
   );
   return TextDocument.create(
     document.uri,
@@ -668,26 +695,26 @@ function getEmbeddedDocument(
   );
 }
 
-function getPrefix(c: ViewRegionInfo) {
-  if (c.attributeName) {
-    switch (c.languageId) {
-      case "css":
-        return CSS_STYLE_RULE + "{";
-    }
-  }
-  return "";
-}
-function getSuffix(c: ViewRegionInfo) {
-  if (c.attributeName) {
-    switch (c.languageId) {
-      case "css":
-        return "}";
-      case "javascript":
-        return ";";
-    }
-  }
-  return "";
-}
+// function getPrefix(c: ViewRegionInfo) {
+//   if (c.attributeName === undefined) {
+//     switch (c.languageId) {
+//       case 'css':
+//         return `${CSS_STYLE_RULE}{`;
+//     }
+//   }
+//   return '';
+// }
+// function getSuffix(c: ViewRegionInfo) {
+//   if (c.attributeName === undefined) {
+//     switch (c.languageId) {
+//       case 'css':
+//         return '}';
+//       case 'javascript':
+//         return ';';
+//     }
+//   }
+//   return '';
+// }
 
 function substituteWithWhitespace(
   result: string,
@@ -700,8 +727,8 @@ function substituteWithWhitespace(
   let accumulatedWS = 0;
   result += before;
   for (let i = start + before.length; i < end; i++) {
-    let ch = oldContent[i];
-    if (ch === "\n" || ch === "\r") {
+    const ch = oldContent[i];
+    if (ch === '\n' || ch === '\r') {
       // only write new lines, skip the whitespace
       accumulatedWS = 0;
       result += ch;
@@ -709,7 +736,7 @@ function substituteWithWhitespace(
       accumulatedWS++;
     }
   }
-  result = append(result, " ", accumulatedWS - after.length);
+  result = append(result, ' ', accumulatedWS - after.length);
   result += after;
   return result;
 }
@@ -725,10 +752,10 @@ function append(result: string, str: string, n: number): string {
   return result;
 }
 
-function getAttributeLanguage(attributeName: string): string | null {
-  let match = attributeName.match(/^(style)$|^(on\w+)$/i);
-  if (!match) {
-    return null;
-  }
-  return match[1] ? "css" : "javascript";
-}
+// function getAttributeLanguage(attributeName: string): string | null {
+//   const match = attributeName.match(/^(style)$|^(on\w+)$/i);
+//   if (!match) {
+//     return null;
+//   }
+//   return match[1] ? 'css' : 'javascript';
+// }

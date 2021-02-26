@@ -6,12 +6,12 @@ import {
   RepeatForRegionData,
   ViewRegionInfo,
   ViewRegionType,
-} from "../embeddedLanguages/embeddedSupport";
-import { TextDocument } from "vscode-languageserver";
-import { aureliaProgram } from "../../viewModel/AureliaProgram";
-import { getVirtualDefinition } from "../../virtual/virtualDefinition/virtualDefinition";
-import { DefinitionResult } from "./getDefinition";
-import { Position } from "../embeddedLanguages/languageModes";
+} from '../embeddedLanguages/embeddedSupport';
+import { TextDocument } from 'vscode-languageserver';
+import { aureliaProgram } from '../../viewModel/AureliaProgram';
+import { getVirtualDefinition } from './virtualDefinition';
+import { DefinitionResult } from './getDefinition';
+import { Position } from '../embeddedLanguages/languageModes';
 
 /**
  * Priority
@@ -42,9 +42,9 @@ export function getAccessScopeDefinition(
     /** repeat.for="" */
 
     if (
-      !targetRepeatForRegion?.startLine ||
-      !targetRepeatForRegion.startOffset ||
-      !targetRepeatForRegion.startCol
+      targetRepeatForRegion?.startLine === undefined ||
+      targetRepeatForRegion.startOffset === undefined ||
+      targetRepeatForRegion.startCol === undefined
     ) {
       console.error(
         `RepeatFor-Region does not have a start (line). cSearched for ${goToSourceWord}`

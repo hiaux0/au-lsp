@@ -5,9 +5,9 @@ import {
   TextEditorEdit,
   Uri,
   workspace,
-} from "vscode";
-import * as path from "path";
-import * as fs from "fs";
+} from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 
 export class RelatedFiles implements Disposable {
   private readonly disposables: Disposable[] = [];
@@ -15,7 +15,7 @@ export class RelatedFiles implements Disposable {
   constructor() {
     this.disposables.push(
       commands.registerTextEditorCommand(
-        "extension.auOpenRelated",
+        'extension.auOpenRelated',
         this.onOpenRelated,
         this
       )
@@ -31,28 +31,28 @@ export class RelatedFiles implements Disposable {
 
     this.disposables.push(
       commands.registerTextEditorCommand(
-        "extension.auOpenRelatedScript",
+        'extension.auOpenRelatedScript',
         this.openRelatedFactory(scriptExtensions),
         this
       )
     );
     this.disposables.push(
       commands.registerTextEditorCommand(
-        "extension.auOpenRelatedStyle",
+        'extension.auOpenRelatedStyle',
         this.openRelatedFactory(styleExtensions),
         this
       )
     );
     this.disposables.push(
       commands.registerTextEditorCommand(
-        "extension.auOpenRelatedUnit",
+        'extension.auOpenRelatedUnit',
         this.openRelatedFactory(unitExtensions),
         this
       )
     );
     this.disposables.push(
       commands.registerTextEditorCommand(
-        "extension.auOpenRelatedView",
+        'extension.auOpenRelatedView',
         this.openRelatedFactory(viewExtensions),
         this
       )
@@ -71,7 +71,7 @@ export class RelatedFiles implements Disposable {
    * Provide file extensions for navigating between Aurelia files.
    */
   private getRelatedFilePathExtensions(): any {
-    const settings = workspace.getConfiguration("aurelia.relatedFiles");
+    const settings = workspace.getConfiguration('aurelia.relatedFiles');
     if (settings) {
       return {
         scriptExtensions: settings.script,
@@ -82,10 +82,10 @@ export class RelatedFiles implements Disposable {
     }
 
     return {
-      scriptExtensions: [".js", ".ts"],
-      styleExtensions: [".less", ".sass", ".scss", ".styl", ".css"],
-      unitExtensions: [".spec.js", ".spec.ts"],
-      viewExtensions: [".html"],
+      scriptExtensions: ['.js', '.ts'],
+      styleExtensions: ['.less', '.sass', '.scss', '.styl', '.css'],
+      unitExtensions: ['.spec.js', '.spec.ts'],
+      viewExtensions: ['.html'],
     };
   }
 
@@ -108,7 +108,7 @@ export class RelatedFiles implements Disposable {
 
     if (relatedFile) {
       commands.executeCommand(
-        "vscode.open",
+        'vscode.open',
         Uri.file(relatedFile),
         editor.viewColumn
       );
@@ -131,12 +131,12 @@ export class RelatedFiles implements Disposable {
        * '.spec' is not recognized as an file extension.
        * Thus, `replace`, so we are able to switch from, eg. 'unit' to 'style'.
        * */
-      const fileName = editor.document.fileName.replace(".spec", "");
+      const fileName = editor.document.fileName.replace('.spec', '');
       const extension = path.extname(fileName).toLowerCase();
       const relatedFile = this.getRelatedFilePath(fileName, switchToExtensions);
       if (relatedFile) {
         commands.executeCommand(
-          "vscode.open",
+          'vscode.open',
           Uri.file(relatedFile),
           editor.viewColumn
         );
@@ -156,7 +156,7 @@ export class RelatedFiles implements Disposable {
         const fileName = `${path.basename(
           fullPath,
           path.extname(fullPath)
-        )}${ext}`.replace(".spec.spec", ".spec"); // Quick fix because we are appending eg. '.spec.ts' to 'file.spec'
+        )}${ext}`.replace('.spec.spec', '.spec'); // Quick fix because we are appending eg. '.spec.ts' to 'file.spec'
         fullPath = path.join(path.dirname(fullPath), fileName);
         if (!fs.existsSync(fullPath)) return;
         targetFile = fullPath;

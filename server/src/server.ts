@@ -1,10 +1,4 @@
-import { AsyncReturnType } from "./common/global.d";
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
-
-import "reflect-metadata";
+import { AsyncReturnType } from './common/global.d';
 
 import {
   createConnection,
@@ -13,58 +7,54 @@ import {
   InitializeParams,
   DidChangeConfigurationNotification,
   CompletionItem,
-  CompletionItemKind,
   TextDocumentPositionParams,
   TextDocumentSyncKind,
   InitializeResult,
   CompletionList,
-  InsertTextFormat,
   Definition,
-  MarkupKind,
-  MarkupContent,
-} from "vscode-languageserver";
+} from 'vscode-languageserver';
 
-import { TextDocument } from "vscode-languageserver-textdocument";
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
   getLanguageModes,
   LanguageModes,
   Position,
-} from "./feature/embeddedLanguages/languageModes";
+} from './feature/embeddedLanguages/languageModes';
 
 // We need to import this to include reflect functionality
-import "reflect-metadata";
+import 'reflect-metadata';
 
 import {
   documentSettings,
   ExtensionSettings,
   settingsName,
-} from "./configuration/DocumentSettings";
-import { aureliaProgram } from "./viewModel/AureliaProgram";
-import { createAureliaWatchProgram } from "./viewModel/createAureliaWatchProgram";
+} from './configuration/DocumentSettings';
+import { aureliaProgram } from './viewModel/AureliaProgram';
+import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram';
 import {
   CustomElementRegionData,
   parseDocumentRegions,
   ViewRegionType,
-} from "./feature/embeddedLanguages/embeddedSupport";
-import { AureliaCompletionItem } from "./virtual/virtualCompletion/virtualCompletion";
+} from './feature/embeddedLanguages/embeddedSupport';
 
-import * as path from "path";
-import * as ts from "typescript";
-import { createDiagram } from "./viewModel/createDiagram";
-import { getVirtualDefinition } from "./virtual/virtualDefinition/virtualDefinition";
+import * as path from 'path';
+import * as ts from 'typescript';
+import { createDiagram } from './viewModel/createDiagram';
+import { getVirtualDefinition } from './feature/definition/virtualDefinition';
 import {
   DefinitionResult,
   getDefinition,
-} from "./feature/definition/getDefinition";
-import { camelCase } from "@aurelia/kernel";
+} from './feature/definition/getDefinition';
+import { camelCase } from 'lodash';
+import { CustomHover } from './feature/virtual/virtualSourceFile';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
-export let connection = createConnection(ProposedFeatures.all);
+export const connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
-let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let languageModes: LanguageModes;
 
 let hasConfigurationCapability: boolean = false;
@@ -72,20 +62,9 @@ let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
 
 connection.onInitialize(async (params: InitializeParams) => {
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log("1. TCL: onInitialize");
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  let capabilities = params.capabilities;
+  console.log('[server.ts] 1. onInitialize');
+
+  const capabilities = params.capabilities;
   languageModes = await getLanguageModes();
 
   // Does the client support the `workspace/configuration` request?
@@ -108,7 +87,7 @@ connection.onInitialize(async (params: InitializeParams) => {
       // Tell the client that the server supports code completion
       completionProvider: {
         resolveProvider: false,
-        triggerCharacters: [" ", ".", "[", '"', "'", "{", "<", ":"],
+        triggerCharacters: [' ', '.', '[', '"', '\'', '{', '<', ':'],
       },
       definitionProvider: true,
       hoverProvider: true,
@@ -129,13 +108,8 @@ connection.onInitialize(async (params: InitializeParams) => {
 });
 
 connection.onInitialized(async () => {
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log("2. TCL: onInitialized");
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
+  console.log('[server.ts] 2. onInitialized');
+
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
     connection.client.register(
@@ -143,23 +117,19 @@ connection.onInitialized(async () => {
       undefined
     );
 
+    console.log('[server.ts] 3. Create Aurelia Watch Program');
     await createAureliaWatchProgram(aureliaProgram);
   }
   if (hasWorkspaceFolderCapability) {
     connection.workspace.onDidChangeWorkspaceFolders((_event) => {
-      connection.console.log("Workspace folder change event received.");
+      connection.console.log('Workspace folder change event received.');
     });
   }
 });
 
 connection.onDidChangeConfiguration((change) => {
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log("3. TCL: onDidChangeConfiguration");
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
+  console.log('[server.ts] onDidChangeConfiguration');
+
   if (hasConfigurationCapability) {
     // Reset all cached document settings
     documentSettings.settingsMap.clear();
@@ -178,19 +148,13 @@ documents.onDidClose((e) => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(async (change) => {
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
-  console.log("4. TCL: onDidChangeContent");
-  console.log(
-    "------------------------------------------------------------------------------------------"
-  );
+  console.log('[server.ts] (re-)get Language Modes');
   languageModes = await getLanguageModes();
 });
 
 connection.onDidChangeWatchedFiles((_change) => {
   // Monitored files have change in VSCode
-  connection.console.log("We received an file change event");
+  connection.console.log('We received an file change event');
 });
 
 // This handler provides the initial list of the completion items.
@@ -201,7 +165,7 @@ connection.onCompletion(
     const documentUri = _textDocumentPosition.textDocument.uri;
     const document = documents.get(documentUri);
     if (!document) {
-      throw new Error("No document found");
+      throw new Error('No document found');
       return [];
     }
     const modeAndRegion = await languageModes.getModeAndRegionAtPosition(
@@ -220,7 +184,7 @@ connection.onCompletion(
     const triggerCharacter = text.substring(offset - 1, offset);
 
     if (doComplete) {
-      let completions: CompletionItem[] = [CompletionItem.create("")];
+      let completions: CompletionItem[] = [CompletionItem.create('')];
       try {
         completions = ((await doComplete(
           document,
@@ -228,7 +192,7 @@ connection.onCompletion(
           triggerCharacter
         )) as unknown) as CompletionItem[];
       } catch (error) {
-        console.log("TCL: error", error);
+        console.log('TCL: error', error);
       }
       return completions;
     }
@@ -239,11 +203,11 @@ connection.onCompletion(
 
 // This handler resolves additional information for the item selected in
 // the completion list.
-connection.onCompletionResolve(
-  (item: CompletionItem): CompletionItem => {
-    return item;
-  }
-);
+// connection.onCompletionResolve(
+//   (item: CompletionItem): CompletionItem => {
+//     return item;
+//   }
+// );
 
 connection.onDefinition((_: TextDocumentPositionParams): Definition | null => {
   /**
@@ -260,7 +224,7 @@ connection.onHover((hoverParams) => {
 });
 
 /** On requests */
-connection.onRequest("aurelia-class-diagram", async (filePath: string) => {
+connection.onRequest('aurelia-class-diagram', async (filePath: string) => {
   // 1. Find the active component
   const aureliaSourceFiles = aureliaProgram.getAureliaSourceFiles();
   const filePathDir = path.dirname(filePath);
@@ -281,31 +245,31 @@ connection.onRequest("aurelia-class-diagram", async (filePath: string) => {
   }
 
   // 2. create diagram by going through the class ast
-  let classDiagram = "";
+  let classDiagram = '';
   targetSourceFile?.forEachChild((fileMembers) => {
     if (ts.isClassDeclaration(fileMembers)) {
       const checker = aureliaProgram.getProgram()?.getTypeChecker();
       if (!checker) {
-        console.log("no checker");
+        console.log('no checker');
       }
-      classDiagram = createDiagram(fileMembers!, checker!);
+      classDiagram = createDiagram(fileMembers, checker!);
     }
   });
-  console.log("TCL: classDiagram", classDiagram);
+  console.log('TCL: classDiagram', classDiagram);
 
   return classDiagram;
 });
 
-connection.onRequest("aurelia-get-component-list", () => {
+connection.onRequest('aurelia-get-component-list', () => {
   return aureliaProgram.getComponentList();
 });
 
-connection.onRequest("aurelia-get-component-class-declarations", () => {
-  return aureliaProgram.getComponentMap().classDeclarations;
+connection.onRequest('aurelia-get-component-class-declarations', () => {
+  return aureliaProgram.getComponentCompletionsMap().classDeclarations;
 });
 
 connection.onRequest<any, any>(
-  "get-virtual-definition",
+  'get-virtual-definition',
   async ({
     documentContent,
     position,
@@ -313,18 +277,25 @@ connection.onRequest<any, any>(
     filePath,
   }): Promise<DefinitionResult | undefined> => {
     const documentUri = filePath;
-    const document = TextDocument.create(filePath, "html", 0, documentContent);
+    const document = TextDocument.create(filePath, 'html', 0, documentContent);
     const isRefactor = true;
 
     if (!document) {
-      throw new Error("No document found");
+      throw new Error('No document found');
       return;
     }
 
-    const modeAndRegion = await languageModes.getModeAndRegionAtPosition(
-      document,
-      position
-    );
+    let modeAndRegion: AsyncReturnType<
+      LanguageModes['getModeAndRegionAtPosition']
+    >;
+    try {
+      modeAndRegion = await languageModes.getModeAndRegionAtPosition(
+        document,
+        position
+      );
+    } catch (error) {
+      console.log('TCL: error', error);
+    }
 
     if (!modeAndRegion) return;
     const { mode, region } = modeAndRegion;
@@ -344,21 +315,21 @@ connection.onRequest<any, any>(
           region
         );
       } catch (error) {
-        console.log("TCL: error", error);
+        console.log('TCL: error', error);
         return;
       }
       return definitions;
     }
 
-    console.log("---------------------------------------");
-    console.log("---------------------------------------");
-    console.log("---------------------------------------");
-    console.log("---------------------------------------");
-    console.log("LEGACY DEFINITON");
-    console.log("---------------------------------------");
-    console.log("---------------------------------------");
-    console.log("---------------------------------------");
-    console.log("---------------------------------------");
+    console.log('---------------------------------------');
+    console.log('---------------------------------------');
+    console.log('---------------------------------------');
+    console.log('---------------------------------------');
+    console.log('LEGACY DEFINITON');
+    console.log('---------------------------------------');
+    console.log('---------------------------------------');
+    console.log('---------------------------------------');
+    console.log('---------------------------------------');
 
     try {
       const definitions = await getDefinition(
@@ -429,18 +400,18 @@ connection.onRequest<any, any>(
   }
 );
 connection.onRequest<any, any>(
-  "get-virtual-hover",
+  'get-virtual-hover',
   async ({
     documentContent,
     position,
     goToSourceWord,
     filePath,
-  }): Promise<void> => {
+  }): Promise<CustomHover | undefined> => {
     const documentUri = filePath;
-    const document = TextDocument.create(filePath, "html", 0, documentContent);
+    const document = TextDocument.create(filePath, 'html', 0, documentContent);
 
     if (!document) {
-      throw new Error("No document found");
+      throw new Error('No document found');
       return;
     }
 
@@ -453,6 +424,7 @@ connection.onRequest<any, any>(
     const { mode, region } = modeAndRegion;
 
     if (!mode) return;
+    if (!region) return;
 
     const doHover = mode.doHover;
 
@@ -462,7 +434,7 @@ connection.onRequest<any, any>(
       try {
         hoverResult = await doHover(document, position, goToSourceWord, region);
       } catch (error) {
-        console.log("TCL: error", error);
+        console.log('TCL: error', error);
         return;
       }
       return hoverResult;

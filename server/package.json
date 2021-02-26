@@ -1,17 +1,18 @@
 {
-	"name": "lsp-sample-server",
-	"description": "Example implementation of a language server in node.",
-	"version": "1.0.0",
-	"author": "Microsoft Corporation",
+	"name": "aurelia",
+	"description": "A VSCode extension for Aurelia",
+	"author": "AureliaEffect",
 	"license": "MIT",
+	"version": "2.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aurelia/vscode-extension"
+  },
 	"engines": {
 		"node": "*"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-extension-samples"
-	},
 	"dependencies": {
+		"lodash": "^4.17.20",
 		"parse5": "^6.0.1",
 		"parse5-sax-parser": "^6.0.1",
 		"vscode-languageserver": "^6.1.1",
@@ -19,7 +20,7 @@
 	},
 	"scripts": {},
 	"devDependencies": {
-		"@aurelia/kernel": "^0.6.0",
+		"@types/lodash": "^4.14.168",
 		"@types/parse5": "^5.0.3",
 		"@types/parse5-sax-parser": "^5.0.1"
 	}

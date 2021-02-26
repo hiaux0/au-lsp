@@ -5,11 +5,11 @@ import {
   MarkupKind,
   createConnection,
   IConnection,
-} from "vscode-languageserver";
-import * as ts from "typescript";
-import { AureliaProgram } from "./AureliaProgram";
-import { kebabCase } from "@aurelia/kernel";
-import { getElementNameFromClassDeclaration } from "../common/className";
+} from 'vscode-languageserver';
+import * as ts from 'typescript';
+import { AureliaProgram } from './AureliaProgram';
+import { kebabCase } from 'lodash';
+import { getElementNameFromClassDeclaration } from '../common/className';
 
 const connection: IConnection = createConnection();
 const logger = connection.console;
@@ -26,7 +26,7 @@ export class ViewModelParser {
       const checker = program.getTypeChecker();
       for (const sourceFile of program.getSourceFiles()) {
         if (!sourceFile.isDeclarationFile) {
-          const fileNameNoExt = sourceFile.fileName.replace(/\.(ts|js)$/, "");
+          const fileNameNoExt = sourceFile.fileName.replace(/\.(ts|js)$/, '');
           const hasTemplate = ts.sys.fileExists(`${fileNameNoExt}.html`);
 
           sourceFile.forEachChild((node) => {
@@ -57,7 +57,7 @@ export class ViewModelParser {
         }
       }
     } else {
-      logger.log("CustomElement: Program missing, can't fetch documentation.");
+      logger.log('CustomElement: Program missing, can\'t fetch documentation.');
     }
 
     return result;
@@ -71,7 +71,7 @@ export class ViewModelParser {
   private getElementNameFromClassDeclaration(
     classDeclaration: ts.ClassDeclaration
   ): string {
-    const text = classDeclaration.name?.getText() || "";
+    const text = classDeclaration.name?.getText() || '';
     return kebabCase(text);
   }
 
@@ -85,8 +85,8 @@ export class ViewModelParser {
   ): boolean | undefined {
     return classDeclaration.decorators?.some((decorator) => {
       return (
-        decorator.getText().includes("@useView") ||
-        decorator.getText().includes("@noView")
+        decorator.getText().includes('@useView') ||
+        decorator.getText().includes('@noView')
       );
     });
   }

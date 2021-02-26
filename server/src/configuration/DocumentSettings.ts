@@ -63,7 +63,7 @@ export class DocumentSettings {
     this.globalSettings = this.defaultSettings;
   }
 
-  inject(connection: Connection, hasConfigurationCapability: boolean) {
+  public inject(connection: Connection, hasConfigurationCapability: boolean): void {
     this.connection = connection;
     this.hasConfigurationCapability = hasConfigurationCapability;
   }
@@ -76,7 +76,7 @@ export class DocumentSettings {
    *   const settings = await documentSettingsClass.getDocumentSettings();
    *   ```
    */
-  async getDocumentSettings(
+  public async getDocumentSettings(
     resource: string = ''
   ): Promise<ExtensionSettings | undefined> {
     if (!this.hasConfigurationCapability) {

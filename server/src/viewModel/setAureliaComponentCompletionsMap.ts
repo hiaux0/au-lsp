@@ -191,14 +191,12 @@ export function classDeclarationHasUseViewOrNoView(
 export function hasCorrectNamingConvention(
   classDeclaration: ts.ClassDeclaration
 ): boolean {
-  if (!classDeclaration.decorators) return false;
-
-  const hasViewDecorator = classDeclaration.decorators.some((decorator) => {
+  const hasViewDecorator = classDeclaration.decorators?.some((decorator) => {
     const result = decorator
       .getText()
       .includes(AureliaDecorator.CUSTOM_ELEMENT);
     return result;
-  });
+  }) ?? false;
 
   const hasCustomElementNamingConvention = Boolean(
     classDeclaration.name?.getText().includes(AureliaClassTypes.CUSTOM_ELEMENT)

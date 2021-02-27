@@ -141,6 +141,8 @@ export function isAureliaCompletionItem(
 ): completion is AureliaCompletionItem[] {
   if (!Array.isArray(completion)) return false;
 
+  if (completion.length === 0) return true;
+
   if (completion[0].label) {
     return true;
   }

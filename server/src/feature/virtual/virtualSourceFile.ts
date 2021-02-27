@@ -4,7 +4,6 @@ import { ViewRegionInfo } from '../embeddedLanguages/embeddedSupport';
 import { aureliaProgram, AureliaProgram } from '../../viewModel/AureliaProgram';
 import { Position, TextDocument } from 'vscode-html-languageservice';
 import { MarkupKind } from 'vscode-languageserver';
-import { getDocumentRegionAtPosition } from '../embeddedLanguages/languageModes';
 
 export const VIRTUAL_SOURCE_FILENAME = 'virtual.ts';
 export const VIRTUAL_METHOD_NAME = '__vir';
@@ -65,9 +64,7 @@ export async function createVirtualLanguageService(
   // 1. Get content for virtual file
   let virtualContent: string = '';
   if (options.region) {
-    const region = await getDocumentRegionAtPosition(position).get(document);
-
-    if (!region) return;
+    const region = options.region;
 
     virtualContent = document
       .getText()

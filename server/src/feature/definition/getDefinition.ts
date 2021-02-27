@@ -7,13 +7,11 @@ import {
   parseDocumentRegions,
   ViewRegionType,
 } from '../embeddedLanguages/embeddedSupport';
-import { AureliaClassTypes, AureliaView } from '../../common/constants';
+import { AureliaClassTypes } from '../../common/constants';
 import { Position, TextDocument } from 'vscode-languageserver-textdocument';
 import { AureliaProgram } from '../../viewModel/AureliaProgram';
 import * as path from 'path';
 import * as ts from 'typescript';
-import { getDocumentRegionAtPosition } from '../embeddedLanguages/languageModes';
-import { createSourceFile, getLineAndCharacterOfPosition } from 'typescript';
 
 export interface DefinitionResult {
   lineAndCharacter: ts.LineAndCharacter;
@@ -45,7 +43,7 @@ export async function getDefinition(
   const regions = await parseDocumentRegions(document);
 
   /** Check value converter region */
-  const targetRegion = await getRegionAtPosition(document, regions, position);
+  const targetRegion = getRegionAtPosition(document, regions, position);
 
   if (targetRegion?.type === ViewRegionType.ValueConverter) {
     const valueConverterRegion = targetRegion as ViewRegionInfo<

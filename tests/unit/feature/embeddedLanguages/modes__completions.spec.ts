@@ -81,4 +81,20 @@ describe('embeddedSupport.ts - Modes - Individual - Definitions', () => {
     const hasComponentCompletions = completion?.length >= 2;
     strictEqual(hasComponentCompletions, true);
   });
+  it('Completions - Object completion (Same file)', async () => {
+    const testAureliaProgram = getAureliaProgramForTesting();
+    const templateContent = '<div if.bind="minimalInterfaceVar."></div>';
+    const position = Position.create(0, 33);
+    const completion = await TestSetup.createCompletionTest(
+      testAureliaProgram,
+      {
+        templatePath: COMPONENT_VIEW_PATH,
+        templateContent,
+        position,
+        triggerCharacter: '.'
+      }
+    );
+
+    strictEqual(completion[0].insertText, 'field');
+  });
 });

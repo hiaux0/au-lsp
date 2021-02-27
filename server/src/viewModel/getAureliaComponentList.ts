@@ -63,7 +63,7 @@ export function getAureliaComponentInfoFromClassDeclaration(
 
       const viewModelName = getElementNameFromClassDeclaration(
         targetClassDeclaration
-      ); /* ? */
+      );
 
       // Note the `!` in the argument: `getSymbolAtLocation` expects a `Node` arg, but returns undefined
       const symbol = checker.getSymbolAtLocation(node.name!);

@@ -118,7 +118,7 @@ function getAureliaViewModelClassDeclaration(
     ) {
       // Save the class for further processing later on.
       targetClassDeclaration = node;
-      targetClassDeclaration.name?.getText(); /* ? */
+      targetClassDeclaration.name?.getText();
 
       templateImportPath = getTemplateImportPathFromCustomElementDecorator(
         targetClassDeclaration,

@@ -97,6 +97,11 @@ export function parseDocumentRegions<RegionDataType = any>(
 ): Promise<ViewRegionInfo<RegionDataType>[]> {
   // eslint-disable-next-line max-lines-per-function
   return new Promise((resolve) => {
+    if (document.getText() === '') {
+      resolve([]);
+      return;
+    }
+
     console.log('[eb.ts] Starting document parsing');
     const saxStream = new SaxStream({ sourceCodeLocationInfo: true });
     const viewRegions: ViewRegionInfo[] = [];

@@ -2,9 +2,9 @@ module.exports = function () {
   return {
     files: [
       "client/**/*.ts",
-      "client/testFixture/src/**/*.html",
       "server/**/*.ts",
       "**/tsconfig.json",
+      "tests/testFixture/src/**/*.{ts,html}",
       "tests/unit/helpers/**/*.ts",
     ],
 

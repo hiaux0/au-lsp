@@ -31,7 +31,7 @@ import { CustomHover } from '../virtual/virtualSourceFile';
 
 export * from 'vscode-html-languageservice';
 
-export function createTextDocument(
+export function createTextDocumentPositionParams(
   document: TextDocument,
   position: Position
 ): TextDocumentPositionParams {

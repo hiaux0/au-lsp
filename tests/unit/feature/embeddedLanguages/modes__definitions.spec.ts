@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as ts from 'typescript';
 
 import {
-  createTextDocument,
+  createTextDocumentPositionParams,
   getLanguageModes,
   LanguageModes,
 } from '../../../../server/src/feature/embeddedLanguages/languageModes';
@@ -231,11 +231,11 @@ describe('embeddedSupport.ts - Modes - Individual', () => {
   //   const region = modeAndRegion?.region;
   //   if (region === undefined) return;
 
-  //   const textDocument = createTextDocument(document, {
+  //   const textDocumentPositionParams = createTextDocumentPositionParams(document, {
   //     line: 4,
   //     character: 13,
   //   });
-  //   const complete = await mode.doComplete(document, textDocument, 'dirty');
+  //   const complete = await mode.doComplete(document, textDocumentPositionParams, 'dirty');
 
   //   if (!isAureliaCompletionItem(complete)) return;
 

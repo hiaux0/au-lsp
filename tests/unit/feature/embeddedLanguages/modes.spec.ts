@@ -39,7 +39,7 @@ describe('embeddedSupport.ts - Modes - Individual', () => {
 
     languageModes = await getLanguageModes();
 
-    const testPath = path.resolve(__dirname, '../../../../client/testFixture');
+    const testPath = path.resolve(__dirname, '../../../testFixture');
     const targetViewPath = path.resolve(testPath, COMPONENT_VIEW_PATH);
     document = createTextDocumentForTesting(targetViewPath);
     document.getText(); /* ? */

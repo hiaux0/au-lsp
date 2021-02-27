@@ -25,7 +25,7 @@ describe('embeddedSupport.ts', () => {
   });
 
   it('getModeAndRegionAtPosition', async () => {
-    const testPath = path.resolve(__dirname, '../../../../client/testFixture');
+    const testPath = path.resolve(__dirname, '../../../testFixture');
     const targetViewPath = path.resolve(
       testPath,
       './src/realdworld-advanced/settings/index.html'
@@ -55,7 +55,7 @@ describe('embeddedSupport.ts - Modes', () => {
     getAureliaProgramForTesting();
     const languageModes = await getLanguageModes();
 
-    const testPath = path.resolve(__dirname, '../../../../client/testFixture');
+    const testPath = path.resolve(__dirname, '../../../testFixture');
     const targetViewPath = path.resolve(
       testPath,
       './src/realdworld-advanced/settings/index.html'

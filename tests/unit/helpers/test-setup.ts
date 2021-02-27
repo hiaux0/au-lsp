@@ -17,10 +17,11 @@ export function getAureliaProgramForTesting(
   const aureliaProgram = container.get(AureliaProgram);
   const sourceDirectory = path.resolve(
     __dirname,
-    '../../../client/testFixture'
+    '../../testFixture'
   );
 
   projectOptions.sourceDirectory = sourceDirectory;
+   sourceDirectory;/* ? */
 
   createAureliaWatchProgram(aureliaProgram, projectOptions);
   return aureliaProgram;

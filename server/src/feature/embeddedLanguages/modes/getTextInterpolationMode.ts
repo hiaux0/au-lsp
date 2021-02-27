@@ -11,7 +11,7 @@ import { VirtualLanguageService } from '../../virtual/virtualSourceFile';
 import { getAccessScopeHover } from '../../hover/accessScopeHover';
 
 export function getTextInterpolationMode(
-  documentRegions: LanguageModelCache<Promise<HTMLDocumentRegions>>
+  languageModelCacheDocument: LanguageModelCache<Promise<HTMLDocumentRegions>>
 ): LanguageMode {
   return {
     getId() {
@@ -36,7 +36,7 @@ export function getTextInterpolationMode(
       position: Position,
       goToSourceWord: string,
     ): Promise<DefinitionResult | undefined> {
-      const regions = (await documentRegions.get(document)).getRegions();
+      const regions = (await languageModelCacheDocument.get(document)).getRegions();
       return getAccessScopeDefinition(
         document,
         position,

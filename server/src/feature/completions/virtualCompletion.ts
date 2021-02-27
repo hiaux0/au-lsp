@@ -35,7 +35,7 @@ import {
   TextDocument,
   TextDocumentPositionParams,
 } from 'vscode-languageserver';
-import { getDocumentRegionAtPosition } from '../embeddedLanguages/languageModes';
+import { getLanguageModelCacheDocumentRegionAtPosition } from '../embeddedLanguages/languageModes';
 import { aureliaProgram, AureliaProgram } from '../../viewModel/AureliaProgram';
 import { AureliaLSP, VIRTUAL_SOURCE_FILENAME } from '../../common/constants';
 import {
@@ -155,7 +155,7 @@ async function getVirtualViewModelCompletion(
 ): Promise<AureliaCompletionItem[]> {
   // 1. From the region get the part, that should be made virtual.
   const documentUri = textDocumentPosition.textDocument.uri;
-  const region = await getDocumentRegionAtPosition(
+  const region = await getLanguageModelCacheDocumentRegionAtPosition(
     textDocumentPosition.position
   ).get(document);
 

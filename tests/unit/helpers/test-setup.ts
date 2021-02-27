@@ -4,6 +4,7 @@ import {
 } from '../../../server/src/common/common.types';
 import * as path from 'path';
 import * as fs from 'fs';
+import 'reflect-metadata';
 
 import { AureliaProgram, globalContainer } from '../../../server/src/viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from '../../../server/src/viewModel/createAureliaWatchProgram';
@@ -21,7 +22,6 @@ export function getAureliaProgramForTesting(
   );
 
   projectOptions.sourceDirectory = sourceDirectory;
-   sourceDirectory;/* ? */
 
   createAureliaWatchProgram(aureliaProgram, projectOptions);
   return aureliaProgram;

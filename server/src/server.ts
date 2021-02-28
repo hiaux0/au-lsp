@@ -234,11 +234,12 @@ connection.onHover(() => {
 });
 
 connection.onRequest('aurelia-get-component-list', () => {
-  return aureliaProgram.getComponentList();
-});
-
-connection.onRequest('aurelia-get-component-class-declarations', () => {
-  return aureliaProgram.getComponentCompletionsMap().classDeclarations;
+  return aureliaProgram.getComponentList().map(cList => {
+    const {componentName, className, viewFilePath, viewModelFilePath, baseViewModelFileName} = cList;
+    return {
+      componentName, className, viewFilePath, viewModelFilePath, baseViewModelFileName
+    };
+  });
 });
 
 connection.onRequest<any, any>(

@@ -174,10 +174,10 @@ export function activate(context: ExtensionContext) {
       'aurelia.getAureliaComponents',
       async () => {
         console.log('Getting...');
-        const components = await client.sendRequest(
+        const components = await client.sendRequest<string[]>(
           'aurelia-get-component-list'
         );
-        console.clear();
+        console.log(`Found >${components.length}< components.`);
         console.log('TCL: activate -> components', components);
       }
     )

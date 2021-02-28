@@ -399,8 +399,11 @@ export function parseDocumentRegions<RegionDataType = any>(
     });
 
     saxStream.on('endTag', (endTag) => {
+      const isLastTag =
+        endTag.sourceCodeLocation?.endOffset === document.getText().length - 1;
       const isTemplateTag = endTag.tagName === AureliaView.TEMPLATE_TAG_NAME;
-      if (isTemplateTag || hasImportTemplateTag) {
+
+      if (isLastTag && (isTemplateTag || hasImportTemplateTag)) {
         resolve(viewRegions);
       }
     });

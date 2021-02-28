@@ -59,8 +59,16 @@ export interface IComponentList {
   viewRegions?: ViewRegionInfo[];
 }
 
-export interface IAureliaBindable extends IAureliaClassMember {
+export interface IAureliaBindable {
   componentName: string;
+  /**
+   * Class member information of bindable.
+   *
+   * Reason for structure:
+   * Before, the interface was like `export interface IAureliaBindable extends IAureliaClassMember`,
+   * but due to further processing hardship (creating actual CompletionItem), that interface was hard to work with.
+   */
+  classMember: IAureliaClassMember;
 }
 
 /**
@@ -156,7 +164,7 @@ export class AureliaProgram {
 
           const targetBindable: IAureliaBindable = {
             componentName: component.componentName,
-            ...classMember
+            classMember
           };
           bindableList.push(targetBindable);
         }

@@ -54,7 +54,7 @@ describe('Aurelia Component List - Methods', () => {
 
     const bindableList = testAureliaProgram.getBindableList();
     strictEqual(bindableList.length, 1);
-    strictEqual(bindableList[0].name, 'minimalBindable');
+    strictEqual(bindableList[0].classMember.name, 'minimalBindable');
     strictEqual(bindableList[0].componentName, 'minimal-component');
   });
 });

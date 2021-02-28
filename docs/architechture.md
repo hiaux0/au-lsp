@@ -1,3 +1,14 @@
+**_NOTE: This document has collapsed regions._**
+
+---
+
+Quick Navigation:
+
+- [Architecture](#architecture)
+  - ...
+  - [5. Architecture.png](#5-architecturepng)
+- [Parsing](#parsing)
+
 <details>
 <summary>Table of contents</summary>
 <p>
@@ -32,9 +43,13 @@
     - [4.1 EO - Completions](#41-eo---completions)
     - [4.2 EO - Definitions](#42-eo---definitions)
     - [4.3 EO - Hover](#43-eo---hover)
+  - [5. Architecture.png](#5-architecturepng)
+- [Parsing](#parsing)
 
 </p>
 </details>
+
+---
 
 # Architecture
 
@@ -92,9 +107,7 @@
 
 ### 4.3 EO - Hover
 
-```ts
-createAureliaWatchProgram(aureliaProgram);
-```
+## 5. Architecture.png
 
 <details>
 <summary>Architecture.png</summary>
@@ -104,3 +117,10 @@ createAureliaWatchProgram(aureliaProgram);
 
 </p>
 </details>
+
+---
+
+# Parsing
+_Intention: Know where and when parsing is happening_
+
+Parsing mainly happens in [2. Extension Input (EI)](#2-extension-input-ei)

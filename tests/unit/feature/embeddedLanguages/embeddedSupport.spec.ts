@@ -19,19 +19,12 @@ describe('embeddedSupport.ts', () => {
   });
 
   it('parseDocumentRegions', async () => {
-    const componentCompletionsMap = testAureliaProgram.getComponentCompletionsMap();
+    const aureliaComponent = testAureliaProgram.getComponentList();
+    const { viewFilePath } = aureliaComponent[0];
 
-    if (componentCompletionsMap.classDeclarations === undefined) return;
-    if (componentCompletionsMap.classDeclarations?.length > 1) {
-      return;
-    }
+    if (viewFilePath === undefined) return;
 
-    const data = componentCompletionsMap.classDeclarations[0].data as {
-      templateImportPath: string;
-    };
-    const { templateImportPath } = data;
-
-    const uri = templateImportPath;
+    const uri = viewFilePath;
     const content = fs.readFileSync(uri, 'utf-8');
     const document = TextDocument.create(uri, 'html', 99, content);
     const regions = await parseDocumentRegions(document, testAureliaProgram);

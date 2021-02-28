@@ -19,6 +19,7 @@ import { Position } from '../embeddedLanguages/languageModes';
 import {
   aureliaProgram,
   IAureliaClassMember,
+  IComponentList,
 } from '../../viewModel/AureliaProgram';
 import { SyntaxKind } from 'typescript';
 
@@ -53,6 +54,41 @@ export function createCompletionItem(
       elementName: componentName,
     },
   };
+  return result;
+}
+
+export function createClassCompletionItem(
+  aureliaComponent: IComponentList
+): CompletionItem {
+  const {
+    documentation,
+    componentName,
+    className,
+    viewFilePath,
+  } = aureliaComponent;
+  const finalName = componentName ?? className;
+  const result: CompletionItem = {
+    documentation: {
+      kind: MarkupKind.Markdown,
+      value: documentation,
+    },
+    detail: `${finalName}`,
+    insertText: `${finalName}$2>$1</${finalName}>$0`,
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Class,
+    label: `(Au Class) ${finalName}`,
+    data: { templateImportPath: viewFilePath },
+  };
+  return result;
+}
+
+export function createComponentCompletionList(
+  aureliaComponentList: IComponentList[]
+): CompletionItem[] {
+  const result = aureliaComponentList.map((component) => {
+    return createClassCompletionItem(component);
+  });
+
   return result;
 }
 

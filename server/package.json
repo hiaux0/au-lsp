@@ -14,9 +14,7 @@
 	"dependencies": {
 		"lodash": "^4.17.20",
 		"parse5": "^6.0.1",
-		"parse5-sax-parser": "^6.0.1",
-		"vscode-languageserver": "^6.1.1",
-		"vscode-languageserver-textdocument": "^1.0.1"
+		"parse5-sax-parser": "^6.0.1"
 	},
 	"scripts": {},
 	"devDependencies": {

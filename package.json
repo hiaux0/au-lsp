@@ -59,13 +59,6 @@
 			"type": "object",
 			"title": "Aurelia",
 			"properties": {
-				"aurelia.hello": {
-					"type": [
-						"string"
-					],
-					"default": "please say hello to everyone",
-					"description": "Aurelia says hello"
-				},
 				"aurelia.relatedFiles": {
 					"type": "object",
 					"description": "Aurelia quick switching between related files",

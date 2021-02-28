@@ -187,12 +187,13 @@ export function classDeclarationHasUseViewOrNoView(
 export function hasCustomElementNamingConvention(
   classDeclaration: ts.ClassDeclaration
 ): boolean {
-  const hasCustomElementDecorator = classDeclaration.decorators?.some((decorator) => {
-    const result = decorator
-      .getText()
-      .includes(AureliaDecorator.CUSTOM_ELEMENT);
-    return result;
-  }) ?? false;
+  const hasCustomElementDecorator =
+    classDeclaration.decorators?.some((decorator) => {
+      const result = decorator
+        .getText()
+        .includes(AureliaDecorator.CUSTOM_ELEMENT);
+      return result;
+    }) ?? false;
 
   const hasCustomElementNamingConvention = Boolean(
     classDeclaration.name?.getText().includes(AureliaClassTypes.CUSTOM_ELEMENT)
@@ -210,12 +211,13 @@ export function hasCustomElementNamingConvention(
 export function hasValueConverterNamingConvention(
   classDeclaration: ts.ClassDeclaration
 ): boolean {
-  const hasValueConverterDecorator = classDeclaration.decorators?.some((decorator) => {
-    const result = decorator
-      .getText()
-      .includes(AureliaDecorator.VALUE_CONVERTER);
-    return result;
-  }) ?? false;
+  const hasValueConverterDecorator =
+    classDeclaration.decorators?.some((decorator) => {
+      const result = decorator
+        .getText()
+        .includes(AureliaDecorator.VALUE_CONVERTER);
+      return result;
+    }) ?? false;
 
   const hasValueConverterNamingConvention = Boolean(
     classDeclaration.name?.getText().includes(AureliaClassTypes.VALUE_CONVERTER)

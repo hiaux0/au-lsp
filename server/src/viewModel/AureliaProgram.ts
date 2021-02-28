@@ -165,7 +165,7 @@ export class AureliaProgram {
 
           const targetBindable: IAureliaBindable = {
             componentName: component.componentName,
-            classMember
+            classMember,
           };
           bindableList.push(targetBindable);
         }
@@ -178,7 +178,10 @@ export class AureliaProgram {
     return this.bindableList;
   }
 
-  public setViewRegions(componentName: string, newRegions: ViewRegionInfo[]): void {
+  public setViewRegions(
+    componentName: string,
+    newRegions: ViewRegionInfo[]
+  ): void {
     const componentList = this.getComponentList();
     const targetComponent = componentList.find(
       (component) => component.componentName === componentName

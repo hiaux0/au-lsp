@@ -8,8 +8,6 @@ import { ViewRegionInfo } from '../feature/embeddedLanguages/embeddedSupport';
 import { getAureliaComponentInfoFromClassDeclaration } from './getAureliaComponentList';
 export const globalContainer = new Container();
 
-interface IWebcomponent {}
-
 export interface IComponentCompletionsMap {
   classDeclarations: CompletionItem[] | undefined;
 

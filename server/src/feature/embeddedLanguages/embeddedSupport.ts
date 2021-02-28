@@ -97,6 +97,7 @@ export function parseDocumentRegions<RegionDataType = any>(
 ): Promise<ViewRegionInfo<RegionDataType>[]> {
   // eslint-disable-next-line max-lines-per-function
   return new Promise((resolve) => {
+    console.log('TCL: document.getText()', document.getText());
     if (document.getText() === '') {
       resolve([]);
       return;
@@ -365,6 +366,7 @@ export function parseDocumentRegions<RegionDataType = any>(
     });
 
     saxStream.on('text', (text) => {
+      console.log('TCL: text', text);
       let interpolationMatch;
       while ((interpolationMatch = interpolationRegex.exec(text.text))) {
         if (interpolationMatch !== null) {
@@ -399,11 +401,9 @@ export function parseDocumentRegions<RegionDataType = any>(
     });
 
     saxStream.on('endTag', (endTag) => {
-      const isLastTag =
-        endTag.sourceCodeLocation?.endOffset === document.getText().length - 1;
       const isTemplateTag = endTag.tagName === AureliaView.TEMPLATE_TAG_NAME;
 
-      if (isLastTag && (isTemplateTag || hasImportTemplateTag)) {
+      if (isTemplateTag || hasImportTemplateTag) {
         resolve(viewRegions);
       }
     });

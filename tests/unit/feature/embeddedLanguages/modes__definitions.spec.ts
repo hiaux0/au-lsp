@@ -159,7 +159,7 @@ describe('embeddedSupport.ts - Modes - Individual', () => {
       attributeValue,
       regionValue,
     }) => {
-      it.only(`Definition - ${type}`, async () => {
+      it(`Definition - ${type}`, async () => {
         modeAndRegion = await languageModes.getModeAndRegionAtPosition(
           document,
           position

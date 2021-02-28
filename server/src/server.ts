@@ -38,7 +38,6 @@ import {
 
 import * as path from 'path';
 import * as ts from 'typescript';
-import { createDiagram } from './viewModel/createDiagram';
 import { getVirtualDefinition } from './feature/definition/virtualDefinition';
 import {
   DefinitionResult,
@@ -244,43 +243,6 @@ connection.onDefinition((_: TextDocumentPositionParams): Definition | null => {
 
 connection.onHover(() => {
   return null;
-});
-
-/** On requests */
-connection.onRequest('aurelia-class-diagram', async (filePath: string) => {
-  // 1. Find the active component
-  const aureliaSourceFiles = aureliaProgram.getAureliaSourceFiles();
-  const filePathDir = path.dirname(filePath);
-  const componentName = path.parse(filePath).name;
-  const targetSourceFile = aureliaSourceFiles?.find((sourceFile) => {
-    const sameDir = path.dirname(sourceFile.fileName) === filePathDir;
-    const sameComponent =
-      path.parse(sourceFile.fileName).name === componentName;
-    /** Need both, since possibility of same component name in different directories */
-    return sameDir && sameComponent;
-  });
-  if (!targetSourceFile) {
-    console.log(
-      `No target file for: ${filePath} in all your ${
-        aureliaSourceFiles?.map((sf) => sf.fileName).join(' -- ') ?? ''
-      }`
-    );
-  }
-
-  // 2. create diagram by going through the class ast
-  let classDiagram = '';
-  targetSourceFile?.forEachChild((fileMembers) => {
-    if (ts.isClassDeclaration(fileMembers)) {
-      const checker = aureliaProgram.getProgram()?.getTypeChecker();
-      if (!checker) {
-        console.log('no checker');
-      }
-      classDiagram = createDiagram(fileMembers, checker!);
-    }
-  });
-  console.log('TCL: classDiagram', classDiagram);
-
-  return classDiagram;
 });
 
 connection.onRequest('aurelia-get-component-list', () => {

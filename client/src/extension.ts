@@ -11,7 +11,6 @@ import {
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient';
-// import { registerDiagramPreview } from "./webview/diagramPreview";
 import { RelatedFiles } from './feature/relatedFiles';
 
 let client: LanguageClient;
@@ -199,8 +198,6 @@ export function activate(context: ExtensionContext) {
       new HoverInView(client)
     )
   );
-
-  // registerDiagramPreview(context, client);
 
   // Start the client. This will also launch the server
   client.start();

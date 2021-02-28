@@ -61,8 +61,6 @@ export interface IComponentList {
   viewRegions?: ViewRegionInfo[];
 }
 
-// interface IClassDiagram {}
-
 /**
  * The AureliaProgram class represents your whole applicaton
  * (aka. program in typescript terminology)
@@ -71,7 +69,6 @@ export interface IComponentList {
 export class AureliaProgram {
   public builderProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
   public componentCompletionsMap: IComponentCompletionsMap;
-  // public classDiagram: IClassDiagram;
   public aureliaSourceFiles?: ts.SourceFile[];
   public projectFilePaths: string[];
   private componentList: IComponentList[];
@@ -156,14 +153,6 @@ export class AureliaProgram {
 
     targetComponent.viewRegions = newRegions;
   }
-
-  // public setClassDiagram(classDiagram: IClassDiagram) {
-  //   this.classDiagram = classDiagram;
-  // }
-
-  // public getClassDiagram() {
-  //   return this.classDiagram;
-  // }
 
   public setProjectFilePaths(
     options: IProjectOptions = defaultProjectOptions

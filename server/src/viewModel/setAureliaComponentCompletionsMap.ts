@@ -8,7 +8,6 @@ import {
   CompletionItemKind,
 } from 'vscode-languageserver';
 import { kebabCase } from 'lodash';
-// import { createDiagram } from "./createDiagram";
 import { getElementNameFromClassDeclaration } from '../common/className';
 import {
   AureliaClassTypes,
@@ -27,7 +26,6 @@ export function setAureliaComponentCompletionsMap(
   const classDeclarations: CompletionItem[] = [];
   let classMembers: CompletionItem[] = [];
   let bindables: CompletionItem[] = [];
-  // let classDiagram: any;
   const componentCompletionsMap: IComponentCompletionsMap = {
     classDeclarations: [],
     classMembers: [],
@@ -73,7 +71,6 @@ export function setAureliaComponentCompletionsMap(
         }
         classDeclarations.push(classDeclaration);
 
-        // classDiagram = createDiagram(targetClassDeclaration!, checker);
         /* public myVariables: string; */
         const result1 = getCompletionsAureliaViewModelClassMembers(
           targetClassDeclaration,
@@ -97,7 +94,6 @@ export function setAureliaComponentCompletionsMap(
   });
 
   aureliaProgram.setComponentCompletionsMap(componentCompletionsMap);
-  // aureliaProgram.setClassDiagram(classDiagram);
 }
 
 function getAureliaViewModelClassDeclaration(

@@ -15,7 +15,7 @@ Get view model (typescript) completions in view (.html)
 5. Completions, definition, quickinfo, ...
 
 ## Terminology / Abbreviations
-- embedded regions (TODO: Link to vscode embedded regions)
+- [embedded regions](https://github.com/microsoft/vscode-extension-samples/tree/main/lsp-embedded-language-service)
 - virtual: Copy of a file, that is used as replacement (eg. with modification to get certain completion result via typescript language service)
 - [TLS] - Typescript Language Service
 

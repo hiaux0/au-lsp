@@ -59,6 +59,10 @@ export interface IComponentList {
   viewRegions?: ViewRegionInfo[];
 }
 
+export interface IAureliaBindable extends IAureliaClassMember {
+  componentName: string;
+}
+
 /**
  * The AureliaProgram class represents your whole applicaton
  * (aka. program in typescript terminology)
@@ -70,6 +74,7 @@ export class AureliaProgram {
   public aureliaSourceFiles?: ts.SourceFile[];
   public projectFilePaths: string[];
   private componentList: IComponentList[];
+  private bindableList: IAureliaBindable[];
 
   public setComponentCompletionsMap(
     componentCompletionsMap: IComponentCompletionsMap
@@ -131,6 +136,7 @@ export class AureliaProgram {
     }
 
     this.setComponentList(componentList);
+    this.setBindableList(componentList);
   }
 
   public setComponentList(componentList: IComponentList[]): void {
@@ -139,6 +145,28 @@ export class AureliaProgram {
 
   public getComponentList(): IComponentList[] {
     return this.componentList;
+  }
+
+  public setBindableList(componentList: IComponentList[]): void {
+    const bindableList: IAureliaBindable[] = [];
+    componentList.forEach((component) => {
+      component.classMembers?.forEach((classMember) => {
+        if (classMember.isBindable) {
+          if (component.componentName === undefined) return;
+
+          const targetBindable: IAureliaBindable = {
+            componentName: component.componentName,
+            ...classMember
+          };
+          bindableList.push(targetBindable);
+        }
+      });
+    });
+    this.bindableList = bindableList;
+  }
+
+  public getBindableList(): IAureliaBindable[] {
+    return this.bindableList;
   }
 
   public setViewRegions(componentName: string, newRegions: ViewRegionInfo[]): void {

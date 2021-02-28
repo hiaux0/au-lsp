@@ -30,11 +30,31 @@ describe('Aurelia Component List', () => {
     if (!classMembers) return;
 
     strictEqual(classMembers.length, 7);
-    const bindables = classMembers.filter(member => member.isBindable);
+    const bindables = classMembers.filter((member) => member.isBindable);
     strictEqual(bindables.length, 0);
-    const variables = classMembers.filter(member => member.syntaxKind === SyntaxKind.VariableDeclaration);
+    const variables = classMembers.filter(
+      (member) => member.syntaxKind === SyntaxKind.VariableDeclaration
+    );
     strictEqual(variables.length, 2);
-    const methods = classMembers.filter(member => member.syntaxKind === SyntaxKind.MethodDeclaration);
+    const methods = classMembers.filter(
+      (member) => member.syntaxKind === SyntaxKind.MethodDeclaration
+    );
     strictEqual(methods.length, 5);
+  });
+
+});
+
+describe('Aurelia Component List - Methods', () => {
+
+  it('#setBindableList #getBindableList', () => {
+    testAureliaProgram = getAureliaProgramForTesting({
+      include: ['src/minimal-component/*'],
+    });
+    testAureliaProgram.initComponentList();
+
+    const bindableList = testAureliaProgram.getBindableList();
+    strictEqual(bindableList.length, 1);
+    strictEqual(bindableList[0].name, 'minimalBindable');
+    strictEqual(bindableList[0].componentName, 'minimal-component');
   });
 });

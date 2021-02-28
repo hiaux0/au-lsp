@@ -97,4 +97,20 @@ describe('embeddedSupport.ts - Modes - Individual - Definitions', () => {
 
     strictEqual(completion[0].insertText, 'field');
   });
+  it('Completions - Bindables', async () => {
+    const testAureliaProgram = getAureliaProgramForTesting();
+    const templateContent = '<minimal-component ></minimal-component>';
+    const position = Position.create(0, 18);
+    const completion = await TestSetup.createCompletionTest(
+      testAureliaProgram,
+      {
+        templatePath: COMPONENT_VIEW_PATH,
+        templateContent,
+        position,
+        triggerCharacter: ' '
+      }
+    );
+
+    strictEqual(completion[0].detail, 'minimalBindable');
+  });
 });

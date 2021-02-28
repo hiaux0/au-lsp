@@ -114,17 +114,18 @@ export function parseDocumentRegions<RegionDataType = any>(
 
     // 0. Check if template was imported to ViewModel
     const fileName = document.uri;
-    const result = aureliaProgram
-      .getComponentCompletionsMap()
-      .classDeclarations?.find((classDecl) => {
-        const data = classDecl.data as { templateImportPath: string };
-        const { templateImportPath } = data;
+    const targetComponent = aureliaProgram
+      .getComponentList()
+      .find((component) => {
+        const { viewFilePath } = component;
         /** Account for "file://" */
-        const isSameFilePath = fileName.includes(templateImportPath);
+        if (viewFilePath === undefined) return false;
+
+        const isSameFilePath = fileName.includes(viewFilePath);
         return isSameFilePath;
       });
 
-    hasImportTemplateTag = result !== undefined;
+    hasImportTemplateTag = targetComponent !== undefined;
 
     // 1. Check if in <template>
     let hasTemplateTag = false;

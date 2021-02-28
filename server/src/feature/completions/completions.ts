@@ -16,7 +16,45 @@ import {
 } from '../embeddedLanguages/embeddedSupport';
 import { Position } from '../embeddedLanguages/languageModes';
 
-import { aureliaProgram } from '../../viewModel/AureliaProgram';
+import {
+  aureliaProgram,
+  IAureliaClassMember,
+} from '../../viewModel/AureliaProgram';
+import { SyntaxKind } from 'typescript';
+
+export function createCompletionItem(
+  classMember: IAureliaClassMember,
+  componentName?: string
+): CompletionItem {
+  const { name, syntaxKind, isBindable, documentation } = classMember;
+  const varAsKebabCase = kebabCase(name);
+  const quote = '"';
+  const kind: CompletionItemKind =
+    syntaxKind === SyntaxKind.MethodDeclaration
+      ? CompletionItemKind.Method
+      : CompletionItemKind.Field;
+
+  const result: CompletionItem = {
+    documentation: {
+      kind: MarkupKind.Markdown,
+      value: documentation,
+    },
+    detail: `${isBindable ? name : varAsKebabCase}`,
+    insertText: isBindable
+      ? `${varAsKebabCase}.$\{1:bind}=${quote}$\{0:${name}}${quote}`
+      : name,
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind,
+    label:
+      '' +
+      `(Au ${isBindable ? 'Bindable' : 'Class member'}) ` +
+      `${isBindable ? varAsKebabCase : name}`,
+    data: {
+      elementName: componentName,
+    },
+  };
+  return result;
+}
 
 export async function getBindablesCompletion(
   _textDocumentPosition: TextDocumentPositionParams,
@@ -38,10 +76,20 @@ export async function getBindablesCompletion(
 
   if (!targetCustomElementRegion) return [];
 
-  return [...aureliaProgram.getComponentCompletionsMap().bindables!].filter(
-    (bindable) =>
+  const bindableList = aureliaProgram.getBindableList();
+  const asCompletionItem = bindableList.map((bindable) => {
+    const result = createCompletionItem(
+      bindable.classMember,
+      bindable.componentName
+    );
+    return result;
+  });
+
+  return asCompletionItem.filter((bindable) => {
+    return (
       kebabCase(bindable.data.elementName) === targetCustomElementRegion.tagName
-  );
+    );
+  });
 }
 
 export function createValueConverterCompletion(): CompletionItem[] {

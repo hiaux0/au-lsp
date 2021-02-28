@@ -6,7 +6,8 @@
 		"outDir": "out",
 		"rootDir": "../",
 		"sourceMap": true,
-		"strictPropertyInitialization": false
+		"strictPropertyInitialization": false,
+		"skipLibCheck": true
 	},
 	"include": ["src"],
 	"exclude": ["node_modules", ".vscode-test"]

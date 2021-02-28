@@ -44,6 +44,17 @@ export function getAureliaComponentInfoFromClassDeclaration(
     ) {
       targetClassDeclaration = node;
 
+      // Note the `!` in the argument: `getSymbolAtLocation` expects a `Node` arg, but returns undefined
+      const symbol = checker.getSymbolAtLocation(node.name!);
+      if (symbol === undefined) {
+        console.log('No symbol found for: ', node.name);
+        return;
+      }
+
+      const documentation = ts.displayPartsToString(
+        symbol.getDocumentationComment(checker)
+      );
+
       const isValueConverterModel = checkValueConverter(targetClassDeclaration);
       if (isValueConverterModel) {
         const valueConverterName = targetClassDeclaration.name
@@ -51,6 +62,7 @@ export function getAureliaComponentInfoFromClassDeclaration(
           .replace(VALUE_CONVERTER_SUFFIX, '')
           .toLocaleLowerCase();
         result = {
+          documentation,
           className: targetClassDeclaration.name?.getText() ?? '',
           valueConverterName,
           baseViewModelFileName: Path.parse(sourceFile.fileName).name,
@@ -65,14 +77,6 @@ export function getAureliaComponentInfoFromClassDeclaration(
         targetClassDeclaration
       );
 
-      // Note the `!` in the argument: `getSymbolAtLocation` expects a `Node` arg, but returns undefined
-      const symbol = checker.getSymbolAtLocation(node.name!);
-      if (symbol === undefined) {
-        console.log('No symbol found for: ', node.name);
-        return;
-      }
-
-      //
       const templateImportPath = getTemplateImportPathFromCustomElementDecorator(
         targetClassDeclaration,
         sourceFile
@@ -85,6 +89,7 @@ export function getAureliaComponentInfoFromClassDeclaration(
       );
 
       result = {
+        documentation,
         className: targetClassDeclaration.name?.getText() ?? '',
         componentName: viewModelName,
         baseViewModelFileName: Path.parse(sourceFile.fileName).name,

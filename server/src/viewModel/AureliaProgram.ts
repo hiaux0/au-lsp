@@ -35,6 +35,7 @@ export interface IAureliaClassMember {
 }
 
 export interface IComponentList {
+  documentation: string;
   sourceFile?: ts.SourceFile;
   /** export class >ComponentName< {} */
   className: string;

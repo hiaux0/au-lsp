@@ -19,7 +19,7 @@ import { Position } from '../embeddedLanguages/languageModes';
 import {
   aureliaProgram,
   IAureliaClassMember,
-  IComponentList,
+  IAureliaComponent,
 } from '../../viewModel/AureliaProgram';
 import { SyntaxKind } from 'typescript';
 
@@ -58,7 +58,7 @@ export function createCompletionItem(
 }
 
 export function createClassCompletionItem(
-  aureliaComponent: IComponentList
+  aureliaComponent: IAureliaComponent
 ): CompletionItem {
   const {
     documentation,
@@ -83,7 +83,7 @@ export function createClassCompletionItem(
 }
 
 export function createComponentCompletionList(
-  aureliaComponentList: IComponentList[]
+  aureliaComponentList: IAureliaComponent[]
 ): CompletionItem[] {
   const result = aureliaComponentList.map((component) => {
     return createClassCompletionItem(component);

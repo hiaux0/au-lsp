@@ -15,7 +15,7 @@ interface DecoratorInfo {
   decoratorArgument: string;
 }
 
-import { IAureliaClassMember, IComponentList } from './AureliaProgram';
+import { IAureliaClassMember, IAureliaComponent } from './AureliaProgram';
 import * as ts from 'typescript';
 import * as Path from 'path';
 import { getElementNameFromClassDeclaration } from '../common/className';
@@ -30,8 +30,8 @@ import {
 export function getAureliaComponentInfoFromClassDeclaration(
   sourceFile: ts.SourceFile,
   checker: ts.TypeChecker
-): IComponentList | undefined {
-  let result: IComponentList | undefined;
+): IAureliaComponent | undefined {
+  let result: IAureliaComponent | undefined;
   let targetClassDeclaration: ts.ClassDeclaration | undefined;
 
   sourceFile.forEachChild((node) => {

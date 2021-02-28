@@ -34,7 +34,7 @@ export interface IAureliaClassMember {
   syntaxKind: ts.SyntaxKind;
 }
 
-export interface IComponentList {
+export interface IAureliaComponent {
   documentation: string;
   sourceFile?: ts.SourceFile;
   /** export class >ComponentName< {} */
@@ -82,7 +82,7 @@ export class AureliaProgram {
   public componentCompletionsMap: IComponentCompletionsMap;
   public aureliaSourceFiles?: ts.SourceFile[];
   public projectFilePaths: string[];
-  private componentList: IComponentList[];
+  private componentList: IAureliaComponent[];
   private bindableList: IAureliaBindable[];
 
   public setComponentCompletionsMap(
@@ -95,8 +95,8 @@ export class AureliaProgram {
     return this.componentCompletionsMap;
   }
 
-  public initComponentList(): IComponentList[] | undefined {
-    const componentList: IComponentList[] = [];
+  public initComponentList(): IAureliaComponent[] | undefined {
+    const componentList: IAureliaComponent[] = [];
 
     const program = aureliaProgram.getProgram();
     if (program === undefined) {
@@ -148,15 +148,15 @@ export class AureliaProgram {
     this.setBindableList(componentList);
   }
 
-  public setComponentList(componentList: IComponentList[]): void {
+  public setComponentList(componentList: IAureliaComponent[]): void {
     this.componentList = componentList;
   }
 
-  public getComponentList(): IComponentList[] {
+  public getComponentList(): IAureliaComponent[] {
     return this.componentList;
   }
 
-  public setBindableList(componentList: IComponentList[]): void {
+  public setBindableList(componentList: IAureliaComponent[]): void {
     const bindableList: IAureliaBindable[] = [];
     componentList.forEach((component) => {
       component.classMembers?.forEach((classMember) => {

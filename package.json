@@ -42,28 +42,28 @@
 			},
 			{
 				"command": "aurelia.getAureliaComponents",
-				"title": "[Au VSC Ext] Show Aurelia Components parsed by the extension",
+				"title": "[Au] Show Aurelia Components parsed by the extension",
 				"category": "Aurelia"
 			},
 			{
 				"command": "extension.auOpenRelated",
-				"title": "Switch between Aurelia view and view model"
+				"title": "[Au] Switch between Aurelia view and view model"
 			},
 			{
 				"command": "extension.auOpenRelatedScript",
-				"title": "Open Related Aurelia File: Script"
+				"title": "[Au] Open Related Aurelia File: Script"
 			},
 			{
 				"command": "extension.auOpenRelatedStyle",
-				"title": "Open Related Aurelia File: Style"
+				"title": "[Au] Open Related Aurelia File: Style"
 			},
 			{
 				"command": "extension.auOpenRelatedUnit",
-				"title": "Open Related Aurelia File: Unit"
+				"title": "[Au] Open Related Aurelia File: Unit"
 			},
 			{
 				"command": "extension.auOpenRelatedView",
-				"title": "Open Related Aurelia File: View"
+				"title": "[Au] Open Related Aurelia File: View"
 			}
 		],
 		"configuration": {

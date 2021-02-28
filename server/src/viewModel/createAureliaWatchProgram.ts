@@ -1,6 +1,5 @@
 import * as ts from 'typescript';
 import { AureliaProgram } from './AureliaProgram';
-import { setAureliaComponentCompletionsMap } from './setAureliaComponentCompletionsMap';
 import { IProjectOptions } from '../common/common.types';
 
 const updateAureliaComponents = (
@@ -8,7 +7,6 @@ const updateAureliaComponents = (
   projectOptions?: IProjectOptions
 ): void => {
   aureliaProgram.setProjectFilePaths(projectOptions);
-  setAureliaComponentCompletionsMap(aureliaProgram);
 
   aureliaProgram.initComponentList();
   const componentList = aureliaProgram.getComponentList();

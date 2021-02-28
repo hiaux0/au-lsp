@@ -1,31 +1,11 @@
 import { singleton, Container } from 'aurelia-dependency-injection';
 import * as ts from 'typescript';
 import * as Path from 'path';
-import { CompletionItem } from 'vscode-languageserver';
 import { defaultProjectOptions, IProjectOptions } from '../common/common.types';
 import { AureliaClassTypes } from '../common/constants';
 import { ViewRegionInfo } from '../feature/embeddedLanguages/embeddedSupport';
 import { getAureliaComponentInfoFromClassDeclaration } from './getAureliaComponentList';
 export const globalContainer = new Container();
-
-export interface IComponentCompletionsMap {
-  classDeclarations: CompletionItem[] | undefined;
-
-  /** in kebab-case */
-  componentName?: string;
-
-  // View Model
-  viewModelFilePath?: string;
-  sourceFile?: ts.SourceFile;
-  /** Used for Completions in own View */
-  classMembers?: CompletionItem[] | undefined;
-  /** Used for Completions in other View */
-  bindables?: CompletionItem[] | undefined;
-
-  // View
-  viewFilePath?: string;
-  regions?: ViewRegionInfo[];
-}
 
 export interface IAureliaClassMember {
   name: string;
@@ -79,21 +59,10 @@ export interface IAureliaBindable {
 @singleton()
 export class AureliaProgram {
   public builderProgram: ts.SemanticDiagnosticsBuilderProgram | undefined;
-  public componentCompletionsMap: IComponentCompletionsMap;
   public aureliaSourceFiles?: ts.SourceFile[];
   public projectFilePaths: string[];
   private componentList: IAureliaComponent[];
   private bindableList: IAureliaBindable[];
-
-  public setComponentCompletionsMap(
-    componentCompletionsMap: IComponentCompletionsMap
-  ): void {
-    this.componentCompletionsMap = componentCompletionsMap;
-  }
-
-  public getComponentCompletionsMap(): IComponentCompletionsMap {
-    return this.componentCompletionsMap;
-  }
 
   public initComponentList(): IAureliaComponent[] | undefined {
     const componentList: IAureliaComponent[] = [];

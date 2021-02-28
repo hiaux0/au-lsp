@@ -1,6 +1,6 @@
 {
   "$schema": "https://aka.ms/codetour-schema",
-  "title": "2.2 EI - Definitions",
+  "title": "[A] 2.2 EI - Definitions",
   "steps": [
     {
       "file": "client/src/extension.ts",

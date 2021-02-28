@@ -1,6 +1,6 @@
 {
   "$schema": "https://aka.ms/codetour-schema",
-  "title": "1. Aurelia App",
+  "title": "[A] 1. Aurelia App",
   "steps": [
     {
       "file": "server/src/server.ts",
@@ -37,5 +37,6 @@
       "title": "aureliaProgram.setComponentList(componentList);"
     }
   ],
-  "ref": "b7f272baf8555d14606dea663fa15c1ae18f9388"
+  "ref": "b7f272baf8555d14606dea663fa15c1ae18f9388",
+  "isPrimary": true
 }

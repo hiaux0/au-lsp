@@ -1,6 +1,6 @@
 {
   "$schema": "https://aka.ms/codetour-schema",
-  "title": "1.1 View Model",
+  "title": "[A] 1.1 View Model",
   "steps": [
     {
       "file": "server/src/viewModel/createAureliaWatchProgram.ts",

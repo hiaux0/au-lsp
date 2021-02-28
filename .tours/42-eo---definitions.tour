@@ -1,6 +1,6 @@
 {
   "$schema": "https://aka.ms/codetour-schema",
-  "title": "4.2 EO - Definitions",
+  "title": "[A] 4.2 EO - Definitions",
   "steps": [
     {
       "file": "server/src/server.ts",

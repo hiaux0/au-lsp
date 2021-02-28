@@ -1,6 +1,6 @@
 {
   "$schema": "https://aka.ms/codetour-schema",
-  "title": "1.2 View",
+  "title": "[A] 1.2 View",
   "steps": [
     {
       "file": "server/src/feature/embeddedLanguages/embeddedSupport.ts",

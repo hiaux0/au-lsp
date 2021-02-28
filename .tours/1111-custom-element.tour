@@ -1,6 +1,6 @@
 {
   "$schema": "https://aka.ms/codetour-schema",
-  "title": "1.1.1.1 Custom Element",
+  "title": "[A] 1.1.1.1 Custom Element",
   "steps": [
     {
       "file": "server/src/viewModel/getAureliaComponentList.ts",

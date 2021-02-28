@@ -1,6 +1,6 @@
 {
   "$schema": "https://aka.ms/codetour-schema",
-  "title": "1.1.2 Class Members Declarations",
+  "title": "[A] 1.1.2 Class Members Declarations",
   "steps": [
     {
       "file": "server/src/viewModel/getAureliaComponentList.ts",

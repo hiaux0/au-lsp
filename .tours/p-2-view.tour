@@ -1,0 +1,93 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "[P] 2. View",
+  "steps": [
+    {
+      "file": "server/src/feature/embeddedLanguages/embeddedSupport.ts",
+      "description": " ",
+      "line": 94,
+      "title": "export function parseDocumentRegions<RegionDataType = any>("
+    },
+    {
+      "file": "server/src/feature/embeddedLanguages/modes/getValueConverterMode.ts",
+      "description": " ",
+      "line": 21,
+      "selection": {
+        "start": {
+          "line": 21,
+          "character": 25
+        },
+        "end": {
+          "line": 21,
+          "character": 45
+        }
+      }
+    },
+    {
+      "file": "server/src/server.ts",
+      "description": " ",
+      "line": 356,
+      "selection": {
+        "start": {
+          "line": 356,
+          "character": 29
+        },
+        "end": {
+          "line": 356,
+          "character": 49
+        }
+      }
+    },
+    {
+      "file": "server/src/feature/embeddedLanguages/languageModes.ts",
+      "description": " ",
+      "line": 103
+    },
+    {
+      "file": "server/src/feature/definition/getDefinition.ts",
+      "description": " ",
+      "line": 43,
+      "selection": {
+        "start": {
+          "line": 43,
+          "character": 25
+        },
+        "end": {
+          "line": 43,
+          "character": 45
+        }
+      }
+    },
+    {
+      "file": "server/src/feature/completions/completions.ts",
+      "description": " ",
+      "line": 30,
+      "selection": {
+        "start": {
+          "line": 30,
+          "character": 25
+        },
+        "end": {
+          "line": 30,
+          "character": 45
+        }
+      }
+    },
+    {
+      "file": "server/src/feature/embeddedLanguages/embeddedSupport.ts",
+      "description": " ",
+      "line": 415,
+      "selection": {
+        "start": {
+          "line": 420,
+          "character": 21
+        },
+        "end": {
+          "line": 420,
+          "character": 41
+        }
+      }
+    }
+  ],
+  "ref": "b64b8701be2ebdb8369324f98127b3ac66e7ba31"
+}

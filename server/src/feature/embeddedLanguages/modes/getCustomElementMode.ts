@@ -30,7 +30,6 @@ export function getCustomElementMode(
           document
         );
         if (bindablesCompletion.length > 0) return bindablesCompletion;
-        console.log('TCL: triggerCharacter', triggerCharacter);
       }
       return [];
     },

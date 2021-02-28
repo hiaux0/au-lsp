@@ -11,7 +11,7 @@ const updateAureliaComponents = (
   aureliaProgram.initComponentList();
   const componentList = aureliaProgram.getComponentList();
 
-  if (componentList) {
+  if (componentList.length) {
     aureliaProgram.setComponentList(componentList);
     console.log(
       `>>> The extension found this many components: ${componentList.length}`

@@ -30,20 +30,8 @@ import {
 } from './configuration/DocumentSettings';
 import { aureliaProgram } from './viewModel/AureliaProgram';
 import { createAureliaWatchProgram } from './viewModel/createAureliaWatchProgram';
-import {
-  CustomElementRegionData,
-  parseDocumentRegions,
-  ViewRegionType,
-} from './feature/embeddedLanguages/embeddedSupport';
 
-import * as path from 'path';
-import * as ts from 'typescript';
-import { getVirtualDefinition } from './feature/definition/virtualDefinition';
-import {
-  DefinitionResult,
-  getDefinition,
-} from './feature/definition/getDefinition';
-import { camelCase } from 'lodash';
+import { DefinitionResult } from './feature/definition/getDefinition';
 import { CustomHover } from './feature/virtual/virtualSourceFile';
 import {
   AURELIA_TEMPLATE_ATTRIBUTE_CHARACTER,
@@ -309,66 +297,6 @@ connection.onRequest<any, any>(
     console.log('---------------------------------------');
     console.log('---------------------------------------');
     console.log('---------------------------------------');
-
-    try {
-      const definitions = await getDefinition(
-        document,
-        position,
-        aureliaProgram,
-        goToSourceWord
-      );
-
-      return definitions;
-    } catch (err) {
-      const virtualDefinition = getVirtualDefinition(
-        filePath,
-        aureliaProgram,
-        goToSourceWord
-      );
-      /**
-       * 1. inter-bindable.bind=">increaseCounter()<"
-       */
-      if (
-        virtualDefinition?.lineAndCharacter.line !== 0 &&
-        virtualDefinition?.lineAndCharacter.character !== 0
-      ) {
-        return virtualDefinition;
-      }
-
-      /**
-       * 2. >inter-bindable<.bind="increaseCounter()"
-       */
-
-      const regions = await parseDocumentRegions<CustomElementRegionData>(
-        document
-      );
-      const targetCustomElementRegion = regions
-        .filter((region) => region.type === ViewRegionType.CustomElement)
-        .find((customElementRegion) => {
-          return customElementRegion.data?.find((customElementAttribute) =>
-            customElementAttribute.attributeName?.includes(goToSourceWord)
-          );
-        });
-
-      if (!targetCustomElementRegion) return;
-
-      const aureliaSourceFiles = aureliaProgram.getAureliaSourceFiles();
-      const targetAureliaFile = aureliaSourceFiles?.find((sourceFile) => {
-        return (
-          path.parse(sourceFile.fileName).name ===
-          targetCustomElementRegion.tagName
-        );
-      });
-
-      if (!targetAureliaFile) return;
-
-      const sourceWordCamelCase = camelCase(goToSourceWord);
-      return getVirtualDefinition(
-        targetAureliaFile.fileName,
-        aureliaProgram,
-        sourceWordCamelCase
-      );
-    }
   }
 );
 connection.onRequest<any, any>(

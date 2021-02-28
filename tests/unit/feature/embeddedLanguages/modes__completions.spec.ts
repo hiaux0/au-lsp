@@ -113,4 +113,21 @@ describe('embeddedSupport.ts - Modes - Individual - Definitions', () => {
 
     strictEqual(completion[0].detail, 'minimalBindable');
   });
+  it.skip('Completions - Aurelia Attribute Keywords', async () => {
+
+    const testAureliaProgram = getAureliaProgramForTesting();
+    const templateContent = '<div ></div>';
+    const position = Position.create(0, 18);
+    const completion = await TestSetup.createCompletionTest(
+      testAureliaProgram,
+      {
+        templatePath: COMPONENT_VIEW_PATH,
+        templateContent,
+        position,
+        triggerCharacter: ' '
+      }
+    );
+
+    strictEqual(completion[0], 'minimalBindable');
+  });
 });

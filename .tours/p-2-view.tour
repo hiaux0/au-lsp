@@ -24,39 +24,9 @@
       }
     },
     {
-      "file": "server/src/server.ts",
-      "description": " ",
-      "line": 356,
-      "selection": {
-        "start": {
-          "line": 356,
-          "character": 29
-        },
-        "end": {
-          "line": 356,
-          "character": 49
-        }
-      }
-    },
-    {
       "file": "server/src/feature/embeddedLanguages/languageModes.ts",
       "description": " ",
       "line": 103
-    },
-    {
-      "file": "server/src/feature/definition/getDefinition.ts",
-      "description": " ",
-      "line": 43,
-      "selection": {
-        "start": {
-          "line": 43,
-          "character": 25
-        },
-        "end": {
-          "line": 43,
-          "character": 45
-        }
-      }
     },
     {
       "file": "server/src/feature/completions/completions.ts",
@@ -89,5 +59,5 @@
       }
     }
   ],
-  "ref": "b64b8701be2ebdb8369324f98127b3ac66e7ba31"
+  "ref": "0658b770805d5924c79702c182602087a3bc17b6"
 }

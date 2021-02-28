@@ -1,8 +1,7 @@
 import 'reflect-metadata';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { workspace, commands, ExtensionContext, OutputChannel } from 'vscode';
-import * as WebSocket from 'ws';
+import { workspace, ExtensionContext } from 'vscode';
 import * as ts from 'typescript';
 
 import {
@@ -96,16 +95,6 @@ class HoverInView implements vscode.HoverProvider {
 }
 
 export function activate(context: ExtensionContext) {
-  const socketPort = workspace
-    .getConfiguration('languageServerExample')
-    .get('port', 7000);
-  let socket: WebSocket | null = null;
-
-  commands.registerCommand('languageServerExample.startStreaming', () => {
-    // Establish websocket connection
-    socket = new WebSocket(`ws://localhost:${socketPort}`);
-  });
-
   // The server is implemented in node
   const serverModule = context.asAbsolutePath(
     path.join('server', 'out', 'server.js')
@@ -125,29 +114,6 @@ export function activate(context: ExtensionContext) {
     },
   };
 
-  // The log to send
-  let log = '';
-  const websocketOutputChannel: OutputChannel = {
-    name: 'websocket',
-    // Only append the logs but send them later
-    append(value: string) {
-      log += value;
-      console.log(value);
-    },
-    appendLine(value: string) {
-      log += value;
-      // Don't send logs until WebSocket initialization
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(log);
-      }
-      log = '';
-    },
-    clear() {},
-    show() {},
-    hide() {},
-    dispose() {},
-  };
-
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     // Register the server for plain text documents
@@ -157,8 +123,6 @@ export function activate(context: ExtensionContext) {
       // Notify the server about file changes to '.clientrc files contained in the workspace
       fileEvents: workspace.createFileSystemWatcher('**/.clientrc'),
     },
-    // Hijacks all LSP logs and redirect them to a specific port through WebSocket connection
-    // outputChannel: websocketOutputChannel
   };
 
   // Create the language client and start the client.

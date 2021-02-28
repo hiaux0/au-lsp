@@ -19,27 +19,16 @@
 		"vscode": "^1.51.1"
 	},
 	"activationEvents": [
-		"onCommand:aurelia.openClassMethodsHierarchy",
 		"onCommand:aurelia.getAureliaComponents",
 		"onCommand:extension.auOpenRelated",
 		"onCommand:extension.auOpenRelatedScript",
 		"onCommand:extension.auOpenRelatedStyle",
 		"onCommand:extension.auOpenRelatedUnit",
-		"onCommand:extension.auOpenRelatedView",
-		"onLanguage:plaintext"
+		"onCommand:extension.auOpenRelatedView"
 	],
 	"main": "./client/out/client/src/extension",
 	"contributes": {
 		"commands": [
-			{
-				"command": "languageServerExample.startStreaming",
-				"title": "Start Stream Logs into languageServerExample.port"
-			},
-			{
-				"command": "aurelia.openClassMethodsHierarchy",
-				"title": "Open class methods hierarchy",
-				"category": "Aurelia"
-			},
 			{
 				"command": "aurelia.getAureliaComponents",
 				"title": "[Au] Show Aurelia Components parsed by the extension",

@@ -46,6 +46,15 @@ import {
 } from './feature/definition/getDefinition';
 import { camelCase } from 'lodash';
 import { CustomHover } from './feature/virtual/virtualSourceFile';
+import {
+  AURELIA_TEMPLATE_ATTRIBUTE_CHARACTER,
+  AURELIA_TEMPLATE_ATTRIBUTE_TRIGGER_CHARACTER,
+} from './common/constants';
+import { checkInsideTag } from './common/view/document-parsing';
+import {
+  createAureliaTemplateAttributeCompletions,
+  createAureliaTemplateAttributeKeywordCompletions,
+} from './feature/completions/createAureliaTemplateAttributeCompletions';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -146,7 +155,6 @@ documents.onDidClose((e) => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(async (change) => {
-  console.log('TCL: change', change);
   console.log('[server.ts] (re-)get Language Modes');
   languageModes = await getLanguageModes();
 });
@@ -181,6 +189,22 @@ connection.onCompletion(
     const text = document.getText();
     const offset = document.offsetAt(_textDocumentPosition.position);
     const triggerCharacter = text.substring(offset - 1, offset);
+
+    if (triggerCharacter === AURELIA_TEMPLATE_ATTRIBUTE_TRIGGER_CHARACTER) {
+      const isNotRegion = modeAndRegion.region === undefined;
+      const isInsideTag = await checkInsideTag(document, offset);
+      if (isNotRegion && isInsideTag) {
+        const atakCompletions = createAureliaTemplateAttributeKeywordCompletions();
+        return atakCompletions;
+      }
+    } else if (triggerCharacter === AURELIA_TEMPLATE_ATTRIBUTE_CHARACTER) {
+      const isNotRegion = modeAndRegion.region === undefined;
+      const isInsideTag = await checkInsideTag(document, offset);
+      if (isNotRegion && isInsideTag) {
+        const ataCompletions = createAureliaTemplateAttributeCompletions();
+        return ataCompletions;
+      }
+    }
 
     if (doComplete !== undefined) {
       let completions: CompletionItem[] = [CompletionItem.create('')];

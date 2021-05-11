@@ -171,7 +171,7 @@
 	},
 	"dependencies": {
 		"aurelia-dependency-injection": "^1.5.2",
-		"lodash": "^4.17.19",
+		"lodash": "^4.17.21",
 		"reflect-metadata": "^0.1.9",
 		"vscode-languageserver": "^6.1.1",
 		"vscode-languageserver-textdocument": "^1.0.1",
